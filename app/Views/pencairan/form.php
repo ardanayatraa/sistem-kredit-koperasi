@@ -36,9 +36,16 @@
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                 required>
                             <option value="">Pilih Kredit</option>
-                            <?php foreach ($kreditOptions as $kredit): ?>
-                                <option value="<?= $kredit['id_kredit'] ?>"
-                                    <?= old('id_kredit', $pencairan['id_kredit'] ?? '') == $kredit['id_kredit'] ? 'selected' : '' ?>>
+                            <?php foreach ($kreditOptions as $kredit):
+                                $selected = '';
+                                $oldValue = old('id_kredit', $pencairan['id_kredit'] ?? '');
+                                
+                                // Pastikan perbandingan tipe data sama
+                                if ((string)$oldValue === (string)$kredit['id_kredit']) {
+                                    $selected = 'selected';
+                                }
+                            ?>
+                                <option value="<?= $kredit['id_kredit'] ?>" <?= $selected ?>>
                                     <?= 'Kredit #' . $kredit['id_kredit'] . ' - Anggota: ' . $kredit['id_anggota'] ?>
                                 </option>
                             <?php endforeach; ?>

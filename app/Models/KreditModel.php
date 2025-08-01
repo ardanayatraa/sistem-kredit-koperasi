@@ -19,10 +19,12 @@ class KreditModel extends Model
         'catatan_bendahara',
         'catatan_appraiser',
         'catatan_ketua',
-        'status_kredit'
+        'status_kredit',
+        'created_at',
+        'updated_at'
     ];
 
-    protected $useTimestamps = false;
+    protected $useTimestamps = true;
 
     public function getAngsuranByKredit($id_kredit)
     {

@@ -46,9 +46,16 @@ class CreateUsersTable extends Migration
                 'unsigned' => true,
                 'null' => true,
             ],
+            'created_at' => [
+                'type' => 'DATETIME',
+                'null' => true,
+            ],
+            'updated_at' => [
+                'type' => 'DATETIME',
+                'null' => true,
+            ],
         ]);
         $this->forge->addKey('id_user', true);
-        $this->forge->addForeignKey('id_anggota_ref', 'tbl_anggota', 'id_anggota', 'CASCADE', 'SET NULL');
         $this->forge->createTable('tbl_users');
     }
 

@@ -46,6 +46,14 @@ class CreatePembayaranAngsuranTable extends Migration
                 'constraint' => 20,
                 'unsigned' => true,
             ],
+            'created_at' => [
+                'type' => 'DATETIME',
+                'null' => true,
+            ],
+            'updated_at' => [
+                'type' => 'DATETIME',
+                'null' => true,
+            ],
         ]);
         $this->forge->addKey('id_pembayaran', true);
         $this->forge->addForeignKey('id_angsuran', 'tbl_angsuran', 'id_angsuran', 'CASCADE', 'CASCADE');

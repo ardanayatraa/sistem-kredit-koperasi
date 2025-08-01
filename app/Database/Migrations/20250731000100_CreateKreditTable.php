@@ -59,6 +59,14 @@ class CreateKreditTable extends Migration
                 'constraint' => 50,
                 'default' => 'Diajukan',
             ],
+            'created_at' => [
+                'type' => 'DATETIME',
+                'null' => true,
+            ],
+            'updated_at' => [
+                'type' => 'DATETIME',
+                'null' => true,
+            ],
         ]);
         $this->forge->addKey('id_kredit', true);
         $this->forge->addForeignKey('id_anggota', 'tbl_anggota', 'id_anggota', 'CASCADE', 'CASCADE');

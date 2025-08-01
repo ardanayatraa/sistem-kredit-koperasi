@@ -14,35 +14,35 @@ $routes->post('/register', 'AuthController::attemptRegister');
 $routes->get('/login', 'AuthController::login');
 $routes->post('/login', 'AuthController::attemptLogin');
 $routes->get('/logout', 'AuthController::logout');
-$routes->get('/home', 'Home::index', ['filter' => 'auth']); // Halaman dashboard setelah login, bisa diganti ke AuthController::dashboard jika ada
+$routes->get('/home', 'Home::index', ['filter' => 'auth']); // Only require authentication
 
-// Rute untuk Anggota CRUD (tetap sama seperti sebelumnya)
-$routes->group('anggota', ['filter' => 'auth'], function($routes) { // Tambahkan filter 'auth'
+// Rute untuk Anggota CRUD
+$routes->group('anggota', ['filter' => 'role:manage_anggota'], function($routes) {
     $routes->get('/', 'AnggotaController::index');
     $routes->get('new', 'AnggotaController::new');
     $routes->post('create', 'AnggotaController::create');
     $routes->get('edit/(:num)', 'AnggotaController::edit/$1');
     $routes->post('update/(:num)', 'AnggotaController::update/$1');
     $routes->get('delete/(:num)', 'AnggotaController::delete/$1');
-    $routes->post('delete/(:num)', 'AnggotaController::delete/$1'); // Tambahkan ini
-
+    $routes->post('delete/(:num)', 'AnggotaController::delete/$1');
     $routes->get('show/(:num)', 'AnggotaController::show/$1');
+    $routes->post('toggle-status/(:num)', 'AnggotaController::toggleStatus/$1');
 });
 
-// Rute untuk Bunga CRUD (tetap sama seperti sebelumnya)
-$routes->group('bunga', ['filter' => 'auth'], function($routes) { // Tambahkan filter 'auth'
+// Rute untuk Bunga CRUD
+$routes->group('bunga', ['filter' => 'role:manage_bunga'], function($routes) {
     $routes->get('/', 'BungaController::index');
     $routes->get('new', 'BungaController::new');
     $routes->post('create', 'BungaController::create');
     $routes->get('edit/(:num)', 'BungaController::edit/$1');
     $routes->post('update/(:num)', 'BungaController::update/$1');
     $routes->get('delete/(:num)', 'BungaController::delete/$1');
-     $routes->post('delete/(:num)', 'AnggotaController::delete/$1');
+    $routes->post('delete/(:num)', 'BungaController::delete/$1'); // Fixed controller name
     $routes->get('show/(:num)', 'BungaController::show/$1');
 });
 
-// Rute untuk Pencairan CRUD (tetap sama seperti sebelumnya)
-$routes->group('pencairan', ['filter' => 'auth'], function($routes) { // Tambahkan filter 'auth'
+// Rute untuk Pencairan CRUD
+$routes->group('pencairan', ['filter' => 'role:manage_pencairan'], function($routes) {
     $routes->get('/', 'PencairanController::index');
     $routes->get('new', 'PencairanController::new');
     $routes->post('create', 'PencairanController::create');
@@ -52,8 +52,8 @@ $routes->group('pencairan', ['filter' => 'auth'], function($routes) { // Tambahk
     $routes->get('show/(:num)', 'PencairanController::show/$1');
 });
 
-// Rute untuk User CRUD (tetap sama seperti sebelumnya)
-$routes->group('user', ['filter' => 'auth'], function($routes) { // Tambahkan filter 'auth'
+// Rute untuk User CRUD
+$routes->group('user', ['filter' => 'role:manage_users'], function($routes) {
     $routes->get('/', 'UserController::index');
     $routes->get('new', 'UserController::new');
     $routes->post('create', 'UserController::create');
@@ -63,8 +63,8 @@ $routes->group('user', ['filter' => 'auth'], function($routes) { // Tambahkan fi
     $routes->get('show/(:num)', 'UserController::show/$1');
 });
 
-// Rute untuk Angsuran CRUD (tetap sama seperti sebelumnya)
-$routes->group('angsuran', ['filter' => 'auth'], function($routes) { // Tambahkan filter 'auth'
+// Rute untuk Angsuran CRUD
+$routes->group('angsuran', ['filter' => 'role:manage_angsuran'], function($routes) {
     $routes->get('/', 'AngsuranController::index');
     $routes->get('new', 'AngsuranController::new');
     $routes->post('create', 'AngsuranController::create');
@@ -74,8 +74,8 @@ $routes->group('angsuran', ['filter' => 'auth'], function($routes) { // Tambahka
     $routes->get('show/(:num)', 'AngsuranController::show/$1');
 });
 
-// Rute untuk Pembayaran Angsuran CRUD (tetap sama seperti sebelumnya)
-$routes->group('pembayaran-angsuran', ['filter' => 'auth'], function($routes) { // Tambahkan filter 'auth'
+// Rute untuk Pembayaran Angsuran CRUD
+$routes->group('pembayaran-angsuran', ['filter' => 'role:manage_pembayaran_angsuran'], function($routes) {
     $routes->get('/', 'PembayaranAngsuranController::index');
     $routes->get('new', 'PembayaranAngsuranController::new');
     $routes->post('create', 'PembayaranAngsuranController::create');
@@ -85,8 +85,8 @@ $routes->group('pembayaran-angsuran', ['filter' => 'auth'], function($routes) { 
     $routes->get('show/(:num)', 'PembayaranAngsuranController::show/$1');
 });
 
-// Rute untuk Kredit CRUD (tetap sama seperti sebelumnya)
-$routes->group('kredit', ['filter' => 'auth'], function($routes) { // Tambahkan filter 'auth'
+// Rute untuk Kredit CRUD
+$routes->group('kredit', ['filter' => 'role:manage_kredit'], function($routes) {
     $routes->get('/', 'KreditController::index');
     $routes->get('new', 'KreditController::new');
     $routes->post('create', 'KreditController::create');
@@ -96,6 +96,18 @@ $routes->group('kredit', ['filter' => 'auth'], function($routes) { // Tambahkan 
     $routes->get('show/(:num)', 'KreditController::show/$1');
 });
 
+// Rute untuk Laporan Kredit
+$routes->group('laporan-kredit', ['filter' => 'role:view_laporan_kredit'], function($routes) {
+    $routes->get('/', 'LaporanKreditController::index');
+    $routes->get('show/(:num)', 'LaporanKreditController::show/$1');
+    $routes->get('generate-pdf/(:num)', 'LaporanKreditController::generatePdf/$1');
+});
+
+// Rute untuk Profile
+$routes->group('profile', ['filter' => 'role:view_profile'], function($routes) {
+    $routes->get('/', 'UserController::profile');
+    $routes->post('update', 'UserController::updateProfile');
+});
 
 // Rute untuk melayani file yang diunggah dari writable/uploads (tetap sama)
 $routes->get('writable/uploads/(:segment)/(:any)', function($folder, $filename) {

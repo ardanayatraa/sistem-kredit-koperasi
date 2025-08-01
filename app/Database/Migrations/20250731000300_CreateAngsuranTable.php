@@ -36,6 +36,14 @@ class CreateAngsuranTable extends Migration
                 'constraint' => 50,
                 'default' => 'Belum Bayar',
             ],
+            'created_at' => [
+                'type' => 'DATETIME',
+                'null' => true,
+            ],
+            'updated_at' => [
+                'type' => 'DATETIME',
+                'null' => true,
+            ],
         ]);
         $this->forge->addKey('id_angsuran', true);
         $this->forge->addForeignKey('id_kredit', 'tbl_kredit', 'id_kredit', 'CASCADE', 'CASCADE');

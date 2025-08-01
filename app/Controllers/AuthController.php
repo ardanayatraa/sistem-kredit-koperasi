@@ -39,7 +39,6 @@ class AuthController extends Controller
             'password' => 'required|min_length[6]',
             'confirm_password' => 'required_with[password]|matches[password]',
             'no_hp' => 'permit_empty|max_length[20]',
-            'id_anggota_ref' => 'permit_empty|integer',
         ];
 
         if (!$this->validate($rules)) {
@@ -53,7 +52,6 @@ class AuthController extends Controller
             'password' => $this->request->getPost('password'), // Password akan di-hash oleh UserModel
             'level' =>'anggota',
             'no_hp' => $this->request->getPost('no_hp'),
-            'id_anggota_ref' => $this->request->getPost('id_anggota_ref'),
             'no_hp' => $this->request->getPost('no_hp'),
 
         ];
@@ -96,8 +94,14 @@ class AuthController extends Controller
 
         $user = $this->userModel->getByUsername($username);
 
-        if (!$user || !password_verify($password, $user['password'])) {
-            return redirect()->back()->withInput()->with('error', 'Username atau password salah.');
+        // Handle non-existent user
+        if (!$user) {
+            return redirect()->back()->withInput()->with('error', 'Akun tidak ditemukan. Silakan periksa kembali username/email Anda atau daftar akun baru.');
+        }
+
+        // Handle invalid password
+        if (!password_verify($password, $user['password'])) {
+            return redirect()->back()->withInput()->with('error', 'Password salah. Silakan coba lagi.');
         }
 
         // Set session data

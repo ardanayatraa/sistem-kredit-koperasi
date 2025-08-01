@@ -1,4 +1,8 @@
 <?= $this->extend('layouts/dashboard_template') ?>
+<?php
+use App\Config\Roles;
+$currentUserLevel = session()->get('level');
+?>
 
 <?= $this->section('content') ?>
 <div class="w-full w-full mx-auto mt-4">
@@ -10,12 +14,14 @@
                     <p class="text-sm text-gray-600 mt-1">Informasi lengkap user</p>
                 </div>
                 <div class="flex gap-2">
-                    <a href="/user/edit/<?= esc($user['id_user']) ?>" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-blue-700 transition-colors">
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        Edit
-                    </a>
+                    <?php if ($currentUserLevel && Roles::can($currentUserLevel, 'manage_users')): ?>
+                        <a href="/user/edit/<?= esc($user['id_user']) ?>" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-blue-700 transition-colors">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            Edit
+                        </a>
+                    <?php endif; ?>
                     <a href="/user" class="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -88,12 +94,6 @@
                         </span>
                     </div>
 
-                    <?php if (!empty($user['id_anggota_ref'])): ?>
-                    <div class="space-y-1">
-                        <label class="text-sm font-medium text-gray-500">ID Anggota Referensi</label>
-                        <p class="text-sm text-gray-900"><?= esc($user['id_anggota_ref']) ?></p>
-                    </div>
-                    <?php endif; ?>
                 </div>
             </div>
 

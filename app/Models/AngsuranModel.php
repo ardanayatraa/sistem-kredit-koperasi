@@ -13,10 +13,12 @@ class AngsuranModel extends Model
         'angsuran_ke',
         'jumlah_angsuran',
         'tgl_jatuh_tempo',
-        'status_pembayaran'
+        'status_pembayaran',
+        'created_at',
+        'updated_at'
     ];
 
-    protected $useTimestamps = false;
+    protected $useTimestamps = true;
 
     public function getPembayaranByAngsuran($id_angsuran)
     {

@@ -18,16 +18,11 @@ class AnggotaModel extends Model
         'status_keanggotaan',
         'dokumen_ktp',
         'dokumen_kk',
-        'dokumen_slip_gaji'
+        'dokumen_slip_gaji',
+        'created_at',
+        'updated_at'
     ];
 
-    protected $useTimestamps = false;
+    protected $useTimestamps = true;
 
-    public function getUserByAnggotaId($id_anggota)
-    {
-        return $this->db->table('tbl_users')
-            ->where('id_anggota_ref', $id_anggota)
-            ->get()
-            ->getRow();
-    }
 }

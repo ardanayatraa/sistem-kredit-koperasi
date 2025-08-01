@@ -157,4 +157,30 @@ class AnggotaController extends Controller
         if (empty($data['anggota'])) { throw new \CodeIgniter\Exceptions\PageNotFoundException('Anggota dengan ID ' . $id . ' tidak ditemukan.'); }
         return view('anggota/show', $data);
     }
+
+    /**
+     * Toggle anggota status (Aktif/Tidak Aktif)
+     */
+    public function toggleStatus($id = null)
+    {
+        $anggota = $this->anggotaModel->find($id);
+        if (empty($anggota)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Anggota tidak ditemukan.'
+            ])->setStatusCode(404);
+        }
+
+        // Toggle status between Aktif and Tidak Aktif
+        $currentStatus = $anggota['status_keanggotaan'];
+        $newStatus = ($currentStatus === 'Aktif') ? 'Tidak Aktif' : 'Aktif';
+
+        $this->anggotaModel->update($id, ['status_keanggotaan' => $newStatus]);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Status anggota berhasil diubah menjadi ' . $newStatus,
+            'new_status' => $newStatus
+        ]);
+    }
 }

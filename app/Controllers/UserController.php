@@ -35,7 +35,6 @@ class UserController extends Controller
             'password' => 'required|min_length[6]',
             'level' => 'required|max_length[50]',
             'no_hp' => 'permit_empty|max_length[20]',
-            'id_anggota_ref' => 'permit_empty|integer',
         ];
 
         if (!$this->validate($rules)) {
@@ -49,7 +48,6 @@ class UserController extends Controller
             'password' => $this->request->getPost('password'), // Password akan di-hash oleh model
             'level' => $this->request->getPost('level'),
             'no_hp' => $this->request->getPost('no_hp'),
-            'id_anggota_ref' => $this->request->getPost('id_anggota_ref'),
         ];
 
         $this->userModel->insert($data);
@@ -75,7 +73,6 @@ class UserController extends Controller
             'password' => 'permit_empty|min_length[6]', // Password opsional saat update
             'level' => 'required|max_length[50]',
             'no_hp' => 'permit_empty|max_length[20]',
-            'id_anggota_ref' => 'permit_empty|integer',
         ];
 
         if (!$this->validate($rules)) { return redirect()->back()->withInput()->with('errors', $this->validator->getErrors()); }
@@ -86,8 +83,8 @@ class UserController extends Controller
             'email' => $this->request->getPost('email'),
             'level' => $this->request->getPost('level'),
             'no_hp' => $this->request->getPost('no_hp'),
-            'id_anggota_ref' => $this->request->getPost('id_anggota_ref'),
         ];
+        
 
         // Hanya update password jika ada input baru
         if ($this->request->getPost('password')) {
@@ -112,5 +109,50 @@ class UserController extends Controller
         $data['user'] = $this->userModel->find($id);
         if (empty($data['user'])) { throw new \CodeIgniter\Exceptions\PageNotFoundException('User dengan ID ' . $id . ' tidak ditemukan.'); }
         return view('user/show', $data);
+    }
+
+    public function profile()
+    {
+        // No permission check needed for profile
+        // Get the current user's ID from session
+        $userId = session()->get('id_user');
+        $data['user'] = $this->userModel->find($userId);
+        return view('profile/index', $data);
+    }
+
+    public function updateProfile()
+    {
+        // No permission check needed for profile update
+        // Get the current user's ID from session
+        $userId = session()->get('id_user');
+        $user = $this->userModel->find($userId);
+        if (empty($user)) { throw new \CodeIgniter\Exceptions\PageNotFoundException('User tidak ditemukan.'); }
+
+        $rules = [
+            'nama_lengkap' => 'required|max_length[255]',
+            'username' => 'required|min_length[3]|max_length[50]|is_unique[tbl_users.username,id_user,' . $userId . ']',
+            'email' => 'required|valid_email|is_unique[tbl_users.email,id_user,' . $userId . ']',
+            'password' => 'permit_empty|min_length[6]',
+            'no_hp' => 'permit_empty|max_length[20]',
+        ];
+
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $data = [
+            'nama_lengkap' => $this->request->getPost('nama_lengkap'),
+            'username' => $this->request->getPost('username'),
+            'email' => $this->request->getPost('email'),
+            'no_hp' => $this->request->getPost('no_hp'),
+        ];
+
+        // Update password only if provided
+        if ($password = $this->request->getPost('password')) {
+            $data['password'] = $password;
+        }
+
+        $this->userModel->update($userId, $data);
+        return redirect()->to('/profile')->with('success', 'Profile berhasil diperbarui.');
     }
 }

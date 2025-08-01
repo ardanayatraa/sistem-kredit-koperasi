@@ -12,10 +12,12 @@ class BungaModel extends Model
         'nama_bunga',
         'persentase_bunga',
         'tipe_bunga',
-        'keterangan'
+        'keterangan',
+        'created_at',
+        'updated_at'
     ];
 
-    protected $useTimestamps = false;
+    protected $useTimestamps = true;
 
     public function getByTipe($tipe)
     {

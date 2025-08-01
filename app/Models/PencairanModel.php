@@ -14,10 +14,12 @@ class PencairanModel extends Model
         'jumlah_dicairkan',
         'metode_pencairan',
         'id_bunga',
-        'bukti_transfer'
+        'bukti_transfer',
+        'created_at',
+        'updated_at'
     ];
 
-    protected $useTimestamps = false;
+    protected $useTimestamps = true;
 
     public function getKredit($id_kredit)
     {

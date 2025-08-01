@@ -17,7 +17,8 @@ class Filters extends BaseConfig
         'honeypot'      => Honeypot::class,
         'invalidchars'  => InvalidChars::class,
         'secureheaders' => SecureHeaders::class,
-        'auth'          => \App\Filters\AuthFilter::class, // Tambahkan baris ini
+        'auth'          => \App\Filters\AuthFilter::class,
+        'role'          => \App\Filters\RoleFilter::class,
     ];
 
     public array $globals = [
@@ -35,17 +36,7 @@ class Filters extends BaseConfig
     public array $methods = [];
 
     public array $filters = [
-        'auth' => [ // Terapkan filter 'auth' ke rute yang ingin dilindungi
-            'before' => [
-                'anggota/*',
-                'bunga/*',
-                'pencairan/*',
-                'user/*',
-                'angsuran/*',
-                'pembayaran-angsuran/*',
-                'kredit/*',
-                'home', // Lindungi halaman dashboard
-            ],
-        ],
+        // No conflicting auth filters here since we're using role filters
+        // which include authentication checks
     ];
 }

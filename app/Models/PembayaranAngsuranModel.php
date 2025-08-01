@@ -15,10 +15,12 @@ class PembayaranAngsuranModel extends Model
         'metode_pembayaran',
         'bukti_pembayaran',
         'denda',
-        'id_bendahara_verifikator'
+        'id_bendahara_verifikator',
+        'created_at',
+        'updated_at'
     ];
 
-    protected $useTimestamps = false;
+    protected $useTimestamps = true;
 
     public function getAngsuran($id_angsuran)
     {

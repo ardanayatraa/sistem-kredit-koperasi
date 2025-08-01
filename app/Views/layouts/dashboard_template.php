@@ -133,20 +133,36 @@
                 <nav class="flex-1 overflow-y-auto p-3 sm:p-4">
                     <ul class="space-y-1">
                         <?php
+                        use App\Config\Roles;
                         $currentUri = service('uri')->getSegment(1);
+                        $currentUserLevel = session()->get('level');
+                        
                         $navLinks = [
-                            ['url' => '/home', 'icon' => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m0 0l7 7m-2 2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', 'label' => 'Dashboard', 'segment' => 'home'],
-                            ['url' => '/anggota', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z', 'label' => 'Anggota', 'segment' => 'anggota'],
-                            ['url' => '/kredit', 'icon' => 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z', 'label' => 'Kredit', 'segment' => 'kredit'],
-                            ['url' => '/angsuran', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'label' => 'Angsuran', 'segment' => 'angsuran'],
-                            ['url' => '/pencairan', 'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z', 'label' => 'Pencairan', 'segment' => 'pencairan'],
-                            ['url' => '/bunga', 'icon' => 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6', 'label' => 'Bunga', 'segment' => 'bunga'],
-                            ['url' => '/user', 'icon' => 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z', 'label' => 'User', 'segment' => 'user'],
+                            ['url' => '/home', 'icon' => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m0 0l7 7m-2 2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', 'label' => 'Dashboard', 'segment' => 'home', 'permission' => null],
+                            ['url' => '/anggota', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z', 'label' => 'Anggota', 'segment' => 'anggota', 'permission' => 'manage_anggota'],
+                            ['url' => '/kredit', 'icon' => 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z', 'label' => 'Kredit', 'segment' => 'kredit', 'permission' => 'manage_kredit'],
+                            ['url' => '/angsuran', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'label' => 'Angsuran', 'segment' => 'angsuran', 'permission' => 'manage_angsuran'],
+                            ['url' => '/pencairan', 'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z', 'label' => 'Pencairan', 'segment' => 'pencairan', 'permission' => 'manage_pencairan'],
+                            ['url' => '/bunga', 'icon' => 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6', 'label' => 'Bunga', 'segment' => 'bunga', 'permission' => 'manage_bunga'],
+                            ['url' => '/laporan-kredit', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'label' => 'Laporan Kredit', 'segment' => 'laporan-kredit', 'permission' => 'view_laporan_kredit'],
+                            ['url' => '/user', 'icon' => 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z', 'label' => 'User', 'segment' => 'user', 'permission' => 'manage_users'],
+                            ['url' => '/profile', 'icon' => 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z', 'label' => 'Profile', 'segment' => 'profile', 'permission' => 'view_profile'],
                         ];
+                        
+                        // Filter nav links based on user permissions
+                        $filteredNavLinks = array_filter($navLinks, function($link) use ($currentUserLevel) {
+                            // If no permission required, show the link
+                            if ($link['permission'] === null) {
+                                return true;
+                            }
+                            
+                            // If user has permission, show the link
+                            return $currentUserLevel && Roles::can($currentUserLevel, $link['permission']);
+                        });
                         ?>
-                        <?php foreach ($navLinks as $link): ?>
+                        <?php foreach ($filteredNavLinks as $link): ?>
                             <li>
-                                <a href="<?= $link['url'] ?>" 
+                                <a href="<?= $link['url'] ?>"
                                    class="flex items-center gap-2 sm:gap-3 rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium transition-colors <?= $currentUri === $link['segment'] ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' ?>">
                                     <svg class="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="<?= $link['icon'] ?>" />

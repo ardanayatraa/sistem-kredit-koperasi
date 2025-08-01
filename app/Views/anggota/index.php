@@ -1,4 +1,9 @@
 <?= $this->extend('layouts/dashboard_template') ?>
+<?php
+use App\Config\Roles;
+$auth = service('auth');
+$currentUserLevel = $auth->user()->level ?? null;
+?>
 
 <?= $this->section('content') ?>
 <!-- Statistics Cards -->
@@ -39,7 +44,9 @@
         <div class="flex items-center justify-between">
             <div class="min-w-0">
                 <p class="text-sm font-medium text-gray-600 truncate">Anggota Aktif</p>
-                <p class="text-2xl font-bold text-purple-600"><?= count($anggota ?? []) ?></p>
+                <p class="text-2xl font-bold text-purple-600">
+                    <?= count(array_filter($anggota ?? [], function($member) { return $member['status_keanggotaan'] === 'Aktif'; })) ?>
+                </p>
             </div>
             <div class="p-2 bg-purple-50 rounded-lg flex-shrink-0">
                 <svg class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -54,7 +61,7 @@
             <div class="min-w-0">
                 <p class="text-sm font-medium text-gray-600 truncate">Rata-rata per Bulan</p>
                 <p class="text-2xl font-bold text-orange-600">
-                    <?= count($anggota ?? []) > 0 ? ceil(count($anggota) / max(1, (time() - strtotime(min(array_column($anggota ?? [], 'tanggal_pendaftaran')))) / (30 * 24 * 3600))) : 0 ?>
+                    <?= count($anggota ?? []) > 0 ? ceil(count($anggota) / max(1, (strtotime(date('Y-m-d')) - strtotime(min(array_column($anggota ?? [], 'tanggal_pendaftaran')))) / (30 * 24 * 3600))) : 0 ?>
                 </p>
             </div>
             <div class="p-2 bg-orange-50 rounded-lg flex-shrink-0">
@@ -121,6 +128,7 @@
             <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alamat</th>
             <th class="hidden lg:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pekerjaan</th>
             <th class="hidden sm:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            <th class="px-4 sm:px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aktif/Nonaktif</th>
             <th class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
         </tr>
     </thead>
@@ -154,9 +162,25 @@
                         <?= esc($row['status_keanggotaan']) ?>
                     </span>
                 </td>
+                <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-center">
+                    <?php if ($currentUserLevel && Roles::can($currentUserLevel, 'manage_anggota')): ?>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox"
+                                   class="sr-only peer"
+                                   id="toggle-<?= esc($row['id_anggota']) ?>"
+                                   <?= $row['status_keanggotaan'] === 'Aktif' ? 'checked' : '' ?>
+                                   onchange="toggleAnggotaStatus(<?= esc($row['id_anggota']) ?>, this)">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    <?php else: ?>
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                            <?= esc($row['status_keanggotaan']) === 'Aktif' ? 'Aktif' : 'Tidak Aktif' ?>
+                        </span>
+                    <?php endif; ?>
+                </td>
                 <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div class="flex items-center justify-end gap-1 sm:gap-2">
-                        <a href="/anggota/show/<?= esc($row['id_anggota']) ?>" 
+                        <a href="/anggota/show/<?= esc($row['id_anggota']) ?>"
                            class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-900 text-xs sm:text-sm p-1 sm:p-0">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -164,14 +188,14 @@
                             </svg>
                             <span class="hidden sm:inline">Lihat</span>
                         </a>
-                        <a href="/anggota/edit/<?= esc($row['id_anggota']) ?>" 
+                        <a href="/anggota/edit/<?= esc($row['id_anggota']) ?>"
                            class="inline-flex items-center gap-1 text-yellow-600 hover:text-yellow-900 text-xs sm:text-sm p-1 sm:p-0">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
                             <span class="hidden sm:inline">Edit</span>
                         </a>
-                        <form action="/anggota/delete/<?= esc($row['id_anggota']) ?>" method="post" class="inline" 
+                        <form action="/anggota/delete/<?= esc($row['id_anggota']) ?>" method="post" class="inline"
                               onsubmit="return confirm('Apakah Anda yakin ingin menghapus anggota ini?');">
                             <?= csrf_field() ?>
                             <button type="submit" class="inline-flex items-center gap-1 text-red-600 hover:text-red-900 text-xs sm:text-sm p-1 sm:p-0">
@@ -206,6 +230,86 @@
             }
         });
     });
+
+    // Toggle anggota status
+    function toggleAnggotaStatus(id, element) {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        
+        fetch('/anggota/toggle-status/' + id, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                showNotification(data.message, 'success');
+                
+                // Update the toggle state
+                element.checked = data.new_status === 'Aktif';
+                
+                // Update the status badge
+                const statusBadge = element.closest('tr').querySelector('.status-badge');
+                if (statusBadge) {
+                    statusBadge.textContent = data.new_status;
+                    statusBadge.className = 'inline-flex px-2 py-1 text-xs font-semibold rounded-full ' +
+                        (data.new_status === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800');
+                }
+            } else {
+                showNotification(data.message || 'Gagal mengubah status', 'error');
+                // Revert toggle state
+                element.checked = !element.checked;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Terjadi kesalahan saat mengubah status', 'error');
+            // Revert toggle state
+            element.checked = !element.checked;
+        });
+    }
+
+    // Notification function
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full ${
+            type === 'success' ? 'bg-green-500 text-white' :
+            type === 'error' ? 'bg-red-500 text-white' :
+            'bg-blue-500 text-white'
+        }`;
+        notification.innerHTML = `
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    ${type === 'success' ?
+                        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>' :
+                        type === 'error' ?
+                        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>' :
+                        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>'
+                    }
+                </svg>
+                <span>${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Animate in
+        setTimeout(() => {
+            notification.classList.remove('translate-x-full');
+        }, 100);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.classList.add('translate-x-full');
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 3000);
+    }
 </script>
 
 <?= $this->endSection() ?>
