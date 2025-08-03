@@ -19,12 +19,14 @@ class Filters extends BaseConfig
         'secureheaders' => SecureHeaders::class,
         'auth'          => \App\Filters\AuthFilter::class,
         'role'          => \App\Filters\RoleFilter::class,
+        'anggotaData'   => \App\Filters\AnggotaDataFilter::class,
     ];
 
     public array $globals = [
         'before' => [
             // 'honeypot',
             'csrf', // Aktifkan CSRF protection untuk semua POST request
+            'anggotaData' => ['except' => ['login', 'register', 'logout', '/']]
         ],
         'after' => [
             'toolbar',

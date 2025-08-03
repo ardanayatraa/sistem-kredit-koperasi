@@ -1,29 +1,59 @@
 <?php
 
+
 namespace App\Controllers;
 
 use App\Models\KreditModel;
+use App\Models\AnggotaModel;
 use CodeIgniter\Controller;
 
 class KreditController extends Controller
 {
     protected $kreditModel;
+    protected $anggotaModel;
 
     public function __construct()
     {
         $this->kreditModel = new KreditModel();
+        $this->anggotaModel = new AnggotaModel();
         helper(['form', 'url']);
     }
 
     public function index()
     {
         $data['kredit'] = $this->kreditModel->findAll();
+        
+        // Get anggota data for each kredit to avoid AJAX calls
+        $anggotaData = [];
+        foreach ($data['kredit'] as $kredit) {
+            if (!isset($anggotaData[$kredit['id_anggota']])) {
+                $anggota = $this->anggotaModel->find($kredit['id_anggota']);
+                if ($anggota) {
+                    // Add kredit-specific data to anggota data
+                    $anggotaData[$kredit['id_anggota']] = array_merge($anggota, [
+                        'kredit_jumlah' => $kredit['jumlah_pengajuan'],
+                        'kredit_jangka_waktu' => $kredit['jangka_waktu'],
+                        'kredit_status' => $kredit['status_kredit'],
+                    ]);
+                }
+            }
+        }
+        $data['anggotaData'] = $anggotaData;
+        
         return view('kredit/index', $data);
     }
 
     public function new()
     {
-        return view('kredit/form');
+        $session = session();
+        $data = [];
+        
+        // If user is 'Anggota' level, auto-fill id_anggota from session
+        if ($session->get('level') === 'Anggota') {
+            $data['userAnggotaId'] = $session->get('id_anggota_ref');
+        }
+        
+        return view('kredit/form', $data);
     }
 
     public function create()
@@ -125,4 +155,85 @@ class KreditController extends Controller
         if (empty($data['kredit'])) { throw new \CodeIgniter\Exceptions\PageNotFoundException('Kredit dengan ID ' . $id . ' tidak ditemukan.'); }
         return view('kredit/show', $data);
     }
+
+    public function toggleStatus($id = null)
+    {
+        $kredit = $this->kreditModel->find($id);
+        if (empty($kredit)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Data kredit tidak ditemukan.'
+            ])->setStatusCode(404);
+        }
+
+        // Toggle status_aktif between Aktif and Tidak Aktif
+        $currentStatus = $kredit['status_aktif'] ?? 'Aktif';
+        $newStatus = ($currentStatus === 'Aktif') ? 'Tidak Aktif' : 'Aktif';
+        $this->kreditModel->update($id, ['status_aktif' => $newStatus]);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Status kredit berhasil diubah menjadi ' . $newStatus,
+            'new_status' => $newStatus
+        ]);
+    }
+
+    public function verifyAgunan()
+    {
+        // Only allow Appraiser role to access this method
+        $currentUserLevel = session()->get('level');
+        if ($currentUserLevel !== 'Appraiser') {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Hanya Appraiser yang dapat melakukan verifikasi agunan.'
+            ])->setStatusCode(403);
+        }
+
+        // Get JSON data from request
+        $jsonData = $this->request->getJSON();
+        
+        if (!$jsonData) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Data tidak valid.'
+            ])->setStatusCode(400);
+        }
+
+        $idKredit = $jsonData->id_kredit;
+        $catatanAppraiser = $jsonData->catatan_appraiser;
+
+        if (!$idKredit) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'ID kredit tidak ditemukan.'
+            ])->setStatusCode(400);
+        }
+
+        // Find the kredit record
+        $kredit = $this->kreditModel->find($idKredit);
+        if (!$kredit) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Data kredit tidak ditemukan.'
+            ])->setStatusCode(404);
+        }
+
+        // Update the catatan_appraiser field
+        $updateData = [
+            'catatan_appraiser' => $catatanAppraiser
+        ];
+
+        if ($this->kreditModel->update($idKredit, $updateData)) {
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Verifikasi agunan berhasil disimpan. Catatan penilai telah diperbarui.'
+            ]);
+        } else {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Gagal menyimpan verifikasi agunan.'
+            ])->setStatusCode(500);
+        }
+    }
+
 }

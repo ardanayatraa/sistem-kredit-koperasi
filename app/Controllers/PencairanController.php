@@ -134,4 +134,29 @@ class PencairanController extends Controller
         if (empty($data['pencairan'])) { throw new \CodeIgniter\Exceptions\PageNotFoundException('Pencairan dengan ID ' . $id . ' tidak ditemukan.'); }
         return view('pencairan/show', $data);
     }
+
+    /**
+     * Toggle pencairan status (Aktif/Tidak Aktif)
+     */
+    public function toggleStatus($id = null)
+    {
+        $pencairan = $this->pencairanModel->find($id);
+        if (empty($pencairan)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Data pencairan tidak ditemukan.'
+            ])->setStatusCode(404);
+        }
+
+        // Toggle status_aktif between Aktif and Tidak Aktif
+        $currentStatus = $pencairan['status_aktif'] ?? 'Aktif';
+        $newStatus = ($currentStatus === 'Aktif') ? 'Tidak Aktif' : 'Aktif';
+        $this->pencairanModel->update($id, ['status_aktif' => $newStatus]);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Status pencairan berhasil diubah menjadi ' . $newStatus,
+            'new_status' => $newStatus
+        ]);
+    }
 }

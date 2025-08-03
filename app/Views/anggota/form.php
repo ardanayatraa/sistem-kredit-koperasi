@@ -19,9 +19,7 @@
             <div class="space-y-4">
                 <div class="border-b border-gray-200 pb-2">
                     <h3 class="text-lg font-medium text-gray-900 flex items-center gap-2">
-                        <svg class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
+                        <i class="bx bx-user text-blue-600 h-5 w-5"></i>
                         Data Pribadi
                     </h3>
                 </div>
@@ -41,9 +39,7 @@
                                required>
                         <?php if (session('errors.nik')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <i class="bx bx-exclamation-circle h-4 w-4"></i>
                                 <?= session('errors.nik') ?>
                             </p>
                         <?php endif; ?>
@@ -62,9 +58,7 @@
                                required>
                         <?php if (session('errors.tempat_lahir')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <i class="bx bx-exclamation-circle h-4 w-4"></i>
                                 <?= session('errors.tempat_lahir') ?>
                             </p>
                         <?php endif; ?>
@@ -82,9 +76,7 @@
                                required>
                         <?php if (session('errors.tanggal_lahir')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <i class="bx bx-exclamation-circle h-4 w-4"></i>
                                 <?= session('errors.tanggal_lahir') ?>
                             </p>
                         <?php endif; ?>
@@ -103,9 +95,7 @@
                                required>
                         <?php if (session('errors.pekerjaan')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <i class="bx bx-exclamation-circle h-4 w-4"></i>
                                 <?= session('errors.pekerjaan') ?>
                             </p>
                         <?php endif; ?>
@@ -124,9 +114,7 @@
                               required><?= old('alamat', $anggota['alamat'] ?? '') ?></textarea>
                     <?php if (session('errors.alamat')): ?>
                         <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
+                            <i class="bx bx-exclamation-circle h-4 w-4"></i>
                             <?= session('errors.alamat') ?>
                         </p>
                     <?php endif; ?>
@@ -137,9 +125,7 @@
             <div class="space-y-4">
                 <div class="border-b border-gray-200 pb-2">
                     <h3 class="text-lg font-medium text-gray-900 flex items-center gap-2">
-                        <svg class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                        <i class="bx bx-user-check text-green-600 h-5 w-5"></i>
                         Data Keanggotaan
                     </h3>
                 </div>
@@ -157,9 +143,7 @@
                                required>
                         <?php if (session('errors.tanggal_pendaftaran')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <i class="bx bx-exclamation-circle h-4 w-4"></i>
                                 <?= session('errors.tanggal_pendaftaran') ?>
                             </p>
                         <?php endif; ?>
@@ -180,9 +164,7 @@
                         </select>
                         <?php if (session('errors.status_keanggotaan')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <i class="bx bx-exclamation-circle h-4 w-4"></i>
                                 <?= session('errors.status_keanggotaan') ?>
                             </p>
                         <?php endif; ?>
@@ -194,9 +176,7 @@
             <div class="space-y-4">
                 <div class="border-b border-gray-200 pb-2">
                     <h3 class="text-lg font-medium text-gray-900 flex items-center gap-2">
-                        <svg class="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
+                        <i class="bx bx-file-upload text-purple-600 h-5 w-5"></i>
                         Upload Dokumen
                     </h3>
                     <p class="text-sm text-gray-500 mt-1">Format yang didukung: PDF, JPG, JPEG, PNG (Maksimal 2MB per file)</p>
@@ -220,9 +200,7 @@
                         <?php endif; ?>
                         <?php if (session('errors.dokumen_ktp')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <i class="bx bx-exclamation-circle h-4 w-4"></i>
                                 <?= session('errors.dokumen_ktp') ?>
                             </p>
                         <?php endif; ?>
@@ -245,9 +223,7 @@
                         <?php endif; ?>
                         <?php if (session('errors.dokumen_kk')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <i class="bx bx-exclamation-circle h-4 w-4"></i>
                                 <?= session('errors.dokumen_kk') ?>
                             </p>
                         <?php endif; ?>
@@ -270,9 +246,7 @@
                         <?php endif; ?>
                         <?php if (session('errors.dokumen_slip_gaji')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <i class="bx bx-exclamation-circle h-4 w-4"></i>
                                 <?= session('errors.dokumen_slip_gaji') ?>
                             </p>
                         <?php endif; ?>
@@ -283,15 +257,11 @@
             <!-- Action Buttons -->
             <div class="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200">
                 <a href="/anggota" class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <i class="bx bx-times h-4 w-4"></i>
                     Batal
                 </a>
                 <button type="submit" class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-blue-700 transition-colors">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
+                    <i class="bx bx-save h-4 w-4"></i>
                     <?= isset($anggota) ? 'Perbarui Data' : 'Simpan Data' ?>
                 </button>
             </div>

@@ -50,6 +50,7 @@ $routes->group('pencairan', ['filter' => 'role:manage_pencairan'], function($rou
     $routes->post('update/(:num)', 'PencairanController::update/$1');
     $routes->get('delete/(:num)', 'PencairanController::delete/$1');
     $routes->get('show/(:num)', 'PencairanController::show/$1');
+    $routes->post('toggle-status/(:num)', 'PencairanController::toggleStatus/$1');
 });
 
 // Rute untuk User CRUD
@@ -83,6 +84,7 @@ $routes->group('pembayaran-angsuran', ['filter' => 'role:manage_pembayaran_angsu
     $routes->post('update/(:num)', 'PembayaranAngsuranController::update/$1');
     $routes->get('delete/(:num)', 'PembayaranAngsuranController::delete/$1');
     $routes->get('show/(:num)', 'PembayaranAngsuranController::show/$1');
+    $routes->post('toggle-status/(:num)', 'PembayaranAngsuranController::toggleStatus/$1');
 });
 
 // Rute untuk Kredit CRUD
@@ -94,6 +96,8 @@ $routes->group('kredit', ['filter' => 'role:manage_kredit'], function($routes) {
     $routes->post('update/(:num)', 'KreditController::update/$1');
     $routes->get('delete/(:num)', 'KreditController::delete/$1');
     $routes->get('show/(:num)', 'KreditController::show/$1');
+    $routes->post('toggle-status/(:num)', 'KreditController::toggleStatus/$1');
+    $routes->post('verify-agunan', 'KreditController::verifyAgunan');
 });
 
 // Rute untuk Laporan Kredit
@@ -107,6 +111,9 @@ $routes->group('laporan-kredit', ['filter' => 'role:view_laporan_kredit'], funct
 $routes->group('profile', ['filter' => 'role:view_profile'], function($routes) {
     $routes->get('/', 'UserController::profile');
     $routes->post('update', 'UserController::updateProfile');
+    $routes->get('complete-anggota-data', 'UserController::completeAnggotaData');
+    $routes->post('save-anggota-data', 'UserController::saveAnggotaData');
+    $routes->post('update-anggota', 'UserController::updateProfileAnggota');
 });
 
 // Rute untuk melayani file yang diunggah dari writable/uploads (tetap sama)

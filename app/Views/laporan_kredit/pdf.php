@@ -128,13 +128,14 @@
             </div>
             <div class="info-item">
                 <span class="info-label">Jumlah Pinjaman:</span>
-                <span class="info-value">Rp <?= number_format($kredit['jumlah_pinjaman'], 0, ',', '.') ?></span>
+                <span class="info-value">Rp <?= number_format($kredit['jumlah_pengajuan'], 0, ',', '.') ?></span>
             </div>
             <div class="info-item">
                 <span class="info-label">Status:</span>
                 <span class="info-value">
-                    <span class="status-badge status-<?= $kredit['status'] ?>">
-                        <?= ucfirst($kredit['status']) ?>
+                    <?php $currentStatus = $kredit['status_kredit'] ?? $kredit['status'] ?? 'pending'; ?>
+                    <span class="status-badge status-<?= $currentStatus ?>">
+                        <?= ucfirst($currentStatus) ?>
                     </span>
                 </span>
             </div>
@@ -204,7 +205,7 @@
                 <?php foreach ($angsurans as $index => $angsuran): ?>
                     <tr>
                         <td><?= $index + 1 ?></td>
-                        <td><?= date('d M Y', strtotime($angsuran['tanggal_pembayaran'])) ?></td>
+                        <td><?= date('d M Y', strtotime($angsuran['tgl_jatuh_tempo'] ?? $angsuran['tanggal_bayar'] ?? $angsuran['created_at'])) ?></td>
                         <td>Rp <?= number_format($angsuran['jumlah_angsuran'], 0, ',', '.') ?></td>
                         <td>
                             <span class="status-badge status-<?= $angsuran['status_pembayaran'] ?>">

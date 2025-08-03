@@ -133,4 +133,29 @@ class PembayaranAngsuranController extends Controller
         if (empty($data['pembayaran_angsuran'])) { throw new \CodeIgniter\Exceptions\PageNotFoundException('Pembayaran Angsuran dengan ID ' . $id . ' tidak ditemukan.'); }
         return view('pembayaran_angsuran/show', $data);
     }
+
+    /**
+     * Toggle pembayaran angsuran status (Aktif/Tidak Aktif)
+     */
+    public function toggleStatus($id = null)
+    {
+        $pembayaranAngsuran = $this->pembayaranAngsuranModel->find($id);
+        if (empty($pembayaranAngsuran)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Data pembayaran angsuran tidak ditemukan.'
+            ])->setStatusCode(404);
+        }
+
+        // Toggle status_aktif between Aktif and Tidak Aktif
+        $currentStatus = $pembayaranAngsuran['status_aktif'] ?? 'Aktif';
+        $newStatus = ($currentStatus === 'Aktif') ? 'Tidak Aktif' : 'Aktif';
+        $this->pembayaranAngsuranModel->update($id, ['status_aktif' => $newStatus]);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Status pembayaran angsuran berhasil diubah menjadi ' . $newStatus,
+            'new_status' => $newStatus
+        ]);
+    }
 }

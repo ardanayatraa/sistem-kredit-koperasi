@@ -13,9 +13,7 @@
             </p>
         </div>
         <a href="/pembayaran_angsuran" class="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors w-fit">
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
+            <i class="bx bx-arrow-left h-4 w-4"></i>
             Kembali
         </a>
     </div>
@@ -96,15 +94,11 @@
                 <!-- Form Actions -->
                 <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
                     <button type="submit" class="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
+                        <i class="bx bx-check h-4 w-4"></i>
                         <?= isset($pembayaran_angsuran) ? 'Update' : 'Simpan' ?>
                     </button>
                     <a href="/pembayaran_angsuran" class="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        <i class="bx bx-times h-4 w-4"></i>
                         Batal
                     </a>
                 </div>

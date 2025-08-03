@@ -24,8 +24,10 @@ class Roles
             'manage_kredit',
             'view_laporan_kredit'
         ],
-        'Penilai' => [
-            'manage_pencairan',
+        'Appraiser' => [
+            'verify_agunan',
+            'assess_agunan',
+            'manage_kredit',
             'view_laporan_kredit'
         ]
     ];

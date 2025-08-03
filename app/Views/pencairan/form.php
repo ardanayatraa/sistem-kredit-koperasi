@@ -19,9 +19,7 @@
             <div class="space-y-4">
                 <div class="border-b border-gray-200 pb-2">
                     <h3 class="text-lg font-medium text-gray-900 flex items-center gap-2">
-                        <svg class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
+                        <i class="bx bx-file-invoice-dollar text-blue-600 h-5 w-5"></i>
                         Data Pencairan
                     </h3>
                 </div>
@@ -52,9 +50,7 @@
                         </select>
                         <?php if (session('errors.id_kredit')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <i class="bx bx-exclamation-circle text-red-500 h-4 w-4"></i>
                                 <?= session('errors.id_kredit') ?>
                             </p>
                         <?php endif; ?>
@@ -72,9 +68,7 @@
                                required>
                         <?php if (session('errors.tanggal_pencairan')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <i class="bx bx-exclamation-circle text-red-500 h-4 w-4"></i>
                                 <?= session('errors.tanggal_pencairan') ?>
                             </p>
                         <?php endif; ?>
@@ -93,9 +87,7 @@
                                required>
                         <?php if (session('errors.jumlah_dicairkan')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <i class="bx bx-exclamation-circle text-red-500 h-4 w-4"></i>
                                 <?= session('errors.jumlah_dicairkan') ?>
                             </p>
                         <?php endif; ?>
@@ -117,9 +109,7 @@
                         </select>
                         <?php if (session('errors.metode_pencairan')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <i class="bx bx-exclamation-circle text-red-500 h-4 w-4"></i>
                                 <?= session('errors.metode_pencairan') ?>
                             </p>
                         <?php endif; ?>
@@ -138,9 +128,7 @@
                                required>
                         <?php if (session('errors.id_bunga')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <i class="bx bx-exclamation-circle text-red-500 h-4 w-4"></i>
                                 <?= session('errors.id_bunga') ?>
                             </p>
                         <?php endif; ?>
@@ -152,9 +140,7 @@
             <div class="space-y-4">
                 <div class="border-b border-gray-200 pb-2">
                     <h3 class="text-lg font-medium text-gray-900 flex items-center gap-2">
-                        <svg class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
+                        <i class="bx bx-file-invoice text-green-600 h-5 w-5"></i>
                         Bukti Transfer
                     </h3>
                     <p class="text-sm text-gray-500 mt-1">Format yang didukung: PDF, JPG, JPEG, PNG (Maksimal 2MB)</p>
@@ -177,9 +163,7 @@
                     <?php endif; ?>
                     <?php if (session('errors.bukti_transfer')): ?>
                         <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
+                            <i class="bx bx-exclamation-circle text-red-500 h-4 w-4"></i>
                             <?= session('errors.bukti_transfer') ?>
                         </p>
                     <?php endif; ?>
@@ -189,15 +173,11 @@
             <!-- Action Buttons -->
             <div class="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200">
                 <a href="/pencairan" class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <i class="bx bx-times h-4 w-4"></i>
                     Batal
                 </a>
                 <button type="submit" class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-blue-700 transition-colors">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
+                    <i class="bx bx-check h-4 w-4"></i>
                     <?= isset($pencairan) ? 'Perbarui Data' : 'Simpan Data' ?>
                 </button>
             </div>

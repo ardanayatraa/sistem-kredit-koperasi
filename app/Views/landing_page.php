@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Kredit Koperasi - Solusi Keuangan Anda</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="icon" href="/placeholder.svg?height=32&width=32" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="font-sans antialiased bg-gray-50 text-gray-900">
 
@@ -43,9 +43,7 @@
                 <!-- Feature 1 -->
                 <div class="bg-gray-50 p-8 rounded-lg shadow-md hover:shadow-lg transition duration-300">
                     <div class="text-blue-600 mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                        <i class="bx bx-hand-holding-usd text-blue-600 text-4xl mx-auto mb-4"></i>
                     </div>
                     <h3 class="text-xl font-semibold mb-4 text-gray-800">Pengelolaan Kredit Mudah</h3>
                     <p class="text-gray-600">Ajukan, lacak, dan kelola pinjaman Anda dengan antarmuka yang intuitif dan sederhana.</p>
@@ -53,9 +51,7 @@
                 <!-- Feature 2 -->
                 <div class="bg-gray-50 p-8 rounded-lg shadow-md hover:shadow-lg transition duration-300">
                     <div class="text-blue-600 mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.001 12.001 0 002.92 12c0 3.072 1.883 5.842 4.717 7.417L12 21.444l4.363-2.027c2.834-1.575 4.717-4.345 4.717-7.417 0-2.344-.654-4.556-1.882-6.416z" />
-                        </svg>
+                        <i class="bx bx-shield-alt text-blue-600 text-4xl mx-auto mb-4"></i>
                     </div>
                     <h3 class="text-xl font-semibold mb-4 text-gray-800">Keamanan Data Terjamin</h3>
                     <p class="text-gray-600">Data pribadi dan transaksi Anda dilindungi dengan enkripsi dan standar keamanan terkini.</p>
@@ -63,9 +59,7 @@
                 <!-- Feature 3 -->
                 <div class="bg-gray-50 p-8 rounded-lg shadow-md hover:shadow-lg transition duration-300">
                     <div class="text-blue-600 mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                        </svg>
+                        <i class="bx bx-chart-line text-blue-600 text-4xl mx-auto mb-4"></i>
                     </div>
                     <h3 class="text-xl font-semibold mb-4 text-gray-800">Laporan Transaksi Akurat</h3>
                     <p class="text-gray-600">Dapatkan laporan angsuran dan pembayaran yang detail dan akurat kapan saja Anda butuhkan.</p>

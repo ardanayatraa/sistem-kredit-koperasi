@@ -17,6 +17,8 @@ class UserModel extends Model
         'password',
         'level',
         'no_hp',
+        'id_anggota_ref',
+        'status',
         'created_at',
         'updated_at'
     ];

@@ -16,6 +16,7 @@ class PembayaranAngsuranModel extends Model
         'bukti_pembayaran',
         'denda',
         'id_bendahara_verifikator',
+        'status_aktif',
         'created_at',
         'updated_at'
     ];

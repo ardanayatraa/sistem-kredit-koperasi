@@ -15,6 +15,7 @@ class PencairanModel extends Model
         'metode_pencairan',
         'id_bunga',
         'bukti_transfer',
+        'status_aktif',
         'created_at',
         'updated_at'
     ];

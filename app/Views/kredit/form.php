@@ -1,3 +1,11 @@
+<?php
+$currentUserLevel = session()->get('level');
+$canEditBendaharaFields = $currentUserLevel === 'Bendahara';
+$canEditAppraiserFields = $currentUserLevel === 'Appraiser';
+$canEditKetuaFields = $currentUserLevel === 'Ketua Koperasi';
+$canEditAllFields = $currentUserLevel === 'Admin';
+?>
+
 <?= $this->extend('layouts/dashboard_template') ?>
 
 <?= $this->section('content') ?>
@@ -10,6 +18,18 @@
             <p class="text-sm text-gray-600 mt-1">
                 <?= isset($kredit) ? 'Perbarui informasi pengajuan kredit' : 'Lengkapi form untuk menambah pengajuan kredit baru' ?>
             </p>
+            <?php if ($currentUserLevel && $currentUserLevel !== 'Admin'): ?>
+                <p class="text-xs text-gray-500 mt-2">
+                    Anda login sebagai: <span class="font-medium"><?= $currentUserLevel ?></span>
+                    <?php if ($canEditBendaharaFields): ?>
+                        | Anda dapat mengedit catatan bendahara
+                    <?php elseif ($canEditAppraiserFields): ?>
+                        | Anda dapat mengedit catatan penilai dan nilai taksiran agunan
+                    <?php elseif ($canEditKetuaFields): ?>
+                        | Anda dapat mengedit catatan ketua
+                    <?php endif; ?>
+                </p>
+            <?php endif; ?>
         </div>
 
         <form action="<?= isset($kredit) ? '/kredit/update/' . esc($kredit['id_kredit']) : '/kredit/create' ?>" method="post" class="p-6 space-y-6">
@@ -31,18 +51,27 @@
                         <label for="id_anggota" class="block text-sm font-medium text-gray-700 mb-2">
                             ID Anggota <span class="text-red-500">*</span>
                         </label>
-                        <input type="number" 
-                               name="id_anggota" 
-                               id="id_anggota" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                               value="<?= old('id_anggota', $kredit['id_anggota'] ?? '') ?>" 
-                               placeholder="Masukkan ID anggota"
+                        <?php
+                        $idAnggotaValue = old('id_anggota', $kredit['id_anggota'] ?? ($userAnggotaId ?? ''));
+                        $isReadonly = isset($userAnggotaId) && !empty($userAnggotaId);
+                        ?>
+                        <input type="number"
+                               name="id_anggota"
+                               id="id_anggota"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors <?= $isReadonly ? 'bg-gray-100' : '' ?>"
+                               value="<?= $idAnggotaValue ?>"
+                               placeholder="<?= $isReadonly ? 'ID Anggota Anda' : 'Masukkan ID anggota' ?>"
+                               <?= $isReadonly ? 'readonly' : '' ?>
                                required>
+                        <?php if ($isReadonly): ?>
+                            <p class="text-green-600 text-sm mt-1 flex items-center gap-1">
+                                <i class="bx bx-check-circle h-4 w-4"></i>
+                                ID Anggota terisi otomatis dari profil Anda
+                            </p>
+                        <?php endif; ?>
                         <?php if (session('errors.id_anggota')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <i class="bx bx-exclamation-circle h-4 w-4"></i>
                                 <?= session('errors.id_anggota') ?>
                             </p>
                         <?php endif; ?>
@@ -136,11 +165,15 @@
             <div class="space-y-4">
                 <div class="border-b border-gray-200 pb-2">
                     <h3 class="text-lg font-medium text-gray-900 flex items-center gap-2">
-                        <svg class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                        </svg>
+                        <i class="bx bx-shield-alt text-green-600 h-5 w-5"></i>
                         Data Agunan
+                        <?php if (session('level') === 'Appraiser'): ?>
+                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Area Appraiser</span>
+                        <?php endif; ?>
                     </h3>
+                    <?php if (session('level') === 'Appraiser'): ?>
+                        <p class="text-sm text-green-600 mt-1"><i class="bx bx-check-circle mr-1"></i> Anda memiliki akses untuk verifikasi dan penilaian agunan</p>
+                    <?php endif; ?>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -172,13 +205,22 @@
                     <div>
                         <label for="nilai_taksiran_agunan" class="block text-sm font-medium text-gray-700 mb-2">
                             Nilai Taksiran Agunan (Rp)
+                            <?php if (session('level') === 'Appraiser'): ?>
+                                <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full ml-2">Tugas Appraiser</span>
+                            <?php endif; ?>
                         </label>
-                        <input type="number" 
-                               name="nilai_taksiran_agunan" 
-                               id="nilai_taksiran_agunan" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                               value="<?= old('nilai_taksiran_agunan', $kredit['nilai_taksiran_agunan'] ?? '') ?>" 
-                               placeholder="Contoh: 50000000">
+                        <input type="number"
+                               name="nilai_taksiran_agunan"
+                               id="nilai_taksiran_agunan"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors <?= session('level') === 'Appraiser' ? 'border-green-300 bg-green-50' : '' ?>"
+                               value="<?= old('nilai_taksiran_agunan', $kredit['nilai_taksiran_agunan'] ?? '') ?>"
+                               placeholder="<?= session('level') === 'Appraiser' ? 'Masukkan hasil penilaian agunan' : 'Contoh: 50000000' ?>">
+                        <?php if (session('level') === 'Appraiser'): ?>
+                            <p class="text-green-600 text-sm mt-1 flex items-center gap-1">
+                                <i class="bx bx-check-circle h-4 w-4"></i>
+                                Tugas: <i class="bx bx-tasks mr-1"></i>Tentukan nilai taksiran berdasarkan penilaian agunan
+                            </p>
+                        <?php endif; ?>
                         <?php if (session('errors.nilai_taksiran_agunan')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -206,12 +248,29 @@
                     <div>
                         <label for="catatan_bendahara" class="block text-sm font-medium text-gray-700 mb-2">
                             Catatan Bendahara
+                            <?php if ($canEditBendaharaFields || $canEditAllFields): ?>
+                                <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full ml-2">Area Anda</span>
+                            <?php else: ?>
+                                <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full ml-2">Tersedia</span>
+                            <?php endif; ?>
                         </label>
-                        <textarea name="catatan_bendahara" 
-                                  id="catatan_bendahara" 
-                                  rows="3" 
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none" 
-                                  placeholder="Catatan dari bendahara"><?= old('catatan_bendahara', $kredit['catatan_bendahara'] ?? '') ?></textarea>
+                        <textarea name="catatan_bendahara"
+                                  id="catatan_bendahara"
+                                  rows="3"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none <?= !($canEditBendaharaFields || $canEditAllFields) ? 'bg-gray-100 cursor-not-allowed' : '' ?>"
+                                  placeholder="Catatan dari bendahara"
+                                  <?= !($canEditBendaharaFields || $canEditAllFields) ? 'readonly' : '' ?>><?= old('catatan_bendahara', $kredit['catatan_bendahara'] ?? '') ?></textarea>
+                        <?php if (!($canEditBendaharaFields || $canEditAllFields)): ?>
+                            <p class="text-gray-500 text-sm mt-1 flex items-center gap-1">
+                                <i class="bx bx-info-circle h-4 w-4"></i>
+                                Hanya <i class="bx bx-user-tie mr-1"></i>Bendahara yang dapat mengedit catatan ini
+                            </p>
+                        <?php elseif ($canEditBendaharaFields || $canEditAllFields): ?>
+                            <p class="text-blue-600 text-sm mt-1 flex items-center gap-1">
+                                <i class="bx bx-check-circle h-4 w-4"></i>
+                                Tugas: <i class="bx bx-tasks mr-1"></i>Berikan catatan terkait verifikasi data anggota
+                            </p>
+                        <?php endif; ?>
                         <?php if (session('errors.catatan_bendahara')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -224,13 +283,30 @@
 
                     <div>
                         <label for="catatan_appraiser" class="block text-sm font-medium text-gray-700 mb-2">
-                            Catatan Appraiser
+                            Catatan Penilai (Appraiser)
+                            <?php if ($canEditAppraiserFields || $canEditAllFields): ?>
+                                <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full ml-2">Area Anda</span>
+                            <?php else: ?>
+                                <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full ml-2">Tersedia</span>
+                            <?php endif; ?>
                         </label>
-                        <textarea name="catatan_appraiser" 
-                                  id="catatan_appraiser" 
-                                  rows="3" 
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none" 
-                                  placeholder="Catatan dari appraiser"><?= old('catatan_appraiser', $kredit['catatan_appraiser'] ?? '') ?></textarea>
+                        <textarea name="catatan_appraiser"
+                                  id="catatan_appraiser"
+                                  rows="3"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none <?= !($canEditAppraiserFields || $canEditAllFields) ? 'bg-gray-100 cursor-not-allowed' : ($canEditAppraiserFields ? 'border-green-300 bg-green-50' : '') ?>"
+                                  placeholder="<?= ($canEditAppraiserFields || $canEditAllFields) ? 'Masukkan hasil verifikasi dan penilaian agunan' : 'Catatan dari penilai (appraiser)' ?>"
+                                  <?= !($canEditAppraiserFields || $canEditAllFields) ? 'readonly' : '' ?>><?= old('catatan_appraiser', $kredit['catatan_appraiser'] ?? '') ?></textarea>
+                        <?php if (!($canEditAppraiserFields || $canEditAllFields)): ?>
+                            <p class="text-gray-500 text-sm mt-1 flex items-center gap-1">
+                                <i class="bx bx-info-circle h-4 w-4"></i>
+                                Hanya <i class="bx bx-user-tie mr-1"></i>Appraiser yang dapat mengedit catatan ini
+                            </p>
+                        <?php elseif ($canEditAppraiserFields || $canEditAllFields): ?>
+                            <p class="text-green-600 text-sm mt-1 flex items-center gap-1">
+                                <i class="bx bx-check-circle h-4 w-4"></i>
+                                Tugas: <i class="bx bx-tasks mr-1"></i>Verifikasi dan nilai agunan berdasarkan jenis dan kondisi
+                            </p>
+                        <?php endif; ?>
                         <?php if (session('errors.catatan_appraiser')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -244,12 +320,29 @@
                     <div>
                         <label for="catatan_ketua" class="block text-sm font-medium text-gray-700 mb-2">
                             Catatan Ketua
+                            <?php if ($canEditKetuaFields || $canEditAllFields): ?>
+                                <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full ml-2">Area Anda</span>
+                            <?php else: ?>
+                                <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full ml-2">Tersedia</span>
+                            <?php endif; ?>
                         </label>
-                        <textarea name="catatan_ketua" 
-                                  id="catatan_ketua" 
-                                  rows="3" 
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none" 
-                                  placeholder="Catatan dari ketua"><?= old('catatan_ketua', $kredit['catatan_ketua'] ?? '') ?></textarea>
+                        <textarea name="catatan_ketua"
+                                  id="catatan_ketua"
+                                  rows="3"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none <?= !($canEditKetuaFields || $canEditAllFields) ? 'bg-gray-100 cursor-not-allowed' : '' ?>"
+                                  placeholder="Catatan dari ketua"
+                                  <?= !($canEditKetuaFields || $canEditAllFields) ? 'readonly' : '' ?>><?= old('catatan_ketua', $kredit['catatan_ketua'] ?? '') ?></textarea>
+                        <?php if (!($canEditKetuaFields || $canEditAllFields)): ?>
+                            <p class="text-gray-500 text-sm mt-1 flex items-center gap-1">
+                                <i class="bx bx-info-circle h-4 w-4"></i>
+                                Hanya <i class="bx bx-user-tie mr-1"></i>Ketua Koperasi yang dapat mengedit catatan ini
+                            </p>
+                        <?php elseif ($canEditKetuaFields || $canEditAllFields): ?>
+                            <p class="text-purple-600 text-sm mt-1 flex items-center gap-1">
+                                <i class="bx bx-check-circle h-4 w-4"></i>
+                                Tugas: <i class="bx bx-tasks mr-1"></i>Berikan keputusan akhir dan persetujuan kredit
+                            </p>
+                        <?php endif; ?>
                         <?php if (session('errors.catatan_ketua')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -263,17 +356,35 @@
                     <div>
                         <label for="status_kredit" class="block text-sm font-medium text-gray-700 mb-2">
                             Status Kredit <span class="text-red-500">*</span>
+                            <?php if ($canEditAllFields): ?>
+                                <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full ml-2">Admin</span>
+                            <?php else: ?>
+                                <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full ml-2">Tersedia</span>
+                            <?php endif; ?>
                         </label>
-                        <select name="status_kredit" 
-                                id="status_kredit" 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                                required>
+                        <select name="status_kredit"
+                                id="status_kredit"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors <?= !($canEditAllFields) ? 'bg-gray-100 cursor-not-allowed' : '' ?>"
+                                required
+                                <?= !($canEditAllFields) ? 'disabled' : '' ?>>
                             <option value="">Pilih Status</option>
-                            <option value="Pending" <?= old('status_kredit', $kredit['status_kredit'] ?? '') == 'Pending' ? 'selected' : '' ?>>Pending</option>
-                            <option value="Dalam Proses" <?= old('status_kredit', $kredit['status_kredit'] ?? '') == 'Dalam Proses' ? 'selected' : '' ?>>Dalam Proses</option>
-                            <option value="Disetujui" <?= old('status_kredit', $kredit['status_kredit'] ?? '') == 'Disetujui' ? 'selected' : '' ?>>Disetujui</option>
-                            <option value="Ditolak" <?= old('status_kredit', $kredit['status_kredit'] ?? '') == 'Ditolak' ? 'selected' : '' ?>>Ditolak</option>
+                            <option value="pending" <?= old('status_kredit', $kredit['status_kredit'] ?? '') == 'pending' ? 'selected' : '' ?>>Pending</option>
+                            <option value="disetujui" <?= old('status_kredit', $kredit['status_kredit'] ?? '') == 'disetujui' ? 'selected' : '' ?>>Disetujui</option>
+                            <option value="ditolak" <?= old('status_kredit', $kredit['status_kredit'] ?? '') == 'ditolak' ? 'selected' : '' ?>>Ditolak</option>
+                            <option value="berjalan" <?= old('status_kredit', $kredit['status_kredit'] ?? '') == 'berjalan' ? 'selected' : '' ?>>Berjalan</option>
+                            <option value="selesai" <?= old('status_kredit', $kredit['status_kredit'] ?? '') == 'selesai' ? 'selected' : '' ?>>Selesai</option>
                         </select>
+                        <?php if (!($canEditAllFields)): ?>
+                            <p class="text-gray-500 text-sm mt-1 flex items-center gap-1">
+                                <i class="bx bx-info-circle h-4 w-4"></i>
+                                Hanya <i class="bx bx-user-shield mr-1"></i>Admin yang dapat mengubah status kredit
+                            </p>
+                        <?php elseif ($canEditAllFields): ?>
+                            <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
+                                <i class="bx bx-check-circle h-4 w-4"></i>
+                                Tugas: <i class="bx bx-tasks mr-1"></i>Tetapkan status akhir pengajuan kredit
+                            </p>
+                        <?php endif; ?>
                         <?php if (session('errors.status_kredit')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -289,15 +400,11 @@
             <!-- Action Buttons -->
             <div class="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200">
                 <a href="/kredit" class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <i class="bx bx-times h-4 w-4"></i>
                     Batal
                 </a>
                 <button type="submit" class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-blue-700 transition-colors">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
+                    <i class="bx bx-save h-4 w-4"></i>
                     <?= isset($kredit) ? 'Perbarui Data' : 'Simpan Data' ?>
                 </button>
             </div>

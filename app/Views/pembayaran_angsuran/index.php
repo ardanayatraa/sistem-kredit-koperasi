@@ -1,4 +1,8 @@
 <?= $this->extend('layouts/dashboard_template') ?>
+<?php
+use App\Config\Roles;
+$currentUserLevel = session()->get('level');
+?>
 
 <?= $this->section('content') ?>
 <div class="w-full space-y-6">
@@ -9,9 +13,7 @@
             <p class="text-sm text-gray-600 mt-1">Kelola data pembayaran angsuran</p>
         </div>
         <a href="/pembayaran_angsuran/create" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-blue-700 transition-colors">
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
+            <i class="bx bx-plus h-4 w-4"></i>
             Tambah Pembayaran
         </a>
     </div>
@@ -25,9 +27,7 @@
                     <p class="text-2xl font-bold text-gray-900"><?= $stats['total_pembayaran'] ?? 0 ?></p>
                 </div>
                 <div class="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
+                    <i class="bx bx-money-bill-wave h-6 w-6 text-blue-600"></i>
                 </div>
             </div>
         </div>
@@ -39,9 +39,7 @@
                     <p class="text-2xl font-bold text-gray-900"><?= $stats['pembayaran_hari_ini'] ?? 0 ?></p>
                 </div>
                 <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                    </svg>
+                    <i class="bx bx-calendar-day h-6 w-6 text-green-600"></i>
                 </div>
             </div>
         </div>
@@ -53,9 +51,7 @@
                     <p class="text-2xl font-bold text-gray-900">Rp <?= number_format($stats['total_nominal'] ?? 0, 0, ',', '.') ?></p>
                 </div>
                 <div class="h-12 w-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                    <svg class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                    </svg>
+                    <i class="bx bx-chart-line h-6 w-6 text-yellow-600"></i>
                 </div>
             </div>
         </div>
@@ -67,9 +63,7 @@
                     <p class="text-2xl font-bold text-gray-900">Rp <?= number_format($stats['rata_rata'] ?? 0, 0, ',', '.') ?></p>
                 </div>
                 <div class="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <svg class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
+                    <i class="bx bx-calculator h-6 w-6 text-purple-600"></i>
                 </div>
             </div>
         </div>
@@ -107,7 +101,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Bayar</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Bayar</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metode</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aktif/Nonaktif</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
@@ -125,32 +119,28 @@
                                 Rp <?= number_format($pembayaran['jumlah_bayar'], 0, ',', '.') ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <?= date('d/m/Y', strtotime($pembayaran['tgl_bayar'])) ?>
+                                <?= date('d/m/Y', strtotime($pembayaran['tanggal_bayar'])) ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                     <?= esc($pembayaran['metode_pembayaran']) ?>
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                    <?php 
-                                    switch($pembayaran['status_pembayaran']) {
-                                        case 'Berhasil':
-                                            echo 'bg-green-100 text-green-800';
-                                            break;
-                                        case 'Pending':
-                                            echo 'bg-yellow-100 text-yellow-800';
-                                            break;
-                                        case 'Gagal':
-                                            echo 'bg-red-100 text-red-800';
-                                            break;
-                                        default:
-                                            echo 'bg-gray-100 text-gray-800';
-                                    }
-                                    ?>">
-                                    <?= esc($pembayaran['status_pembayaran']) ?>
-                                </span>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <?php if ($currentUserLevel && Roles::can($currentUserLevel, 'manage_pembayaran_angsuran')): ?>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox"
+                                               class="sr-only peer"
+                                               id="toggle-<?= esc($pembayaran['id_pembayaran']) ?>"
+                                               <?= ($pembayaran['status_aktif'] ?? 'Aktif') === 'Aktif' ? 'checked' : '' ?>
+                                               onchange="togglePembayaranAngsuranStatus(<?= esc($pembayaran['id_pembayaran']) ?>, this)">
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    </label>
+                                <?php else: ?>
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                        <?= esc($pembayaran['status_aktif'] ?? 'Aktif') === 'Aktif' ? 'Aktif' : 'Tidak Aktif' ?>
+                                    </span>
+                                <?php endif; ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                 <a href="/pembayaran_angsuran/show/<?= esc($pembayaran['id_pembayaran']) ?>" class="text-blue-600 hover:text-blue-900">Detail</a>
@@ -163,9 +153,7 @@
                         <tr>
                             <td colspan="7" class="px-6 py-12 text-center text-sm text-gray-500">
                                 <div class="flex flex-col items-center gap-2">
-                                    <svg class="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
+                                    <i class="bx bx-file-invoice h-12 w-12 text-gray-400"></i>
                                     <p>Belum ada data pembayaran angsuran</p>
                                     <a href="/pembayaran_angsuran/create" class="text-blue-600 hover:text-blue-900 font-medium">Tambah pembayaran pertama</a>
                                 </div>
@@ -201,4 +189,79 @@
         <?php endif; ?>
     </div>
 </div>
+
+<script>
+    // Toggle pembayaran angsuran status
+    function togglePembayaranAngsuranStatus(id, element) {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        
+        fetch('/pembayaran-angsuran/toggle-status/' + id, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                showNotification(data.message, 'success');
+                
+                // Update the toggle state
+                element.checked = data.new_status === 'Aktif';
+            } else {
+                showNotification(data.message || 'Gagal mengubah status', 'error');
+                // Revert toggle state
+                element.checked = !element.checked;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Terjadi kesalahan saat mengubah status', 'error');
+            // Revert toggle state
+            element.checked = !element.checked;
+        });
+    }
+
+    // Notification function
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full ${
+            type === 'success' ? 'bg-green-500 text-white' :
+            type === 'error' ? 'bg-red-500 text-white' :
+            'bg-blue-500 text-white'
+        }`;
+        notification.innerHTML = `
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    ${type === 'success' ?
+                            '<i class="bx bx-check-circle h-5 w-5 mr-2"></i>' :
+                            type === 'error' ?
+                            '<i class="bx bx-times-circle h-5 w-5 mr-2"></i>' :
+                            '<i class="bx bx-info-circle h-5 w-5 mr-2"></i>'
+                    }
+                </svg>
+                <span>${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Animate in
+        setTimeout(() => {
+            notification.classList.remove('translate-x-full');
+        }, 100);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.classList.add('translate-x-full');
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 3000);
+    }
+</script>
+
 <?= $this->endSection() ?>

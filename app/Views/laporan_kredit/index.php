@@ -11,9 +11,7 @@
                 </div>
                 <div class="flex gap-2">
                     <button onclick="window.print()" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-green-700 transition-colors">
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                        </svg>
+                        <i class="bx bx-print h-4 w-4"></i>
                         Cetak Semua
                     </button>
                 </div>
@@ -24,9 +22,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Cari Kredit</label>
                     <div class="relative">
-                        <svg class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
+                        <i class="bx bx-search absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"></i>
                         <input type="text" id="search-input" placeholder="ID Kredit, Nama Anggota..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     </div>
                 </div>
@@ -71,13 +67,13 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200" id="laporan-table-body">
                         <?php foreach ($kredits as $row): ?>
-                            <tr class="hover:bg-gray-50 transition-colors laporan-row" 
+                            <tr class="hover:bg-gray-50 transition-colors laporan-row"
                                 data-search="<?= strtolower($row['id_kredit'] . ' ' . ($row['nama_anggota'] ?? '')) ?>"
-                                data-status="<?= $row['status'] ?>"
+                                data-status="<?= $row['status_kredit'] ?? $row['status'] ?? '' ?>"
                                 data-date="<?= $row['tanggal_pengajuan'] ?>">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?= esc($row['id_kredit']) ?></td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?= esc($row['nama_anggota'] ?? '-') ?></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rp <?= number_format($row['jumlah_pinjaman'], 0, ',', '.') ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rp <?= number_format($row['jumlah_pengajuan'], 0, ',', '.') ?></td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <?php 
                                     $statusColors = [
@@ -94,10 +90,11 @@
                                         'berjalan' => 'Berjalan',
                                         'selesai' => 'Selesai'
                                     ];
-                                    $statusClass = $statusColors[$row['status']] ?? 'bg-gray-100 text-gray-800';
+                                    $currentStatus = $row['status_kredit'] ?? $row['status'] ?? 'pending';
+                                    $statusClass = $statusColors[$currentStatus] ?? 'bg-gray-100 text-gray-800';
                                     ?>
                                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full <?= $statusClass ?>">
-                                        <?= $statusTexts[$row['status']] ?? $row['status'] ?>
+                                        <?= $statusTexts[$currentStatus] ?? $currentStatus ?>
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?= date('d M Y', strtotime($row['tanggal_pengajuan'])) ?></td>
@@ -105,18 +102,13 @@
                                     <div class="flex items-center justify-end gap-2">
                                         <a href="/laporan-kredit/show/<?= esc($row['id_kredit']) ?>" 
                                            class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-900">
-                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                            </svg>
+                                            <i class="bx bx-eye h-4 w-4"></i>
                                             Lihat
                                         </a>
                                         <a href="/laporan-kredit/generate-pdf/<?= esc($row['id_kredit']) ?>" 
                                            target="_blank"
                                            class="inline-flex items-center gap-1 text-green-600 hover:text-green-900">
-                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
+                                            <i class="bx bx-file-pdf h-4 w-4"></i>
                                             PDF
                                         </a>
                                     </div>

@@ -24,10 +24,16 @@ class LaporanKreditController extends BaseController
      */
     public function index()
     {
+        // Get kredit data with anggota information
+        $kredits = $this->kreditModel
+            ->select('tbl_kredit.*, tbl_anggota.nik as nama_anggota')
+            ->join('tbl_anggota', 'tbl_anggota.id_anggota = tbl_kredit.id_anggota', 'left')
+            ->findAll();
+
         $data = [
             'title' => 'Laporan Kredit',
             'headerTitle' => 'Laporan Kredit',
-            'kredits' => $this->kreditModel->findAll()
+            'kredits' => $kredits
         ];
 
         return view('laporan_kredit/index', $data);
@@ -47,11 +53,13 @@ class LaporanKreditController extends BaseController
         $angsurans = $this->angsuranModel->where('id_kredit', $id_kredit)->findAll();
         $anggota = $this->anggotaModel->find($kredit['id_anggota']);
 
-        // Hitung total angsuran dibayar
+        // Hitung total angsuran dibayar dan jumlah lunas
         $totalDibayar = 0;
+        $angsuranLunas = 0;
         foreach ($angsurans as $angsuran) {
             if ($angsuran['status_pembayaran'] === 'lunas') {
                 $totalDibayar += $angsuran['jumlah_angsuran'];
+                $angsuranLunas++;
             }
         }
 
@@ -62,6 +70,7 @@ class LaporanKreditController extends BaseController
             'anggota' => $anggota,
             'angsurans' => $angsurans,
             'totalDibayar' => $totalDibayar,
+            'angsuranLunas' => $angsuranLunas,
             'totalAngsuran' => count($angsurans) > 0 ? $angsurans[0]['jumlah_angsuran'] * count($angsurans) : 0
         ];
 

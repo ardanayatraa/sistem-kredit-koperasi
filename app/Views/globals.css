@@ -1,3 +1,227 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Global Role-Based Theme Styles */
+
+/* Tema Hijau Koperasi (Tanpa Gradien) */
+:root {
+    --theme-primary: #2e7d32; /* Hijau utama */
+    --theme-primary-hover: #1b5e20;
+    --theme-primary-light: #e8f5e9;
+    --theme-primary-text: #1b5e20;
+}
+
+/* Semua peran menggunakan tema hijau koperasi */
+.theme-blue,
+.theme-purple,
+.theme-green,
+.theme-orange {
+    --theme-primary: #2e7d32;
+    --theme-primary-hover: #1b5e20;
+    --theme-primary-light: #e8f5e9;
+    --theme-primary-text: #1b5e20;
+}
+
+/* Apply theme colors to common UI elements */
+.btn-primary {
+    background-color: var(--theme-primary);
+    color: white;
+    border-color: var(--theme-primary);
+}
+
+.btn-primary:hover {
+    background-color: var(--theme-primary-hover);
+    border-color: var(--theme-primary-hover);
+}
+
+.btn-outline-primary {
+    color: var(--theme-primary);
+    border-color: var(--theme-primary);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--theme-primary-light);
+    color: var(--theme-primary-text);
+}
+
+.bg-primary {
+    background-color: var(--theme-primary) !important;
+}
+
+.text-primary {
+    color: var(--theme-primary) !important;
+}
+
+.border-primary {
+    border-color: var(--theme-primary) !important;
+}
+
+.text-primary-dark {
+    color: var(--theme-primary-hover) !important;
+}
+
+/* Table status badges with theme colors */
+.status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-active {
+    background-color: var(--theme-primary-light);
+    color: var(--theme-primary-text);
+}
+
+.status-inactive {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+/* Card headers with theme colors */
+.card-header {
+    background-color: var(--theme-primary-light);
+    color: var(--theme-primary-text);
+    border-bottom: 2px solid var(--theme-primary);
+}
+
+/* Form inputs with theme colors */
+.form-control:focus {
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--theme-primary), 0.25);
+}
+
+/* Navigation active state */
+.nav-active {
+    background-color: var(--theme-primary);
+    color: white;
+}
+
+/* Statistics cards with theme colors */
+.stat-card {
+    border-left: 4px solid var(--theme-primary);
+}
+
+.stat-card .stat-icon {
+    color: var(--theme-primary);
+}
+
+/* Toggle switches with theme colors */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 24px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--theme-primary);
+}
+
+input:checked + .slider:before {
+    transform: translateX(24px);
+}
+
+/* Modal headers with theme colors */
+.modal-header {
+    background-color: var(--theme-primary-light);
+    color: var(--theme-primary-text);
+    border-bottom: 2px solid var(--theme-primary);
+}
+
+/* Alert messages with theme colors */
+.alert-primary {
+    background-color: var(--theme-primary-light);
+    border-color: var(--theme-primary);
+    color: var(--theme-primary-text);
+}
+
+/* Loading spinners with theme colors */
+.spinner-primary {
+    border-color: var(--theme-primary-light);
+    border-top-color: var(--theme-primary);
+}
+
+/* Progress bars with theme colors */
+.progress-bar {
+    background-color: var(--theme-primary);
+}
+
+/* Badges with theme colors */
+.badge-primary {
+    background-color: var(--theme-primary);
+    color: white;
+}
+
+/* Table hover effects with theme colors */
+.table-hover tbody tr:hover {
+    background-color: var(--theme-primary-light);
+}
+
+/* Pagination with theme colors */
+.pagination .page-link {
+    color: var(--theme-primary);
+    border-color: var(--theme-primary);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--theme-primary);
+    border-color: var(--theme-primary);
+}
+
+/* Dropdown menus with theme colors */
+.dropdown-menu .dropdown-item:hover {
+    background-color: var(--theme-primary-light);
+    color: var(--theme-primary-text);
+}
+
+/* Tooltips with theme colors */
+.tooltip-inner {
+    background-color: var(--theme-primary);
+    color: white;
+}
+
+/* Custom scrollbar with theme colors */
+::-webkit-scrollbar-thumb {
+    background: var(--theme-primary);
+}
+
+/* Print styles - remove theme colors for printing */
+@media print {
+    .theme-blue,
+    .theme-purple,
+    .theme-green,
+    .theme-orange {
+        --theme-primary: #000000;
+        --theme-primary-hover: #000000;
+        --theme-primary-light: #f0f0f0;
+        --theme-primary-text: #000000;
+    }
+}

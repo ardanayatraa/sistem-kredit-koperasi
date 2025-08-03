@@ -3,11 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?= csrf_hash() ?>">
     <title><?= $title ?? 'Dashboard Koperasi' ?></title>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono@2.304/web/JetBrainsMono.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/globals.css" rel="stylesheet">
+    <script>
+        // Apply role-based theme based on user level
+        document.addEventListener('DOMContentLoaded', function() {
+            const userLevel = '<?php echo session()->get('level'); ?>';
+            const body = document.body;
+            
+            // Remove existing theme classes
+            body.classList.remove('theme-blue', 'theme-purple', 'theme-green', 'theme-orange');
+            
+            // Apply theme based on user level
+            switch(userLevel) {
+                case 'Bendahara':
+                    body.classList.add('theme-blue');
+                    break;
+                case 'Ketua Koperasi':
+                    body.classList.add('theme-purple');
+                    break;
+                case 'Appraiser':
+                    body.classList.add('theme-green');
+                    break;
+                case 'Anggota':
+                    body.classList.add('theme-orange');
+                    break;
+                default:
+                    body.classList.add('theme-blue'); // Default theme
+            }
+        });
+    </script>
 
-    <link rel="icon" href="/placeholder.svg?height=32&width=32" type="image/svg+xml">
     <script>
         tailwind.config = {
             theme: {
@@ -95,34 +125,132 @@
         }
 
         body {
-    font-family: 'JetBrains Mono', monospace;
-}
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        /* Role-based theme colors */
+        .theme-blue {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-light: #dbeafe;
+            --primary-text: #1e40af;
+        }
+        
+        .theme-purple {
+            --primary-color: #7c3aed;
+            --primary-hover: #6d28d9;
+            --primary-light: #ede9fe;
+            --primary-text: #5b21b6;
+        }
+        
+        .theme-green {
+            --primary-color: #059669;
+            --primary-hover: #047857;
+            --primary-light: #d1fae5;
+            --primary-text: #065f46;
+        }
+        
+        .theme-orange {
+            --primary-color: #ea580c;
+            --primary-hover: #c2410c;
+            --primary-light: #fed7aa;
+            --primary-text: #9a3412;
+        }
+        
+        /* Apply theme colors to UI components */
+        
+        
+        .theme-blue .accent-hover:hover { background-color: #1d4ed8; }
+        .theme-purple .accent-hover:hover { background-color: #6d28d9; }
+        .theme-green .accent-hover:hover { background-color: #047857; }
+        .theme-orange .accent-hover:hover { background-color: #c2410c; }
+        
+        .theme-blue .text-accent { color: #60a5fa; }
+        .theme-purple .text-accent { color: #a78bfa; }
+        .theme-green .text-accent { color: #34d399; }
+        .theme-orange .text-accent { color: #fb923c; }
+        
+        .theme-blue .border-accent { border-color: #3b82f6; }
+        .theme-purple .border-accent { border-color: #8b5cf6; }
+        .theme-green .border-accent { border-color: #10b981; }
+        .theme-orange .border-accent { border-color: #f97316; }
     </style>
 </head>
-<body class="bg-gray-50 font-sans h-full">
+<body class="bg-gray-50 font-sans h-full <?php
+$userLevel = session()->get('level');
+$themeClasses = [
+    'Bendahara' => 'theme-blue',
+    'Ketua Koperasi' => 'theme-purple',
+    'Appraiser' => 'theme-green',
+    'Anggota' => 'theme-orange'
+];
+echo $themeClasses[$userLevel] ?? 'theme-blue';
+?>">
+    <?php
+    $userLevel = session()->get('level');
+    $roleConfigs = [
+        'Bendahara' => [
+            'theme' => 'blue',
+            'sidebar' => 'from-blue-600 to-blue-800',
+            'accent' => 'bg-blue-600',
+            'accent_hover' => 'hover:bg-blue-700',
+            'text_accent' => 'text-blue-400',
+            'border_accent' => 'border-blue-500'
+        ],
+        'Ketua Koperasi' => [
+            'theme' => 'purple',
+            'sidebar' => 'from-purple-600 to-purple-800',
+            'accent' => 'bg-purple-600',
+            'accent_hover' => 'hover:bg-purple-700',
+            'text_accent' => 'text-purple-400',
+            'border_accent' => 'border-purple-500'
+        ],
+        'Appraiser' => [
+            'theme' => 'green',
+            'sidebar' => 'from-green-600 to-green-800',
+            'accent' => 'bg-green-600',
+            'accent_hover' => 'hover:bg-green-700',
+            'text_accent' => 'text-green-400',
+            'border_accent' => 'border-green-500'
+        ],
+        'Anggota' => [
+            'theme' => 'orange',
+            'sidebar' => 'from-orange-600 to-orange-800',
+            'accent' => 'bg-orange-600',
+            'accent_hover' => 'hover:bg-orange-700',
+            'text_accent' => 'text-orange-400',
+            'border_accent' => 'border-orange-500'
+        ]
+    ];
+    
+    $config = $roleConfigs[$userLevel] ?? $roleConfigs['Bendahara'];
+    $sidebarClass = $config['sidebar'];
+    $accentClass = $config['accent'];
+    $accentHoverClass = $config['accent_hover'];
+    $textAccentClass = $config['text_accent'];
+    $borderAccentClass = $config['border_accent'];
+    ?>
     <!-- Mobile Overlay -->
     <div id="mobile-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden"></div>
     
     <!-- Layout Container -->
     <div class="flex h-full">
         <!-- Sidebar -->
-        <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-50 w-64 sm:w-72 lg:w-64 bg-sidebar-900 shadow-xl sidebar-transition mobile-sidebar lg:translate-x-0">
+        <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-50 w-64 sm:w-72 lg:w-64 bg-gray-800 shadow-xl sidebar-transition mobile-sidebar lg:translate-x-0">
             <div class="flex h-full flex-col">
                 <!-- Sidebar Header -->
                 <div class="flex items-center justify-between border-b border-gray-700 p-3 sm:p-4">
                     <div class="flex items-center gap-2 sm:gap-3 min-w-0">
                         <div class="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-blue-600 flex-shrink-0">
-                            <svg class="h-3 w-3 sm:h-4 sm:w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m0 0l7 7m-2 2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                            </svg>
+                            <i class="bx bx-university text-white text-sm sm:text-base"></i>
                         </div>
                         <div class="min-w-0">
                             <h2 class="text-base sm:text-lg font-bold text-white truncate">Koperasi</h2>
-                            <p class="text-xs text-gray-400 truncate">Management System</p>
+                            <p class="text-xs text-gray-300 truncate">Management System</p>
                         </div>
                     </div>
                     <!-- Close button for mobile -->
-                    <button id="close-sidebar" class="lg:hidden text-gray-400 hover:text-white p-1 rounded">
+                    <button id="close-sidebar" class="lg:hidden text-gray-300 hover:text-white p-1 rounded">
                         <svg class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -163,7 +291,7 @@
                         <?php foreach ($filteredNavLinks as $link): ?>
                             <li>
                                 <a href="<?= $link['url'] ?>"
-                                   class="flex items-center gap-2 sm:gap-3 rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium transition-colors <?= $currentUri === $link['segment'] ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' ?>">
+                                   class="flex items-center gap-2 sm:gap-3 rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium transition-colors <?= $currentUri === $link['segment'] ? 'bg-primary text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' ?>">
                                     <svg class="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="<?= $link['icon'] ?>" />
                                     </svg>
@@ -209,7 +337,7 @@
                             <p class="text-xs sm:text-sm font-semibold text-gray-900 truncate max-w-32 lg:max-w-none"><?= esc(session()->get('nama_lengkap') ?? 'DEWI') ?></p>
                             <p class="text-xs text-gray-500"><?= esc(session()->get('level') ?? 'ADMIN') ?></p>
                         </div>
-                        <div class="h-7 w-7 sm:h-8 sm:w-8 lg:h-10 lg:w-10 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+                        <div class="h-7 w-7 sm:h-8 sm:w-8 lg:h-10 lg:w-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
                             <span class="text-white font-semibold text-xs sm:text-sm">
                                 <?= strtoupper(substr(session()->get('nama_lengkap') ?? 'DW', 0, 2)) ?>
                             </span>

@@ -20,6 +20,7 @@ class KreditModel extends Model
         'catatan_appraiser',
         'catatan_ketua',
         'status_kredit',
+        'status_aktif',
         'created_at',
         'updated_at'
     ];

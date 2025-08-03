@@ -50,10 +50,10 @@ class AuthController extends Controller
             'username' => $this->request->getPost('username'),
             'email' => $this->request->getPost('email'),
             'password' => $this->request->getPost('password'), // Password akan di-hash oleh UserModel
-            'level' =>'anggota',
+            'level' => 'Anggota',
             'no_hp' => $this->request->getPost('no_hp'),
-            'no_hp' => $this->request->getPost('no_hp'),
-
+            'status' => 'Aktif',
+            'id_anggota_ref' => null,
         ];
 
         $this->userModel->insert($data);
@@ -111,6 +111,8 @@ class AuthController extends Controller
             'username' => $user['username'],
             'email' => $user['email'],
             'level' => $user['level'],
+            'status' => $user['status'] ?? 'Aktif',
+            'id_anggota_ref' => $user['id_anggota_ref'] ?? null,
             'isLoggedIn' => true,
         ];
         $this->session->set($userData);
