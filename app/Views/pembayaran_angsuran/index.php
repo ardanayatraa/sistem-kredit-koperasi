@@ -141,6 +141,7 @@ $currentUserLevel = session()->get('level');
                                                 <i class="bx bx-check-circle mr-1"></i>
                                                 Setujui
                                             </button>
+                                            </form>
                                             <form action="/pembayaran-angsuran/tolak-pembayaran/<?= esc($pembayaran['id_pembayaran']) ?>" method="POST" style="display:inline;">
                                                 <?= csrf_field() ?>
                                                 <button type="button" onclick="openTolakModal(<?= esc($pembayaran['id_pembayaran']) ?>)"
@@ -148,6 +149,7 @@ $currentUserLevel = session()->get('level');
                                                 <i class="bx bx-x-circle mr-1"></i>
                                                 Tolak
                                             </button>
+                                            </form>
                                         <?php else: ?>
                                             <!-- Status untuk yang sudah diverifikasi -->
                                             <?php if ($pembayaran['status_verifikasi'] === 'approved'): ?>
@@ -172,14 +174,6 @@ $currentUserLevel = session()->get('level');
                                     </div>
                                     
                                     <!-- Hidden form for rejection -->
-                                    <?php foreach ($pembayaran_angsuran as $pembayaran): ?>
-                                        <?php if (($pembayaran['status_verifikasi'] ?? 'pending') === 'pending'): ?>
-                                            <form id="tolak-form-<?= $pembayaran['id_pembayaran'] ?>" action="/pembayaran-angsuran/tolak-pembayaran/<?= $pembayaran['id_pembayaran'] ?>" method="POST" style="display:none;">
-                                                <?= csrf_field() ?>
-                                                <input type="hidden" name="alasan" id="alasan-tolak-input">
-                                            </form>
-                                        <?php endif; ?>
-                                    <?php endforeach; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -198,6 +192,39 @@ $currentUserLevel = session()->get('level');
         </div>
     </div>
 
+<!-- Hidden forms for rejection modals -->
+<?php if (!empty($pembayaran_angsuran)): ?>
+    <?php foreach ($pembayaran_angsuran as $item): ?>
+        <?php if (($item['status_verifikasi'] ?? 'pending') === 'pending'): ?>
+            <form id="tolak-form-<?= esc($item['id_pembayaran']) ?>" action="/pembayaran-angsuran/tolak-pembayaran/<?= esc($item['id_pembayaran']) ?>" method="POST" style="display:none;">
+                <?= csrf_field() ?>
+                <input type="hidden" name="alasan" id="alasan-tolak-input-<?= esc($item['id_pembayaran']) ?>">
+            </form>
+        <?php endif; ?>
+    <?php endforeach; ?>
+<?php endif; ?>
+
+<script>
+let currentRejectId = null;
+
+function openTolakModal(id) {
+    currentRejectId = id;
+    document.getElementById('tolak-modal').classList.remove('hidden');
+}
+
+function closeTolakModal() {
+    document.getElementById('tolak-modal').classList.add('hidden');
+}
+
+function submitTolakan() {
+    var alasan = document.getElementById('alasan-tolak-text').value;
+    var form = document.getElementById('tolak-form-' + currentRejectId);
+    var input = form.querySelector('#alasan-tolak-input-' + currentRejectId);
+    input.value = alasan;
+    form.submit();
+}
+</script>
+
     <!-- Pagination -->
     <?php if (isset($pager)): ?>
         <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 rounded-lg shadow">
@@ -207,61 +234,7 @@ $currentUserLevel = session()->get('level');
 </div>
 
 
-    // Modal functions
-    let currentPaymentId = null;
     
-    function openTolakModal(id) {
-        currentPaymentId = id;
-        document.getElementById('tolak-modal').classList.remove('hidden');
-    }
-    
-    function closeTolakModal() {
-        document.getElementById('tolak-modal').classList.add('hidden');
-        document.getElementById('alasan-tolak').value = '';
-    }
-    
-    function submitTolakan() {
-        if (currentPaymentId) {
-            // Set alasan in hidden form
-            document.getElementById('alasan-tolak-input').value =
-                document.getElementById('alasan-tolak-text').value;
-            
-            // Submit form
-            document.getElementById('tolak-form-' + currentPaymentId).submit();
-        }
-    }
-
-    // Notification function
-    function showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full ${
-            type === 'success' ? 'bg-green-500 text-white' :
-            type === 'error' ? 'bg-red-500 text-white' :
-            'bg-blue-500 text-white'
-        }`;
-        notification.innerHTML = `
-            <div class="flex items-center">
-                <i class="bx ${type === 'success' ? 'bx-check-circle' : type === 'error' ? 'bx-times-circle' : 'bx-info-circle'} h-5 w-5 mr-2"></i>
-                <span>${message}</span>
-            </div>
-        `;
-        
-        document.body.appendChild(notification);
-        
-        // Animate in
-        setTimeout(() => {
-            notification.classList.remove('translate-x-full');
-        }, 100);
-        
-        // Remove after 3 seconds
-        setTimeout(() => {
-            notification.classList.add('translate-x-full');
-            setTimeout(() => {
-                document.body.removeChild(notification);
-            }, 300);
-        }, 3000);
-    }
-</script>
 
 <!-- Tolak Modal -->
 <div id="tolak-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">

@@ -9,11 +9,6 @@
             <p class="text-sm text-gray-600 mt-1">Informasi lengkap pembayaran angsuran</p>
         </div>
         <div class="flex flex-col sm:flex-row gap-2">
-            <a href="/pembayaran-angsuran/edit/<?= $pembayaran_angsuran['id_pembayaran'] ?>"
-               class="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
-                <i class="bx bx-edit h-4 w-4"></i>
-                Edit
-            </a>
             <a href="/pembayaran-angsuran"
                class="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors">
                 <i class="bx bx-arrow-left h-4 w-4"></i>
@@ -159,10 +154,6 @@
 
     <!-- Action Buttons -->
     <div class="flex flex-col sm:flex-row gap-3 pt-4">
-        <button onclick="window.print()" class="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
-            <i class="bx bx-print h-4 w-4"></i>
-            Cetak
-        </button>
         <button onclick="confirmDelete()" class="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors">
             <i class="bx bx-trash h-4 w-4"></i>
             Hapus

@@ -5,9 +5,9 @@ namespace App\Controllers;
 use App\Models\AngsuranModel;
 use App\Models\KreditModel;
 use App\Models\PencairanModel;
-use CodeIgniter\Controller;
+use App\Controllers\BaseController;
 
-class AngsuranController extends Controller
+class AngsuranController extends BaseController
 {
     protected $angsuranModel;
     protected $kreditModel;
@@ -171,9 +171,8 @@ class AngsuranController extends Controller
         } catch (\Exception $e) {
             return ['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()];
         }
-    }
-
-    /**
+}
+/**
      * Generate angsuran berikutnya setelah pembayaran lunas
      */
     public function generateAngsuranBerikutnya($id_kredit)
@@ -182,19 +181,15 @@ class AngsuranController extends Controller
             // Ambil data kredit
             $kredit = $this->kreditModel->find($id_kredit);
             if (!$kredit) {
-                return $this->response->setJSON([
-                    'success' => false,
-                    'message' => 'Data kredit tidak ditemukan'
-                ])->setStatusCode(404);
+                session()->setFlashdata('error', 'Data kredit tidak ditemukan');
+                return redirect()->back();
             }
 
             // Ambil pencairan untuk kalkulasi
             $pencairan = $this->pencairanModel->where('id_kredit', $id_kredit)->first();
             if (!$pencairan) {
-                return $this->response->setJSON([
-                    'success' => false,
-                    'message' => 'Data pencairan tidak ditemukan'
-                ])->setStatusCode(404);
+                session()->setFlashdata('error', 'Data pencairan tidak ditemukan');
+                return redirect()->back();
             }
 
             // Cari angsuran terakhir yang sudah ada
@@ -203,10 +198,8 @@ class AngsuranController extends Controller
                                                    ->first();
             
             if (!$angsuranTerakhir) {
-                return $this->response->setJSON([
-                    'success' => false,
-                    'message' => 'Tidak ada angsuran sebelumnya'
-                ])->setStatusCode(400);
+                session()->setFlashdata('error', 'Tidak ada angsuran sebelumnya');
+                return redirect()->back();
             }
 
             // Check apakah angsuran terakhir sudah lunas
@@ -218,10 +211,8 @@ class AngsuranController extends Controller
             $isLunas = ($totalDibayar['jumlah_bayar'] ?? 0) >= $angsuranTerakhir['jumlah_angsuran'];
             
             if (!$isLunas) {
-                return $this->response->setJSON([
-                    'success' => false,
-                    'message' => 'Angsuran ke-' . $angsuranTerakhir['angsuran_ke'] . ' belum lunas'
-                ])->setStatusCode(400);
+                session()->setFlashdata('error', 'Angsuran ke-' . $angsuranTerakhir['angsuran_ke'] . ' belum lunas');
+                return redirect()->back();
             }
 
             // Cek apakah masih dalam jangka waktu
@@ -229,10 +220,8 @@ class AngsuranController extends Controller
             $angsuranBerikutnya = $angsuranTerakhir['angsuran_ke'] + 1;
             
             if ($angsuranBerikutnya > $jangkaWaktu) {
-                return $this->response->setJSON([
-                    'success' => false,
-                    'message' => 'Semua angsuran sudah selesai'
-                ])->setStatusCode(400);
+                session()->setFlashdata('error', 'Semua angsuran sudah selesai');
+                return redirect()->back();
             }
 
             // Hitung angsuran bulanan (sama seperti sebelumnya)
@@ -258,23 +247,13 @@ class AngsuranController extends Controller
 
             // Insert angsuran baru
             $this->angsuranModel->insert($angsuranBaru);
-
-            return $this->response->setJSON([
-                'success' => true,
-                'message' => "Angsuran ke-{$angsuranBerikutnya} berhasil dibuat",
-                'data' => [
-                    'angsuran_ke' => $angsuranBerikutnya,
-                    'jumlah_angsuran' => round($angsuranPerBulan, 0),
-                    'jatuh_tempo' => $tanggalBerikutnya->format('d/m/Y'),
-                    'sisa_angsuran' => $jangkaWaktu - $angsuranBerikutnya + 1
-                ]
-            ]);
+            
+            session()->setFlashdata('success', "Angsuran ke-{$angsuranBerikutnya} berhasil dibuat");
+            return redirect()->back();
 
         } catch (\Exception $e) {
-            return $this->response->setJSON([
-                'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-            ])->setStatusCode(500);
+            session()->setFlashdata('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            return redirect()->back();
         }
     }
 

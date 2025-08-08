@@ -545,6 +545,7 @@ class PembayaranAngsuranController extends Controller
 
                     // Auto-generate angsuran berikutnya
                     $angsuranController = new \App\Controllers\AngsuranController();
+                    $angsuranController->initController($this->request, $this->response, \Config\Services::logger());
                     $response = $angsuranController->generateAngsuranBerikutnya($angsuran['id_kredit_ref']);
                     
                     $responseData = json_decode($response->getBody(), true);
@@ -565,17 +566,13 @@ class PembayaranAngsuranController extends Controller
                 $message = 'Pembayaran berhasil diverifikasi.';
             }
 
-            return $this->response->setJSON([
-                'success' => true,
-                'message' => $message
-            ]);
+            session()->setFlashdata('success', $message);
+            return redirect()->back();
 
         } catch (\Exception $e) {
             log_message('error', 'Error verifying payment: ' . $e->getMessage());
-            return $this->response->setJSON([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat verifikasi: ' . $e->getMessage()
-            ])->setStatusCode(500);
+            session()->setFlashdata('error', 'Terjadi kesalahan saat verifikasi: ' . $e->getMessage());
+            return redirect()->back();
         }
     }
 
