@@ -13,6 +13,7 @@ class AnggotaSeeder extends Seeder
 
         $anggotaData = [
             [
+                'no_anggota' => 'KOPL-0001',
                 'nik' => '3201012345678901',
                 'tempat_lahir' => 'Jakarta',
                 'tanggal_lahir' => '1985-05-15',
@@ -25,6 +26,7 @@ class AnggotaSeeder extends Seeder
                 'dokumen_slip_gaji' => 'slip_gaji_sample_1.jpg'
             ],
             [
+                'no_anggota' => 'KOPL-0002',
                 'nik' => '3201012345678902',
                 'tempat_lahir' => 'Bandung',
                 'tanggal_lahir' => '1990-08-20',
@@ -37,6 +39,7 @@ class AnggotaSeeder extends Seeder
                 'dokumen_slip_gaji' => 'slip_gaji_sample_2.jpg'
             ],
             [
+                'no_anggota' => 'KOPL-0003',
                 'nik' => '3201012345678903',
                 'tempat_lahir' => 'Surabaya',
                 'tanggal_lahir' => '1987-12-03',
@@ -49,6 +52,7 @@ class AnggotaSeeder extends Seeder
                 'dokumen_slip_gaji' => 'slip_gaji_sample_3.jpg'
             ],
             [
+                'no_anggota' => 'KOPL-0004',
                 'nik' => '3201012345678904',
                 'tempat_lahir' => 'Medan',
                 'tanggal_lahir' => '1992-04-18',
@@ -61,6 +65,7 @@ class AnggotaSeeder extends Seeder
                 'dokumen_slip_gaji' => 'slip_gaji_sample_4.jpg'
             ],
             [
+                'no_anggota' => 'KOPL-0005',
                 'nik' => '3201012345678905',
                 'tempat_lahir' => 'Yogyakarta',
                 'tanggal_lahir' => '1988-11-25',

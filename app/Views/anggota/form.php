@@ -132,24 +132,6 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label for="tanggal_pendaftaran" class="block text-sm font-medium text-gray-700 mb-2">
-                            Tanggal Pendaftaran <span class="text-red-500">*</span>
-                        </label>
-                        <input type="date" 
-                               name="tanggal_pendaftaran" 
-                               id="tanggal_pendaftaran" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                               value="<?= old('tanggal_pendaftaran', $anggota['tanggal_pendaftaran'] ?? date('Y-m-d')) ?>" 
-                               required>
-                        <?php if (session('errors.tanggal_pendaftaran')): ?>
-                            <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
-                                <i class="bx bx-exclamation-circle h-4 w-4"></i>
-                                <?= session('errors.tanggal_pendaftaran') ?>
-                            </p>
-                        <?php endif; ?>
-                    </div>
-
-                    <div>
                         <label for="status_keanggotaan" class="block text-sm font-medium text-gray-700 mb-2">
                             Status Keanggotaan <span class="text-red-500">*</span>
                         </label>

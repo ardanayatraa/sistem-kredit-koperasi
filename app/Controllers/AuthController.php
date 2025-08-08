@@ -67,9 +67,10 @@ class AuthController extends Controller
      */
     public function login()
     {
-        // Jika user sudah login, redirect ke dashboard
+        // Jika user sudah login, redirect ke dashboard yang sesuai role
         if ($this->session->get('isLoggedIn')) {
-            return redirect()->to('/home');
+            $level = $this->session->get('level');
+            return redirect()->to($this->getDashboardUrl($level));
         }
         return view('auth/login');
     }
@@ -117,7 +118,9 @@ class AuthController extends Controller
         ];
         $this->session->set($userData);
 
-        return redirect()->to('/home')->with('success', 'Selamat datang, ' . $user['nama_lengkap'] . '!');
+        // Redirect ke dashboard yang sesuai dengan level user
+        $dashboardUrl = $this->getDashboardUrl($user['level']);
+        return redirect()->to($dashboardUrl)->with('success', 'Selamat datang, ' . $user['nama_lengkap'] . '!');
     }
 
     /**
@@ -128,5 +131,24 @@ class AuthController extends Controller
     {
         $this->session->destroy();
         return redirect()->to('/login')->with('success', 'Anda telah berhasil logout.');
+    }
+
+    /**
+     * Get dashboard URL based on user level
+     */
+    private function getDashboardUrl($level)
+    {
+        switch ($level) {
+            case 'Bendahara':
+                return '/dashboard-bendahara';
+            case 'Ketua':
+                return '/dashboard-ketua';
+            case 'Appraiser':
+                return '/dashboard-appraiser';
+            case 'Anggota':
+                return '/dashboard-anggota';
+            default:
+                return '/beranda'; // Fallback ke beranda jika level tidak dikenal
+        }
     }
 }

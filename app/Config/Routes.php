@@ -14,7 +14,98 @@ $routes->post('/register', 'AuthController::attemptRegister');
 $routes->get('/login', 'AuthController::login');
 $routes->post('/login', 'AuthController::attemptLogin');
 $routes->get('/logout', 'AuthController::logout');
-$routes->get('/home', 'Home::index', ['filter' => 'auth']); // Only require authentication
+
+// Dashboard routes for each role
+$routes->get('/home', 'Home::index', ['filter' => 'auth']); // General dashboard
+$routes->get('/dashboard-bendahara', 'Home::dashboardBendahara', ['filter' => 'auth']);
+$routes->get('/dashboard-ketua', 'Home::dashboardKetua', ['filter' => 'auth']);
+$routes->get('/dashboard-appraiser', 'Home::dashboardAppraiser', ['filter' => 'auth']);
+$routes->get('/dashboard-anggota', 'Home::dashboardAnggota', ['filter' => 'auth']);
+
+// Beranda route
+$routes->get('/beranda', 'Home::beranda', ['filter' => 'role:view_beranda']);
+
+// Riwayat Penilaian routes
+$routes->group('riwayat-penilaian', ['filter' => 'role:view_riwayat_penilaian'], function($routes) {
+    $routes->get('/', 'RiwayatPenilaianController::index');
+    $routes->get('(:num)', 'RiwayatPenilaianController::show/$1'); // Direct access with ID
+    $routes->get('show/(:num)', 'RiwayatPenilaianController::show/$1');
+    $routes->get('print/(:num)', 'RiwayatPenilaianController::print/$1');
+});
+
+// Data Agunan routes
+$routes->group('agunan', ['filter' => 'role:manage_agunan'], function($routes) {
+    $routes->get('/', 'AgunanController::index');
+    $routes->get('new', 'AgunanController::new');
+    $routes->post('create', 'AgunanController::create');
+    $routes->get('edit/(:num)', 'AgunanController::edit/$1');
+    $routes->post('update/(:num)', 'AgunanController::update/$1');
+    $routes->get('delete/(:num)', 'AgunanController::delete/$1');
+    $routes->get('show/(:num)', 'AgunanController::show/$1');
+    $routes->get('print/(:num)', 'AgunanController::print/$1');
+});
+
+// Daftar Agunan untuk Appraiser
+$routes->group('daftar-agunan', ['filter' => 'role:view_daftar_agunan'], function($routes) {
+    $routes->get('/', 'AgunanController::daftarAgunan');
+    $routes->get('show/(:num)', 'AgunanController::show/$1');
+});
+
+// Verifikasi Agunan routes
+$routes->group('verifikasi-agunan', ['filter' => 'role:verify_agunan'], function($routes) {
+    $routes->get('/', 'AgunanController::verifikasi');
+    $routes->post('proses', 'AgunanController::prosesVerifikasi');
+    $routes->post('approve/(:num)', 'AgunanController::approve/$1');
+    $routes->post('reject/(:num)', 'AgunanController::reject/$1');
+    $routes->get('detail/(:num)', 'AgunanController::detailVerifikasi/$1');
+    $routes->get('dokumen/(:num)', 'AgunanController::dokumen/$1');
+});
+
+// Detail Kredit Anggota untuk Ketua
+$routes->group('detail-kredit-anggota', ['filter' => 'role:view_detail_kredit_anggota'], function($routes) {
+    $routes->get('/', 'KreditController::detailKreditAnggota');
+    $routes->get('show/(:num)', 'KreditController::showDetailAnggota/$1');
+});
+
+// Laporan Kredit Koperasi untuk Ketua
+$routes->group('laporan-kredit-koperasi', ['filter' => 'role:view_laporan_kredit_koperasi'], function($routes) {
+    $routes->get('/', 'LaporanKreditController::koperasi');
+    $routes->get('generate-pdf', 'LaporanKreditController::generatePdfKoperasi');
+    $routes->get('export-excel', 'LaporanKreditController::exportExcelKoperasi');
+});
+
+// Riwayat Persetujuan untuk Ketua
+$routes->group('riwayat-persetujuan', ['filter' => 'role:view_riwayat_persetujuan'], function($routes) {
+    $routes->get('/', 'RiwayatPersetujuanController::index');
+    $routes->get('show/(:num)', 'RiwayatPersetujuanController::show/$1');
+});
+
+// Riwayat Kredit untuk Anggota
+$routes->group('riwayat-kredit', ['filter' => 'role:view_riwayat_kredit'], function($routes) {
+    $routes->get('/', 'RiwayatKreditController::index');
+    $routes->get('(:num)', 'RiwayatKreditController::show/$1'); // Direct access with ID
+    $routes->get('show/(:num)', 'RiwayatKreditController::show/$1');
+    $routes->get('print/(:num)', 'RiwayatKreditController::print/$1');
+});
+
+// Riwayat Pembayaran untuk Anggota
+$routes->group('riwayat-pembayaran', ['filter' => 'role:view_riwayat_pembayaran'], function($routes) {
+    $routes->get('/', 'RiwayatPembayaranController::index');
+    $routes->get('show/(:num)', 'RiwayatPembayaranController::show/$1');
+    $routes->get('print/(:num)', 'RiwayatPembayaranController::print/$1');
+});
+
+// Simulasi Bunga untuk Anggota
+$routes->group('simulasi-bunga', ['filter' => 'role:view_simulasi_bunga'], function($routes) {
+    $routes->get('/', 'SimulasiBungaController::index');
+    $routes->post('calculate', 'SimulasiBungaController::calculate');
+});
+
+// Ganti Password route untuk semua user
+$routes->group('change-password', ['filter' => 'role:change_password'], function($routes) {
+    $routes->get('/', 'UserController::changePassword');
+    $routes->post('update', 'UserController::updatePassword');
+});
 
 // Rute untuk Anggota CRUD
 $routes->group('anggota', ['filter' => 'role:manage_anggota'], function($routes) {
@@ -73,6 +164,16 @@ $routes->group('angsuran', ['filter' => 'role:manage_angsuran'], function($route
     $routes->post('update/(:num)', 'AngsuranController::update/$1');
     $routes->get('delete/(:num)', 'AngsuranController::delete/$1');
     $routes->get('show/(:num)', 'AngsuranController::show/$1');
+    
+    // Routes untuk Flow Pembayaran Kredit
+    $routes->post('generate-jadwal/(:num)', 'AngsuranController::generateJadwalAngsuran/$1');
+    $routes->get('jadwal/(:num)', 'AngsuranController::lihatJadwal/$1');
+    $routes->get('bayar/(:num)', 'AngsuranController::bayarAngsuran/$1');
+});
+
+// Dashboard Pembayaran untuk Anggota
+$routes->group('dashboard-pembayaran', ['filter' => 'role:view_riwayat_pembayaran'], function($routes) {
+    $routes->get('(:num)', 'AngsuranController::dashboardPembayaran/$1');
 });
 
 // Rute untuk Pembayaran Angsuran CRUD
@@ -98,6 +199,17 @@ $routes->group('kredit', ['filter' => 'role:manage_kredit'], function($routes) {
     $routes->get('show/(:num)', 'KreditController::show/$1');
     $routes->post('toggle-status/(:num)', 'KreditController::toggleStatus/$1');
     $routes->post('verify-agunan', 'KreditController::verifyAgunan');
+    
+    // ALUR KOPERASI MITRA SEJAHTRA: Workflow Management Routes
+    $routes->get('pengajuan-untuk-role', 'KreditController::pengajuanUntukRole');
+    $routes->get('verifikasi-bendahara/(:num)', 'KreditController::verifikasiBendahara/$1');
+    $routes->post('verifikasi-bendahara/(:num)', 'KreditController::verifikasiBendahara/$1');
+    $routes->get('penilaian-appraiser/(:num)', 'KreditController::penilaianAppraiser/$1');
+    $routes->post('penilaian-appraiser/(:num)', 'KreditController::penilaianAppraiser/$1');
+    $routes->get('teruskan-hasil-appraiser/(:num)', 'KreditController::teruskanHasilAppraiser/$1');
+    $routes->post('teruskan-hasil-appraiser/(:num)', 'KreditController::teruskanHasilAppraiser/$1');
+    $routes->get('persetujuan-final/(:num)', 'KreditController::persetujuanFinal/$1');
+    $routes->post('persetujuan-final/(:num)', 'KreditController::persetujuanFinal/$1');
 });
 
 // Rute untuk Laporan Kredit

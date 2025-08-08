@@ -362,4 +362,64 @@ class UserController extends Controller
 
         return redirect()->to('/profile')->with('success', 'Profile dan data anggota berhasil diperbarui.');
     }
+
+    /**
+     * Change Password page
+     */
+    public function changePassword()
+    {
+        $data = [
+            'title' => 'Ganti Password',
+            'headerTitle' => 'Ganti Password'
+        ];
+
+        return view('change_password/index', $data);
+    }
+
+    /**
+     * Update Password
+     */
+    public function updatePassword()
+    {
+        $userId = session()->get('id_user');
+        if (!$userId) {
+            return redirect()->to('/login');
+        }
+
+        $rules = [
+            'current_password' => 'required',
+            'new_password' => 'required|min_length[6]',
+            'confirm_password' => 'required|matches[new_password]'
+        ];
+
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $user = $this->userModel->find($userId);
+        if (!$user) {
+            session()->setFlashdata('error', 'User tidak ditemukan');
+            return redirect()->to('/change-password');
+        }
+
+        // Verify current password
+        if (!password_verify($this->request->getPost('current_password'), $user['password'])) {
+            session()->setFlashdata('error', 'Password saat ini tidak sesuai');
+            return redirect()->to('/change-password');
+        }
+
+        // Update password
+        $newPassword = $this->request->getPost('new_password');
+        $updateData = [
+            'password' => $newPassword
+        ];
+
+        if ($this->userModel->update($userId, $updateData)) {
+            session()->setFlashdata('success', 'Password berhasil diubah');
+        } else {
+            session()->setFlashdata('error', 'Gagal mengubah password');
+        }
+
+        return redirect()->to('/change-password');
+    }
 }

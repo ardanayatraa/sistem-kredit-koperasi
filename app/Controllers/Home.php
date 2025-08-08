@@ -53,7 +53,7 @@ class Home extends BaseController
                     ['title' => 'Pembayaran', 'url' => '/pembayaran-angsuran', 'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1']
                 ]
             ],
-            'Ketua Koperasi' => [
+            'Ketua' => [
                 'theme' => 'purple',
                 'accent' => 'bg-purple-600',
                 'accent_hover' => 'hover:bg-purple-700',
@@ -133,6 +133,70 @@ class Home extends BaseController
         ];
 
         return view('home', $data);
+    }
+
+    // Specific dashboard methods for each role
+    public function dashboardBendahara()
+    {
+        $stats = $this->getRoleBasedStats('Bendahara');
+        $data = [
+            'title' => 'Dashboard Bendahara',
+            'headerTitle' => 'Dashboard Bendahara',
+            'stats' => $stats['bendahara'],
+            'userLevel' => 'Bendahara'
+        ];
+
+        return view('dashboard/bendahara', $data);
+    }
+
+    public function dashboardKetua()
+    {
+        $stats = $this->getRoleBasedStats('Ketua');
+        $data = [
+            'title' => 'Dashboard Ketua',
+            'headerTitle' => 'Dashboard Ketua',
+            'stats' => $stats['ketua'],
+            'userLevel' => 'Ketua'
+        ];
+
+        return view('dashboard/ketua', $data);
+    }
+
+    public function dashboardAppraiser()
+    {
+        $stats = $this->getRoleBasedStats('Appraiser');
+        $data = [
+            'title' => 'Dashboard Appraiser',
+            'headerTitle' => 'Dashboard Appraiser',
+            'stats' => $stats['appraiser'],
+            'userLevel' => 'Appraiser'
+        ];
+
+        return view('dashboard/appraiser', $data);
+    }
+
+    public function dashboardAnggota()
+    {
+        $stats = $this->getRoleBasedStats('Anggota');
+        $data = [
+            'title' => 'Dashboard Anggota',
+            'headerTitle' => 'Dashboard Anggota',
+            'stats' => $stats['anggota'],
+            'userLevel' => 'Anggota'
+        ];
+
+        return view('dashboard/anggota', $data);
+    }
+
+    public function beranda()
+    {
+        $data = [
+            'title' => 'Beranda',
+            'headerTitle' => 'Beranda',
+            'userLevel' => session()->get('level')
+        ];
+
+        return view('beranda/index', $data);
     }
 
     public function landingPage(): string

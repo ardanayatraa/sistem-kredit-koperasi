@@ -62,8 +62,24 @@ class PencairanController extends Controller
             'bukti_transfer' => $buktiTransferName,
         ];
 
-        $this->pencairanModel->insert($data);
-        return redirect()->to('/pencairan')->with('success', 'Data pencairan berhasil ditambahkan.');
+        $pencairanId = $this->pencairanModel->insert($data);
+        
+        // Auto-generate jadwal angsuran setelah pencairan berhasil
+        if ($pencairanId) {
+            $angsuranController = new \App\Controllers\AngsuranController();
+            $response = $angsuranController->generateJadwalAngsuran($data['id_kredit']);
+            
+            $responseData = json_decode($response->getBody(), true);
+            if ($responseData && $responseData['success']) {
+                $message = 'Data pencairan berhasil ditambahkan dan jadwal angsuran telah dibuat otomatis.';
+            } else {
+                $message = 'Data pencairan berhasil ditambahkan. Namun, jadwal angsuran perlu dibuat manual.';
+            }
+        } else {
+            $message = 'Data pencairan berhasil ditambahkan.';
+        }
+        
+        return redirect()->to('/pencairan')->with('success', $message);
     }
 
     public function edit($id = null)

@@ -13,6 +13,7 @@ class BungaModel extends Model
         'persentase_bunga',
         'tipe_bunga',
         'keterangan',
+        'status_aktif',
         'created_at',
         'updated_at'
     ];

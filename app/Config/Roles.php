@@ -6,29 +6,45 @@ class Roles
 {
     public const PERMISSIONS = [
         'Bendahara' => [
-            'manage_anggota',
-            'manage_kredit',
-            'manage_pencairan',
-            'manage_pembayaran_angsuran',
-            'view_laporan_kredit'
+            'dashboard_bendahara',
+            'view_beranda',
+            'manage_anggota', // Data Anggota
+            'manage_kredit', // Pengajuan Kredit
+            'view_riwayat_penilaian', // Riwayat Penilaian
+            'manage_pencairan', // Pencairan Kredit
+            'manage_pembayaran_angsuran', // Pembayaran Kredit / Angsuran
+            'manage_agunan', // Data Agunan
+            'view_laporan_kredit', // Laporan Kredit
+            'change_password', // Ganti Password
+            'view_profile'
         ],
-        'Ketua Koperasi' => [
+        'Ketua' => [
+            'dashboard_ketua',
+            'view_beranda',
+            'view_pengajuan_kredit', // Pengajuan Kredit (view only)
+            'view_detail_kredit_anggota', // Detail Kredit Anggota
+            'view_laporan_kredit_koperasi', // Laporan Kredit Koperasi
+            'view_riwayat_persetujuan', // Riwayat Persetujuan
+            'change_password', // Ganti Password
             'manage_users',
-            'manage_anggota',
             'manage_bunga',
-            'manage_pencairan',
-            'view_laporan_kredit'
+            'approve_kredit' // Untuk approval
         ],
         'Anggota' => [
-            'view_profile',
-            'manage_kredit',
-            'view_laporan_kredit'
+            'dashboard_anggota',
+            'manage_kredit', // Pengajuan Kredit (untuk anggota)
+            'view_riwayat_kredit', // Riwayat Kredit
+            'view_riwayat_pembayaran', // Riwayat Pembayaran
+            'view_simulasi_bunga', // Simulasi Bunga
+            'change_password', // Ganti Password
+            'view_profile'
         ],
         'Appraiser' => [
-            'verify_agunan',
-            'assess_agunan',
-            'manage_kredit',
-            'view_laporan_kredit'
+            'dashboard_appraiser',
+            'view_daftar_agunan', // Daftar Agunan
+            'verify_agunan', // Verifikasi Agunan
+            'assess_agunan', // Assessment agunan
+            'view_riwayat_penilaian' // Riwayat Penilaian
         ]
     ];
 

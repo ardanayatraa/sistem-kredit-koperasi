@@ -26,8 +26,9 @@ class LaporanKreditController extends BaseController
     {
         // Get kredit data with anggota information
         $kredits = $this->kreditModel
-            ->select('tbl_kredit.*, tbl_anggota.nik as nama_anggota')
+            ->select('tbl_kredit.*, tbl_users.nama_lengkap as nama_anggota, tbl_anggota.nik')
             ->join('tbl_anggota', 'tbl_anggota.id_anggota = tbl_kredit.id_anggota', 'left')
+            ->join('tbl_users', 'tbl_users.id_anggota_ref = tbl_anggota.id_anggota', 'left')
             ->findAll();
 
         $data = [
@@ -120,5 +121,75 @@ class LaporanKreditController extends BaseController
 
         $filename = 'Laporan_Kredit_' . $kredit['id_kredit'] . '.pdf';
         $dompdf->stream($filename, ['Attachment' => true]);
+    }
+
+    /**
+     * Laporan Kredit Koperasi untuk Ketua
+     */
+    public function koperasi()
+    {
+        $data = [
+            'title' => 'Laporan Kredit Koperasi',
+            'headerTitle' => 'Laporan Kredit Koperasi'
+        ];
+
+        // Get summary statistics
+        $totalKredit = $this->kreditModel->countAll();
+        $kreditDisetujui = $this->kreditModel->where('status_kredit', 'Disetujui')->countAllResults();
+        $kreditDitolak = $this->kreditModel->where('status_kredit', 'Ditolak')->countAllResults();
+        $kreditMenunggu = $this->kreditModel->where('status_kredit', 'Diajukan')->countAllResults();
+
+        // Get recent applications
+        $recentKredit = $this->kreditModel
+            ->select('tbl_kredit.*, tbl_users.nama_lengkap, tbl_anggota.no_anggota')
+            ->join('tbl_anggota', 'tbl_kredit.id_anggota = tbl_anggota.id_anggota')
+            ->join('tbl_users', 'tbl_users.id_anggota_ref = tbl_anggota.id_anggota')
+            ->orderBy('tbl_kredit.created_at', 'DESC')
+            ->limit(10)
+            ->get()
+            ->getResultArray();
+
+        $data['summary'] = [
+            'total_kredit' => $totalKredit,
+            'kredit_disetujui' => $kreditDisetujui,
+            'kredit_ditolak' => $kreditDitolak,
+            'kredit_menunggu' => $kreditMenunggu
+        ];
+
+        $data['recent_kredit'] = $recentKredit;
+
+        return view('laporan_kredit/koperasi', $data);
+    }
+
+    /**
+     * Generate PDF untuk laporan koperasi
+     */
+    public function generatePdfKoperasi()
+    {
+        $data = [
+            'title' => 'Laporan Kredit Koperasi'
+        ];
+
+        // Get all credit data with member info
+        $kredit = $this->kreditModel
+            ->select('tbl_kredit.*, tbl_users.nama_lengkap, tbl_anggota.no_anggota')
+            ->join('tbl_anggota', 'tbl_kredit.id_anggota = tbl_anggota.id_anggota')
+            ->join('tbl_users', 'tbl_users.id_anggota_ref = tbl_anggota.id_anggota')
+            ->orderBy('tbl_kredit.created_at', 'DESC')
+            ->get()
+            ->getResultArray();
+
+        $data['kredit'] = $kredit;
+
+        return view('laporan_kredit/pdf_koperasi', $data);
+    }
+
+    /**
+     * Export Excel untuk laporan koperasi
+     */
+    public function exportExcelKoperasi()
+    {
+        session()->setFlashdata('info', 'Fitur export Excel dalam pengembangan');
+        return redirect()->to('/laporan-kredit-koperasi');
     }
 }

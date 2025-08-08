@@ -1,8 +1,7 @@
 <?= $this->extend('layouts/dashboard_template') ?>
 <?php
 use App\Config\Roles;
-$auth = service('auth');
-$currentUserLevel = $auth->user()->level ?? null;
+$currentUserLevel = session()->get('level') ?? null;
 ?>
 
 <?= $this->section('content') ?>

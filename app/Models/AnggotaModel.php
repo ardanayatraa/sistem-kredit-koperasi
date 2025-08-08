@@ -9,6 +9,7 @@ class AnggotaModel extends Model
     protected $table = 'tbl_anggota';
     protected $primaryKey = 'id_anggota';
     protected $allowedFields = [
+        'no_anggota',
         'nik',
         'tempat_lahir',
         'tanggal_lahir',
@@ -24,5 +25,17 @@ class AnggotaModel extends Model
     ];
 
     protected $useTimestamps = true;
+    protected $beforeInsert = ['generateMemberNumber'];
 
+    protected function generateMemberNumber(array $data)
+    {
+        // If no_anggota is not provided, generate it automatically
+        if (empty($data['data']['no_anggota'])) {
+            // Get the last member ID to generate the next member number
+            $lastMember = $this->orderBy('id_anggota', 'DESC')->first();
+            $nextId = $lastMember ? ($lastMember['id_anggota'] + 1) : 1;
+            $data['data']['no_anggota'] = 'KOPL-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+        }
+        return $data;
+    }
 }

@@ -35,7 +35,6 @@ class AnggotaController extends Controller
             'tanggal_lahir' => 'required|valid_date',
             'alamat' => 'required',
             'pekerjaan' => 'required',
-            'tanggal_pendaftaran' => 'required|valid_date',
             'status_keanggotaan' => 'required',
             'dokumen_ktp' => 'uploaded[dokumen_ktp]|max_size[dokumen_ktp,2048]|ext_in[dokumen_ktp,pdf,jpg,jpeg,png]',
             'dokumen_kk' => 'uploaded[dokumen_kk]|max_size[dokumen_kk,2048]|ext_in[dokumen_kk,pdf,jpg,jpeg,png]',
@@ -96,7 +95,7 @@ class AnggotaController extends Controller
         $rules = [
             'nik' => 'required|min_length[16]|max_length[16]|is_unique[tbl_anggota.nik,id_anggota,' . $id . ']',
             'tempat_lahir' => 'required', 'tanggal_lahir' => 'required|valid_date', 'alamat' => 'required',
-            'pekerjaan' => 'required', 'tanggal_pendaftaran' => 'required|valid_date', 'status_keanggotaan' => 'required',
+            'pekerjaan' => 'required', 'status_keanggotaan' => 'required',
             'dokumen_ktp' => 'max_size[dokumen_ktp,2048]|ext_in[dokumen_ktp,pdf,jpg,jpeg,png]',
             'dokumen_kk' => 'max_size[dokumen_kk,2048]|ext_in[dokumen_kk,pdf,jpg,jpeg,png]',
             'dokumen_slip_gaji' => 'max_size[dokumen_slip_gaji,2048]|ext_in[dokumen_slip_gaji,pdf,jpg,jpeg,png]',
@@ -107,7 +106,7 @@ class AnggotaController extends Controller
         $data = [
             'nik' => $this->request->getPost('nik'), 'tempat_lahir' => $this->request->getPost('tempat_lahir'),
             'tanggal_lahir' => $this->request->getPost('tanggal_lahir'), 'alamat' => $this->request->getPost('alamat'),
-            'pekerjaan' => $this->request->getPost('pekerjaan'), 'tanggal_pendaftaran' => $this->request->getPost('tanggal_pendaftaran'),
+            'pekerjaan' => $this->request->getPost('pekerjaan'),
             'status_keanggotaan' => $this->request->getPost('status_keanggotaan'),
         ];
 

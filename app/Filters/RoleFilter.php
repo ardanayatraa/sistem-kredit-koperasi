@@ -22,16 +22,43 @@ class RoleFilter implements FilterInterface
         // Get current user role
         $role = $session->get('level');
 
-        // Check if required permission is provided
-        if (empty($arguments)) {
-            return;
+        // Skip permission check for dashboard routes
+        $uri = service('uri');
+        $currentPath = $uri->getPath();
+        
+        // Check if current path is a dashboard path
+        if (!preg_match('/^dashboard-/', $currentPath)) {
+            // Check if required permission is provided
+            if (empty($arguments)) {
+                return;
+            }
+
+            $permission = $arguments[0];
+
+            // Check if user has permission
+            if (!Roles::can($role, $permission)) {
+                $dashboardUrl = $this->getDashboardUrl($role);
+                return redirect()->to($dashboardUrl)->with('error', 'Anda tidak memiliki akses ke fitur ini');
+            }
         }
+    }
 
-        $permission = $arguments[0];
-
-        // Check if user has permission
-        if (!Roles::can($role, $permission)) {
-            return redirect()->back()->with('error', 'Anda tidak memiliki akses ke fitur ini');
+    /**
+     * Get dashboard URL based on user role
+     */
+    private function getDashboardUrl($level)
+    {
+        switch ($level) {
+            case 'Bendahara':
+                return '/dashboard-bendahara';
+            case 'Ketua':
+                return '/dashboard-ketua';
+            case 'Appraiser':
+                return '/dashboard-appraiser';
+            case 'Anggota':
+                return '/dashboard-anggota';
+            default:
+                return '/beranda'; // Fallback ke beranda jika level tidak dikenal
         }
     }
 

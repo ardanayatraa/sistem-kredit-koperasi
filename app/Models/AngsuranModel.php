@@ -9,7 +9,7 @@ class AngsuranModel extends Model
     protected $table = 'tbl_angsuran';
     protected $primaryKey = 'id_angsuran';
     protected $allowedFields = [
-        'id_kredit',
+        'id_kredit_ref',
         'angsuran_ke',
         'jumlah_angsuran',
         'tgl_jatuh_tempo',

@@ -34,7 +34,8 @@ class CreateAnggotaTable extends Migration
                 'constraint' => 50,
             ],
             'tanggal_pendaftaran' => [
-                'type' => 'TIMESTAMP',
+                'type' => 'DATE',
+                'null' => true,
             ],
             'status_keanggotaan' => [
                 'type' => 'ENUM',
