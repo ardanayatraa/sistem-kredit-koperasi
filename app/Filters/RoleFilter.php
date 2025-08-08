@@ -27,7 +27,7 @@ class RoleFilter implements FilterInterface
         $currentPath = $uri->getPath();
         
         // Check if current path is a dashboard path
-        if (!preg_match('/^dashboard-/', $currentPath)) {
+        if (!preg_match('/^\/dashboard-/', $currentPath)) {
             // Check if required permission is provided
             if (empty($arguments)) {
                 return;

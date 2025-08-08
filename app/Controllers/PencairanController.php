@@ -13,19 +13,37 @@ class PencairanController extends Controller
     public function __construct()
     {
         $this->pencairanModel = new PencairanModel();
-        helper(['form', 'url']);
+        helper(['form', 'url', 'data_filter']);
     }
 
     public function index()
     {
-        $data['pencairan'] = $this->pencairanModel->findAll();
+        // Use filtered method with user-based access control
+        $data['pencairan'] = $this->pencairanModel->getFilteredPencairanWithData();
         return view('pencairan/index', $data);
     }
 
     public function new()
     {
         $kreditModel = new \App\Models\KreditModel();
-        $data['kreditOptions'] = $kreditModel->findAll();
+        $bungaModel = new \App\Models\BungaModel();
+        
+        // Get approved kredits that haven't been disbursed yet - with filtering
+        $select = 'tbl_kredit.*, tbl_users.nama_lengkap';
+        $additionalWhere = ['tbl_kredit.status_kredit' => 'Disetujui'];
+        $approvedKredits = $kreditModel->getFilteredKreditsWithData($additionalWhere, $select);
+        
+        // Filter out kredits that already have pencairan
+        $existingPencairanKredits = $this->pencairanModel->builder()->select('id_kredit')->get()->getResultArray();
+        $existingIds = array_column($existingPencairanKredits, 'id_kredit');
+        
+        $data['kreditOptions'] = array_filter($approvedKredits, function($kredit) use ($existingIds) {
+            return !in_array($kredit['id_kredit'], $existingIds);
+        });
+            
+        // Get active interest rates
+        $data['bungaOptions'] = $bungaModel->where('status_aktif', 'Aktif')->findAll();
+        
         return view('pencairan/form', $data);
     }
 
@@ -62,33 +80,47 @@ class PencairanController extends Controller
             'bukti_transfer' => $buktiTransferName,
         ];
 
-        $pencairanId = $this->pencairanModel->insert($data);
-        
-        // Auto-generate jadwal angsuran setelah pencairan berhasil
-        if ($pencairanId) {
-            $angsuranController = new \App\Controllers\AngsuranController();
-            $response = $angsuranController->generateJadwalAngsuran($data['id_kredit']);
+        try {
+            $pencairanId = $this->pencairanModel->insert($data);
             
-            $responseData = json_decode($response->getBody(), true);
-            if ($responseData && $responseData['success']) {
-                $message = 'Data pencairan berhasil ditambahkan dan jadwal angsuran telah dibuat otomatis.';
+            // Auto-generate jadwal angsuran setelah pencairan berhasil
+            if ($pencairanId) {
+                $angsuranController = new \App\Controllers\AngsuranController();
+                $result = $angsuranController->generateAngsuranPertamaInternal($data['id_kredit']);
+                
+                if ($result && $result['success']) {
+                    $message = 'Data pencairan berhasil ditambahkan dan jadwal angsuran telah dibuat otomatis.';
+                } else {
+                    $message = 'Data pencairan berhasil ditambahkan. Namun, jadwal angsuran perlu dibuat manual.';
+                }
             } else {
-                $message = 'Data pencairan berhasil ditambahkan. Namun, jadwal angsuran perlu dibuat manual.';
+                $message = 'Data pencairan berhasil ditambahkan.';
             }
-        } else {
-            $message = 'Data pencairan berhasil ditambahkan.';
+            
+            return redirect()->to('/pencairan')->with('success', $message);
+            
+        } catch (\Exception $e) {
+            log_message('error', 'Error creating pencairan: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan saat menyimpan pencairan: ' . $e->getMessage());
         }
-        
-        return redirect()->to('/pencairan')->with('success', $message);
     }
 
     public function edit($id = null)
     {
         $kreditModel = new \App\Models\KreditModel();
-        $data['kreditOptions'] = $kreditModel->findAll();
+        $bungaModel = new \App\Models\BungaModel();
         
-        $data['pencairan'] = $this->pencairanModel->find($id);
-        if (empty($data['pencairan'])) { throw new \CodeIgniter\Exceptions\PageNotFoundException('Pencairan dengan ID ' . $id . ' tidak ditemukan.'); }
+        // Use filtered method for kredit options
+        $select = 'tbl_kredit.*, tbl_users.nama_lengkap';
+        $data['kreditOptions'] = $kreditModel->getFilteredKreditsWithData([], $select);
+            
+        $data['bungaOptions'] = $bungaModel->where('status_aktif', 'Aktif')->findAll();
+        
+        // Use access-controlled method
+        $data['pencairan'] = $this->pencairanModel->findWithAccess($id);
+        if (empty($data['pencairan'])) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Pencairan dengan ID ' . $id . ' tidak ditemukan atau Anda tidak memiliki akses.');
+        }
         return view('pencairan/form', $data);
     }
 
@@ -146,8 +178,11 @@ class PencairanController extends Controller
 
     public function show($id = null)
     {
-        $data['pencairan'] = $this->pencairanModel->find($id);
-        if (empty($data['pencairan'])) { throw new \CodeIgniter\Exceptions\PageNotFoundException('Pencairan dengan ID ' . $id . ' tidak ditemukan.'); }
+        // Use access-controlled method
+        $data['pencairan'] = $this->pencairanModel->findWithAccess($id);
+        if (empty($data['pencairan'])) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Pencairan dengan ID ' . $id . ' tidak ditemukan atau Anda tidak memiliki akses.');
+        }
         return view('pencairan/show', $data);
     }
 
@@ -174,5 +209,49 @@ class PencairanController extends Controller
             'message' => 'Status pencairan berhasil diubah menjadi ' . $newStatus,
             'new_status' => $newStatus
         ]);
+    }
+
+    /**
+     * View document with access control
+     */
+    public function viewDocument($filename)
+    {
+        // Remove path info if included and get just filename
+        $filename = basename($filename);
+        
+        // Build file path
+        $filePath = WRITEPATH . 'uploads/pencairan/' . $filename;
+        
+        // Check if file exists
+        if (!file_exists($filePath)) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('File tidak ditemukan.');
+        }
+        
+        // Get pencairan record that owns this file to check access
+        $pencairan = $this->pencairanModel->where('bukti_transfer', $filename)->first();
+        if (!$pencairan) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('File tidak dapat diakses.');
+        }
+        
+        // Check if user has access to this pencairan data
+        $accessible = $this->pencairanModel->findWithAccess($pencairan['id_pencairan']);
+        if (!$accessible) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Anda tidak memiliki akses ke file ini.');
+        }
+        
+        // Get file info
+        $mimeType = mime_content_type($filePath);
+        $fileSize = filesize($filePath);
+        
+        // Set headers
+        header('Content-Type: ' . $mimeType);
+        header('Content-Length: ' . $fileSize);
+        header('Content-Disposition: inline; filename="' . $filename . '"');
+        header('Cache-Control: private, max-age=0, no-cache');
+        header('Pragma: no-cache');
+        
+        // Output file
+        readfile($filePath);
+        exit;
     }
 }

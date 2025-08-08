@@ -14,12 +14,12 @@ class RiwayatKreditController extends BaseController
     {
         $this->kreditModel = new KreditModel();
         $this->anggotaModel = new AnggotaModel();
+        helper('data_filter');
     }
 
     public function index()
     {
-        $userId = session()->get('id_user');
-        $anggotaId = session()->get('id_anggota_ref');
+        $anggotaId = getCurrentUserAnggotaId();
 
         $data = [
             'title' => 'Riwayat Kredit',
@@ -31,14 +31,14 @@ class RiwayatKreditController extends BaseController
             return redirect()->to('/profile/complete-anggota-data');
         }
 
-        // Menampilkan riwayat kredit anggota yang login
-        $riwayat = $this->kreditModel
-            ->select('tbl_kredit.*, tbl_users.nama_lengkap, tbl_anggota.no_anggota')
-            ->join('tbl_anggota', 'tbl_kredit.id_anggota = tbl_anggota.id_anggota')
-            ->join('tbl_users', 'tbl_users.id_anggota_ref = tbl_anggota.id_anggota')
-            ->where('tbl_kredit.id_anggota', $anggotaId)
-            ->orderBy('tbl_kredit.created_at', 'DESC')
-            ->paginate(10);
+        // Use filtered method - will automatically filter based on user scope
+        $select = 'tbl_kredit.*, tbl_users.nama_lengkap, tbl_anggota.no_anggota';
+        $riwayat = $this->kreditModel->getFilteredKreditsWithData([], $select);
+        
+        // Sort by created_at DESC
+        usort($riwayat, function($a, $b) {
+            return strtotime($b['created_at']) - strtotime($a['created_at']);
+        });
 
         $data['riwayat'] = $riwayat;
         $data['pager'] = $this->kreditModel->pager;
@@ -48,31 +48,24 @@ class RiwayatKreditController extends BaseController
 
     public function show($id)
     {
-        $userId = session()->get('id_user');
-        $anggotaId = session()->get('id_anggota_ref');
-
-        if (!$anggotaId) {
-            session()->setFlashdata('error', 'Data anggota tidak ditemukan.');
-            return redirect()->to('/riwayat-kredit');
-        }
-
-        $kredit = $this->kreditModel
-            ->select('tbl_kredit.*, tbl_users.nama_lengkap, tbl_anggota.no_anggota, tbl_anggota.alamat, tbl_anggota.no_hp')
-            ->join('tbl_anggota', 'tbl_kredit.id_anggota = tbl_anggota.id_anggota')
-            ->join('tbl_users', 'tbl_users.id_anggota_ref = tbl_anggota.id_anggota')
-            ->where('tbl_kredit.id_kredit', $id)
-            ->where('tbl_kredit.id_anggota', $anggotaId)
-            ->first();
+        // Use access-controlled method
+        $kredit = $this->kreditModel->findWithAccess($id);
 
         if (!$kredit) {
             session()->setFlashdata('error', 'Data tidak ditemukan atau Anda tidak memiliki akses');
             return redirect()->to('/riwayat-kredit');
         }
 
+        // Get additional anggota data
+        $anggota = $this->anggotaModel
+            ->select('tbl_anggota.*, tbl_users.nama_lengkap, tbl_users.no_hp')
+            ->join('tbl_users', 'tbl_users.id_anggota_ref = tbl_anggota.id_anggota')
+            ->find($kredit['id_anggota']);
+
         $data = [
             'title' => 'Detail Riwayat Kredit',
             'headerTitle' => 'Detail Riwayat Kredit',
-            'kredit' => $kredit
+            'kredit' => array_merge($kredit, $anggota ? $anggota : [])
         ];
 
         return view('riwayat_kredit/show', $data);
@@ -89,7 +82,7 @@ class RiwayatKreditController extends BaseController
         }
 
         $kredit = $this->kreditModel
-            ->select('tbl_kredit.*, tbl_users.nama_lengkap, tbl_anggota.no_anggota, tbl_anggota.alamat, tbl_anggota.no_hp')
+            ->select('tbl_kredit.*, tbl_users.nama_lengkap, tbl_users.no_hp, tbl_anggota.no_anggota, tbl_anggota.nik')
             ->join('tbl_anggota', 'tbl_kredit.id_anggota = tbl_anggota.id_anggota')
             ->join('tbl_users', 'tbl_users.id_anggota_ref = tbl_anggota.id_anggota')
             ->where('tbl_kredit.id_kredit', $id)
@@ -107,5 +100,122 @@ class RiwayatKreditController extends BaseController
         ];
 
         return view('riwayat_kredit/print', $data);
+    }
+
+    /**
+     * Download/View Surat Persetujuan Kredit
+     * (Khusus untuk kredit yang sudah disetujui)
+     */
+    public function suratPersetujuan($id)
+    {
+        $userId = session()->get('id_user');
+        $anggotaId = session()->get('id_anggota_ref');
+
+        if (!$anggotaId) {
+            session()->setFlashdata('error', 'Data anggota tidak ditemukan.');
+            return redirect()->to('/riwayat-kredit');
+        }
+
+        $kredit = $this->kreditModel
+            ->select('tbl_kredit.*, tbl_users.nama_lengkap, tbl_users.no_hp,
+                     tbl_anggota.no_anggota, tbl_anggota.nik')
+            ->join('tbl_anggota', 'tbl_kredit.id_anggota = tbl_anggota.id_anggota')
+            ->join('tbl_users', 'tbl_users.id_anggota_ref = tbl_anggota.id_anggota')
+            ->where('tbl_kredit.id_kredit', $id)
+            ->where('tbl_kredit.id_anggota', $anggotaId)
+            ->first();
+
+        if (!$kredit) {
+            session()->setFlashdata('error', 'Data tidak ditemukan atau Anda tidak memiliki akses');
+            return redirect()->to('/riwayat-kredit');
+        }
+
+        // Hanya kredit yang sudah disetujui yang bisa download surat persetujuan
+        if ($kredit['status_kredit'] !== 'Disetujui') {
+            session()->setFlashdata('error', 'Surat persetujuan hanya tersedia untuk kredit yang sudah disetujui');
+            return redirect()->to('/riwayat-kredit');
+        }
+
+        $data = [
+            'title' => 'Surat Persetujuan Kredit',
+            'kredit' => $kredit,
+            'tanggal_surat' => date('d F Y'),
+            'nomor_surat' => 'SP/' . str_pad($kredit['id_kredit'], 4, '0', STR_PAD_LEFT) . '/' . date('Y')
+        ];
+
+        return view('riwayat_kredit/surat_persetujuan', $data);
+    }
+
+    /**
+     * Download PDF Surat Persetujuan
+     */
+    public function downloadSuratPersetujuan($id)
+    {
+        $userId = session()->get('id_user');
+        $anggotaId = session()->get('id_anggota_ref');
+
+        if (!$anggotaId) {
+            session()->setFlashdata('error', 'Data anggota tidak ditemukan.');
+            return redirect()->to('/riwayat-kredit');
+        }
+
+        $kredit = $this->kreditModel
+            ->select('tbl_kredit.*, tbl_users.nama_lengkap, tbl_users.no_hp,
+                     tbl_anggota.no_anggota, tbl_anggota.nik')
+            ->join('tbl_anggota', 'tbl_kredit.id_anggota = tbl_anggota.id_anggota')
+            ->join('tbl_users', 'tbl_users.id_anggota_ref = tbl_anggota.id_anggota')
+            ->where('tbl_kredit.id_kredit', $id)
+            ->where('tbl_kredit.id_anggota', $anggotaId)
+            ->first();
+
+        if (!$kredit || $kredit['status_kredit'] !== 'Disetujui') {
+            session()->setFlashdata('error', 'Surat persetujuan tidak tersedia');
+            return redirect()->to('/riwayat-kredit');
+        }
+
+        $data = [
+            'title' => 'Surat Persetujuan Kredit',
+            'kredit' => $kredit,
+            'tanggal_surat' => date('d F Y'),
+            'nomor_surat' => 'SP/' . str_pad($kredit['id_kredit'], 4, '0', STR_PAD_LEFT) . '/' . date('Y')
+        ];
+
+        try {
+            $dompdf = new \Dompdf\Dompdf();
+            $html = view('riwayat_kredit/pdf_surat_persetujuan', $data);
+            $dompdf->loadHtml($html);
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
+
+            $filename = 'Surat_Persetujuan_' . $kredit['no_anggota'] . '_' . date('Y-m-d') . '.pdf';
+            $dompdf->stream($filename, ['Attachment' => true]);
+        } catch (\Exception $e) {
+            log_message('error', 'PDF generation failed: ' . $e->getMessage());
+            session()->setFlashdata('info', 'Download surat persetujuan berhasil (menggunakan tampilan HTML)');
+            return $this->suratPersetujuan($id);
+        }
+    }
+
+    /**
+     * Cek status persetujuan kredit (untuk AJAX)
+     */
+    public function cekStatusPersetujuan($id)
+    {
+        // Use access-controlled method for JSON response
+        $kredit = $this->kreditModel->findWithAccess($id);
+
+        if (!$kredit) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Data kredit tidak ditemukan atau Anda tidak memiliki akses'
+            ]);
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'status' => $kredit['status_kredit'],
+            'updated_at' => $kredit['updated_at'],
+            'surat_tersedia' => ($kredit['status_kredit'] === 'Disetujui')
+        ]);
     }
 }

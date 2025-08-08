@@ -177,12 +177,100 @@ class Home extends BaseController
 
     public function dashboardAnggota()
     {
-        $stats = $this->getRoleBasedStats('Anggota');
+        $userId = session()->get('user_id');
+        
+        // Get anggota ID from users table
+        $userModel = new \App\Models\UserModel();
+        $user = $userModel->find($userId);
+        $idAnggota = $user['id_anggota_ref'] ?? null;
+        
+        if (!$idAnggota) {
+            // If no anggota reference, set default empty values
+            $data = [
+                'title' => 'Dashboard Anggota',
+                'headerTitle' => 'Dashboard Anggota',
+                'userLevel' => 'Anggota',
+                'userData' => $user,
+                'kreditAktif' => 0,
+                'sisaAngsuran' => 0,
+                'totalTerbayar' => 0,
+                'statusPembayaran' => 'lancar',
+                'kreditSaya' => [],
+                'pembayaranTerakhir' => [],
+                'jadwalPembayaran' => []
+            ];
+            return view('dashboard/anggota', $data);
+        }
+        
+        // Get active credits for this anggota
+        $kreditAktif = $this->kreditModel
+            ->where('id_anggota', $idAnggota)
+            ->where('status_aktif', 'Aktif')
+            ->findAll();
+            
+        // Calculate total active credit amount
+        $totalKreditAktif = 0;
+        foreach ($kreditAktif as $kredit) {
+            $totalKreditAktif += $kredit['jumlah_kredit'];
+        }
+        
+        // Get credit history for table display
+        $kreditSaya = $this->kreditModel
+            ->where('id_anggota', $idAnggota)
+            ->orderBy('tanggal_pengajuan', 'DESC')
+            ->limit(5)
+            ->findAll();
+            
+        // Get payment schedule (unpaid installments)
+        $jadwalPembayaran = $this->angsuranModel
+            ->where('id_anggota', $idAnggota)
+            ->where('status_pembayaran', 'Belum Dibayar')
+            ->orderBy('tanggal_jatuh_tempo', 'ASC')
+            ->limit(5)
+            ->findAll();
+            
+        // Get recent payments
+        $pembayaranTerakhir = $this->pembayaranAngsuranModel
+            ->select('pembayaran_angsuran.*, angsuran.angsuran_ke')
+            ->join('angsuran', 'angsuran.id_angsuran = pembayaran_angsuran.id_angsuran')
+            ->where('angsuran.id_anggota', $idAnggota)
+            ->orderBy('pembayaran_angsuran.tanggal_pembayaran', 'DESC')
+            ->limit(5)
+            ->findAll();
+            
+        // Calculate total paid
+        $totalTerbayar = 0;
+        foreach ($pembayaranTerakhir as $pembayaran) {
+            $totalTerbayar += $pembayaran['jumlah_bayar'];
+        }
+        
+        // Count remaining installments
+        $sisaAngsuran = $this->angsuranModel
+            ->where('id_anggota', $idAnggota)
+            ->where('status_pembayaran', 'Belum Dibayar')
+            ->countAllResults();
+            
+        // Determine payment status
+        $overdueCount = $this->angsuranModel
+            ->where('id_anggota', $idAnggota)
+            ->where('status_pembayaran', 'Belum Dibayar')
+            ->where('tanggal_jatuh_tempo <', date('Y-m-d'))
+            ->countAllResults();
+            
+        $statusPembayaran = $overdueCount > 0 ? 'terlambat' : 'lancar';
+
         $data = [
             'title' => 'Dashboard Anggota',
             'headerTitle' => 'Dashboard Anggota',
-            'stats' => $stats['anggota'],
-            'userLevel' => 'Anggota'
+            'userLevel' => 'Anggota',
+            'userData' => $user,
+            'kreditAktif' => $totalKreditAktif,
+            'sisaAngsuran' => $sisaAngsuran,
+            'totalTerbayar' => $totalTerbayar,
+            'statusPembayaran' => $statusPembayaran,
+            'kreditSaya' => $kreditSaya,
+            'pembayaranTerakhir' => $pembayaranTerakhir,
+            'jadwalPembayaran' => $jadwalPembayaran
         ];
 
         return view('dashboard/anggota', $data);

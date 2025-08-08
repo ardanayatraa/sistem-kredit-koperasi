@@ -42,6 +42,8 @@ $routes->group('agunan', ['filter' => 'role:manage_agunan'], function($routes) {
     $routes->post('update/(:num)', 'AgunanController::update/$1');
     $routes->get('delete/(:num)', 'AgunanController::delete/$1');
     $routes->get('show/(:num)', 'AgunanController::show/$1');
+    $routes->get('nilai/(:num)', 'AgunanController::nilai/$1');
+    $routes->post('simpan-nilai/(:num)', 'AgunanController::simpanNilai/$1');
     $routes->get('print/(:num)', 'AgunanController::print/$1');
 });
 
@@ -86,6 +88,11 @@ $routes->group('riwayat-kredit', ['filter' => 'role:view_riwayat_kredit'], funct
     $routes->get('(:num)', 'RiwayatKreditController::show/$1'); // Direct access with ID
     $routes->get('show/(:num)', 'RiwayatKreditController::show/$1');
     $routes->get('print/(:num)', 'RiwayatKreditController::print/$1');
+    
+    // Routes untuk Surat Persetujuan
+    $routes->get('surat-persetujuan/(:num)', 'RiwayatKreditController::suratPersetujuan/$1');
+    $routes->get('download-surat/(:num)', 'RiwayatKreditController::downloadSuratPersetujuan/$1');
+    $routes->get('cek-status/(:num)', 'RiwayatKreditController::cekStatusPersetujuan/$1');
 });
 
 // Riwayat Pembayaran untuk Anggota
@@ -155,7 +162,7 @@ $routes->group('user', ['filter' => 'role:manage_users'], function($routes) {
     $routes->get('show/(:num)', 'UserController::show/$1');
 });
 
-// Rute untuk Angsuran CRUD
+// Rute untuk Angsuran CRUD (hanya untuk admin/bendahara)
 $routes->group('angsuran', ['filter' => 'role:manage_angsuran'], function($routes) {
     $routes->get('/', 'AngsuranController::index');
     $routes->get('new', 'AngsuranController::new');
@@ -165,16 +172,32 @@ $routes->group('angsuran', ['filter' => 'role:manage_angsuran'], function($route
     $routes->get('delete/(:num)', 'AngsuranController::delete/$1');
     $routes->get('show/(:num)', 'AngsuranController::show/$1');
     
-    // Routes untuk Flow Pembayaran Kredit
+    // Routes untuk Flow Pembayaran Kredit (admin only)
     $routes->post('generate-jadwal/(:num)', 'AngsuranController::generateJadwalAngsuran/$1');
     $routes->get('jadwal/(:num)', 'AngsuranController::lihatJadwal/$1');
-    $routes->get('bayar/(:num)', 'AngsuranController::bayarAngsuran/$1');
 });
 
 // Dashboard Pembayaran untuk Anggota
 $routes->group('dashboard-pembayaran', ['filter' => 'role:view_riwayat_pembayaran'], function($routes) {
     $routes->get('(:num)', 'AngsuranController::dashboardPembayaran/$1');
 });
+
+// Routes Pembayaran Khusus untuk Anggota
+$routes->group('pembayaran', ['filter' => 'role:view_riwayat_pembayaran'], function($routes) {
+    $routes->get('jadwal/(:num)', 'AngsuranController::lihatJadwal/$1'); // Lihat jadwal angsuran
+    $routes->get('bayar/(:num)', 'AngsuranController::bayarAngsuran/$1'); // Form pembayaran angsuran
+    $routes->post('proses-bayar/(:num)', 'AngsuranController::prosesBayar/$1'); // Proses pembayaran
+});
+
+// Routes khusus untuk anggota - pembayaran angsuran
+$routes->group('bayar-angsuran', ['filter' => 'role:view_riwayat_pembayaran'], function($routes) {
+    $routes->get('/', 'AngsuranController::bayarAngsuran'); // Daftar angsuran untuk dibayar
+    $routes->get('(:num)', 'AngsuranController::bayarAngsuran/$1'); // Form pembayaran spesifik
+    $routes->post('proses/(:num)', 'AngsuranController::prosesBayar/$1'); // Proses pembayaran
+});
+
+// Debug route (temporary)
+$routes->get('debug/check-anggota', 'DebugController::checkAnggotaData');
 
 // Rute untuk Pembayaran Angsuran CRUD
 $routes->group('pembayaran-angsuran', ['filter' => 'role:manage_pembayaran_angsuran'], function($routes) {
@@ -186,6 +209,20 @@ $routes->group('pembayaran-angsuran', ['filter' => 'role:manage_pembayaran_angsu
     $routes->get('delete/(:num)', 'PembayaranAngsuranController::delete/$1');
     $routes->get('show/(:num)', 'PembayaranAngsuranController::show/$1');
     $routes->post('toggle-status/(:num)', 'PembayaranAngsuranController::toggleStatus/$1');
+    
+    // Routes untuk verifikasi pembayaran (untuk Bendahara/Admin)
+    $routes->post('verifikasi/(:num)', 'PembayaranAngsuranController::verifikasiPembayaran/$1');
+    $routes->post('tolak/(:num)', 'PembayaranAngsuranController::tolakPembayaran/$1');
+    
+    // Route untuk AJAX get angsuran by anggota (untuk Bendahara)
+    $routes->post('get-angsuran-by-anggota', 'PembayaranAngsuranController::getAngsuranByAnggota');
+    $routes->post('get-detail-angsuran', 'PembayaranAngsuranController::getDetailAngsuran');
+    
+    // Routes untuk fitur bukti pembayaran (untuk Anggota)
+    $routes->get('cetak-bukti/(:num)', 'PembayaranAngsuranController::cetakBukti/$1');
+    $routes->get('download-bukti/(:num)', 'PembayaranAngsuranController::downloadBukti/$1');
+    $routes->get('riwayat/(:num)', 'PembayaranAngsuranController::riwayatPembayaran/$1');
+    $routes->get('riwayat', 'PembayaranAngsuranController::riwayatPembayaran'); // Auto-detect from session
 });
 
 // Rute untuk Kredit CRUD
@@ -196,6 +233,7 @@ $routes->group('kredit', ['filter' => 'role:manage_kredit'], function($routes) {
     $routes->get('edit/(:num)', 'KreditController::edit/$1');
     $routes->post('update/(:num)', 'KreditController::update/$1');
     $routes->get('delete/(:num)', 'KreditController::delete/$1');
+    $routes->post('delete/(:num)', 'KreditController::delete/$1');
     $routes->get('show/(:num)', 'KreditController::show/$1');
     $routes->post('toggle-status/(:num)', 'KreditController::toggleStatus/$1');
     $routes->post('verify-agunan', 'KreditController::verifyAgunan');
@@ -212,10 +250,17 @@ $routes->group('kredit', ['filter' => 'role:manage_kredit'], function($routes) {
     $routes->post('persetujuan-final/(:num)', 'KreditController::persetujuanFinal/$1');
 });
 
-// Rute untuk Laporan Kredit
+// Rute untuk Laporan Kredit (Full CRUD untuk Bendahara)
 $routes->group('laporan-kredit', ['filter' => 'role:view_laporan_kredit'], function($routes) {
     $routes->get('/', 'LaporanKreditController::index');
+    $routes->get('new', 'LaporanKreditController::new');
+    $routes->post('create', 'LaporanKreditController::create');
+    $routes->get('edit/(:num)', 'LaporanKreditController::edit/$1');
+    $routes->post('update/(:num)', 'LaporanKreditController::update/$1');
+    $routes->get('delete/(:num)', 'LaporanKreditController::delete/$1');
+    $routes->post('delete/(:num)', 'LaporanKreditController::delete/$1');
     $routes->get('show/(:num)', 'LaporanKreditController::show/$1');
+    $routes->post('toggle-status/(:num)', 'LaporanKreditController::toggleStatus/$1');
     $routes->get('generate-pdf/(:num)', 'LaporanKreditController::generatePdf/$1');
 });
 
@@ -227,6 +272,12 @@ $routes->group('profile', ['filter' => 'role:view_profile'], function($routes) {
     $routes->post('save-anggota-data', 'UserController::saveAnggotaData');
     $routes->post('update-anggota', 'UserController::updateProfileAnggota');
 });
+
+// Route untuk akses dokumen kredit dengan access control
+$routes->get('dokumen_kredit/(:any)', 'KreditController::viewDocument/$1', ['filter' => 'auth']);
+
+// Route untuk akses file pencairan dengan access control
+$routes->get('uploads/pencairan/(:any)', 'PencairanController::viewDocument/$1', ['filter' => 'auth']);
 
 // Rute untuk melayani file yang diunggah dari writable/uploads (tetap sama)
 $routes->get('writable/uploads/(:segment)/(:any)', function($folder, $filename) {

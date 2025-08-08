@@ -104,8 +104,8 @@
         <div class="px-6 py-4">
             <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <dt class="text-sm font-medium text-gray-500">Alamat</dt>
-                    <dd class="mt-1 text-sm text-gray-900"><?= esc($kredit['alamat'] ?? 'N/A') ?></dd>
+                    <dt class="text-sm font-medium text-gray-500">NIK</dt>
+                    <dd class="mt-1 text-sm text-gray-900"><?= esc($kredit['nik'] ?? 'N/A') ?></dd>
                 </div>
                 <div>
                     <dt class="text-sm font-medium text-gray-500">No. HP</dt>

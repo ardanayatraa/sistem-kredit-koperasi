@@ -44,7 +44,7 @@
                                 }
                             ?>
                                 <option value="<?= $kredit['id_kredit'] ?>" <?= $selected ?>>
-                                    <?= 'Kredit #' . $kredit['id_kredit'] . ' - Anggota: ' . $kredit['id_anggota'] ?>
+                                    <?= 'Kredit #' . $kredit['id_kredit'] . ' - ' . esc($kredit['nama_lengkap']) . ' (Rp ' . number_format($kredit['jumlah_pengajuan'], 0, ',', '.') . ')' ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -78,12 +78,15 @@
                         <label for="jumlah_dicairkan" class="block text-sm font-medium text-gray-700 mb-2">
                             Jumlah Dicairkan (Rp) <span class="text-red-500">*</span>
                         </label>
-                        <input type="number" 
-                               name="jumlah_dicairkan" 
-                               id="jumlah_dicairkan" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                               value="<?= old('jumlah_dicairkan', $pencairan['jumlah_dicairkan'] ?? '') ?>" 
-                               placeholder="Contoh: 5000000"
+                        <input type="number"
+                               name="jumlah_dicairkan"
+                               id="jumlah_dicairkan"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                               value="<?= old('jumlah_dicairkan', $pencairan['jumlah_dicairkan'] ?? '') ?>"
+                               placeholder="5000000"
+                               min="100000"
+                               max="999999999999"
+                               step="1000"
                                required>
                         <?php if (session('errors.jumlah_dicairkan')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
@@ -117,20 +120,42 @@
 
                     <div>
                         <label for="id_bunga" class="block text-sm font-medium text-gray-700 mb-2">
-                            ID Bunga <span class="text-red-500">*</span>
+                            Suku Bunga <span class="text-red-500">*</span>
                         </label>
-                        <input type="number" 
-                               name="id_bunga" 
-                               id="id_bunga" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                               value="<?= old('id_bunga', $pencairan['id_bunga'] ?? '') ?>" 
-                               placeholder="Masukkan ID bunga"
-                               required>
+                        <select name="id_bunga"
+                                id="id_bunga"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                required>
+                            <option value="">Pilih Suku Bunga</option>
+                            <?php if (isset($bungaOptions) && !empty($bungaOptions)): ?>
+                                <?php foreach ($bungaOptions as $bunga):
+                                    $selected = '';
+                                    $oldValue = old('id_bunga', $pencairan['id_bunga'] ?? '');
+                                    
+                                    if ((string)$oldValue === (string)$bunga['id_bunga']) {
+                                        $selected = 'selected';
+                                    }
+                                ?>
+                                    <option value="<?= $bunga['id_bunga'] ?>" <?= $selected ?>>
+                                        <?= esc($bunga['nama_bunga']) . ' - ' . $bunga['persentase_bunga'] . '% (' . esc($bunga['tipe_bunga']) . ')' ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <option value="" disabled>Tidak ada data bunga tersedia</option>
+                            <?php endif; ?>
+                        </select>
                         <?php if (session('errors.id_bunga')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
                                 <i class="bx bx-exclamation-circle text-red-500 h-4 w-4"></i>
                                 <?= session('errors.id_bunga') ?>
                             </p>
+                        <?php endif; ?>
+                        
+                        <!-- Debug info -->
+                        <?php if (ENVIRONMENT === 'development'): ?>
+                        <small class="text-gray-500">
+                            Debug: <?= isset($bungaOptions) ? count($bungaOptions) . ' bunga tersedia' : 'bungaOptions tidak tersedia' ?>
+                        </small>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -186,37 +211,8 @@
 </div>
 
 <script>
-// Format currency input
 document.addEventListener('DOMContentLoaded', function() {
-    const formatCurrency = (input) => {
-        // Remove non-numeric characters
-        let value = input.value.replace(/[^\d]/g, '');
-        
-        // Format with thousand separator
-        if (value.length > 0) {
-            input.value = parseInt(value).toLocaleString('id-ID');
-        }
-    };
-    
-    // Format on page load
-    const currencyInputs = document.querySelectorAll('#jumlah_dicairkan');
-    currencyInputs.forEach(input => {
-        if (input.value) {
-            formatCurrency(input);
-        }
-        
-        // Format on input
-        input.addEventListener('input', function() {
-            formatCurrency(this);
-        });
-        
-        // Before form submit, remove formatting
-        input.form.addEventListener('submit', function() {
-            input.value = input.value.replace(/[^\d]/g, '');
-        });
-    });
-    
-    // File upload validation
+    // Simple file upload validation
     const fileInput = document.getElementById('bukti_transfer');
     if (fileInput) {
         fileInput.addEventListener('change', function(e) {
@@ -236,6 +232,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     e.target.value = '';
                     return;
                 }
+            }
+        });
+    }
+
+    // Simple amount validation
+    const amountInput = document.getElementById('jumlah_dicairkan');
+    if (amountInput) {
+        amountInput.addEventListener('blur', function(e) {
+            const value = parseInt(e.target.value);
+            if (value && value < 100000) {
+                alert('Jumlah dicairkan minimal Rp 100.000');
+                e.target.focus();
             }
         });
     }

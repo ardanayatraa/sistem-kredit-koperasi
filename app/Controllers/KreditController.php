@@ -16,29 +16,13 @@ class KreditController extends Controller
     {
         $this->kreditModel = new KreditModel();
         $this->anggotaModel = new AnggotaModel();
-        helper(['form', 'url', 'permission', 'notification']);
+        helper(['form', 'url', 'permission', 'notification', 'data_filter']);
     }
 
     public function index()
     {
-        $data['kredit'] = $this->kreditModel->findAll();
-        
-        // Get anggota data for each kredit to avoid AJAX calls
-        $anggotaData = [];
-        foreach ($data['kredit'] as $kredit) {
-            if (!isset($anggotaData[$kredit['id_anggota']])) {
-                $anggota = $this->anggotaModel->find($kredit['id_anggota']);
-                if ($anggota) {
-                    // Add kredit-specific data to anggota data
-                    $anggotaData[$kredit['id_anggota']] = array_merge($anggota, [
-                        'kredit_jumlah' => $kredit['jumlah_pengajuan'],
-                        'kredit_jangka_waktu' => $kredit['jangka_waktu'],
-                        'kredit_status' => $kredit['status_kredit'],
-                    ]);
-                }
-            }
-        }
-        $data['anggotaData'] = $anggotaData;
+        // Use filtered method with user-based access control
+        $data['kredit'] = $this->kreditModel->getFilteredKreditsWithData();
         
         return view('kredit/index', $data);
     }
@@ -127,7 +111,7 @@ class KreditController extends Controller
         if ($file && $file->isValid() && !$file->hasMoved()) {
             $newName = 'dokumen_agunan_' . date('YmdHis') . '_' . $file->getRandomName();
             if ($file->move($uploadPath, $newName)) {
-                $data['dokumen_agunan'] = 'uploads/dokumen_kredit/' . $newName;
+                $data['dokumen_agunan'] = 'dokumen_kredit/' . $newName;
             }
         }
 
@@ -141,15 +125,21 @@ class KreditController extends Controller
 
     public function edit($id = null)
     {
-        $data['kredit'] = $this->kreditModel->find($id);
-        if (empty($data['kredit'])) { throw new \CodeIgniter\Exceptions\PageNotFoundException('Kredit dengan ID ' . $id . ' tidak ditemukan.'); }
+        // Use access-controlled method
+        $data['kredit'] = $this->kreditModel->findWithAccess($id);
+        if (empty($data['kredit'])) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Kredit dengan ID ' . $id . ' tidak ditemukan atau Anda tidak memiliki akses.');
+        }
         return view('kredit/form', $data);
     }
 
     public function update($id = null)
     {
-        $kredit = $this->kreditModel->find($id);
-        if (empty($kredit)) { throw new \CodeIgniter\Exceptions\PageNotFoundException('Kredit dengan ID ' . $id . ' tidak ditemukan.'); }
+        // Use access-controlled method
+        $kredit = $this->kreditModel->findWithAccess($id);
+        if (empty($kredit)) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Kredit dengan ID ' . $id . ' tidak ditemukan atau Anda tidak memiliki akses.');
+        }
 
         // Debug - log catatan appraiser yang diterima
         $catatanAppraiser = $this->request->getPost('catatan_appraiser');
@@ -201,7 +191,7 @@ class KreditController extends Controller
             
             $newName = 'dokumen_agunan_' . date('YmdHis') . '_' . $file->getRandomName();
             if ($file->move($uploadPath, $newName)) {
-                $data['dokumen_agunan'] = 'uploads/dokumen_kredit/' . $newName;
+                $data['dokumen_agunan'] = 'dokumen_kredit/' . $newName;
             }
         }
 
@@ -215,17 +205,67 @@ class KreditController extends Controller
 
     public function delete($id = null)
     {
-        $kredit = $this->kreditModel->find($id);
-        if (empty($kredit)) { throw new \CodeIgniter\Exceptions\PageNotFoundException('Kredit dengan ID ' . $id . ' tidak ditemukan.'); }
+        // Use access-controlled method
+        $kredit = $this->kreditModel->findWithAccess($id);
+        if (empty($kredit)) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Kredit dengan ID ' . $id . ' tidak ditemukan atau Anda tidak memiliki akses.');
+        }
 
-        $this->kreditModel->delete($id);
-        return redirect()->to('/kredit')->with('success', 'Data kredit berhasil dihapus.');
+        try {
+            // Check for related data that needs to be handled
+            $db = \Config\Database::connect();
+            
+            // Check if there's pencairan (disbursement) data
+            $pencairanModel = new \App\Models\PencairanModel();
+            $pencairan = $pencairanModel->where('id_kredit', $id)->first();
+            
+            if ($pencairan) {
+                // If there's pencairan, check for angsuran and pembayaran
+                $angsuranModel = new \App\Models\AngsuranModel();
+                $pembayaranModel = new \App\Models\PembayaranAngsuranModel();
+                
+                // Get all angsuran for this kredit
+                $angsuranList = $angsuranModel->where('id_kredit_ref', $id)->findAll();
+                
+                if (!empty($angsuranList)) {
+                    // Delete all pembayaran angsuran first
+                    foreach ($angsuranList as $angsuran) {
+                        $pembayaranModel->where('id_angsuran', $angsuran['id_angsuran'])->delete();
+                    }
+                    
+                    // Delete all angsuran
+                    $angsuranModel->where('id_kredit_ref', $id)->delete();
+                }
+                
+                // Delete pencairan data
+                $pencairanModel->delete($pencairan['id_pencairan']);
+            }
+            
+            // Delete dokumen file if exists
+            if (!empty($kredit['dokumen_agunan'])) {
+                $filePath = WRITEPATH . 'uploads/' . $kredit['dokumen_agunan'];
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
+            }
+            
+            // Finally delete the kredit record
+            $this->kreditModel->delete($id);
+            
+            return redirect()->to('/kredit')->with('success', 'Data kredit dan semua data terkait berhasil dihapus.');
+            
+        } catch (\Exception $e) {
+            log_message('error', 'Error deleting kredit ID ' . $id . ': ' . $e->getMessage());
+            return redirect()->to('/kredit')->with('error', 'Gagal menghapus data kredit: ' . $e->getMessage());
+        }
     }
 
     public function show($id = null)
     {
-        $data['kredit'] = $this->kreditModel->find($id);
-        if (empty($data['kredit'])) { throw new \CodeIgniter\Exceptions\PageNotFoundException('Kredit dengan ID ' . $id . ' tidak ditemukan.'); }
+        $data['kredit'] = $this->kreditModel->findWithAccess($id);
+        if (empty($data['kredit'])) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Kredit dengan ID ' . $id . ' tidak ditemukan atau Anda tidak memiliki akses.');
+        }
         return view('kredit/show', $data);
     }
 
@@ -319,15 +359,11 @@ class KreditController extends Controller
             'headerTitle' => 'Detail Kredit Anggota'
         ];
 
-        // Menampilkan semua kredit anggota dengan detail lengkap
-        $kredit = $this->kreditModel
-            ->select('tbl_kredit.*, tbl_users.nama_lengkap, tbl_anggota.no_anggota, tbl_anggota.alamat')
-            ->join('tbl_anggota', 'tbl_kredit.id_anggota = tbl_anggota.id_anggota')
-            ->join('tbl_users', 'tbl_users.id_anggota_ref = tbl_anggota.id_anggota')
-            ->orderBy('tbl_kredit.created_at', 'DESC')
-            ->paginate(10);
-
-        $data['kredit'] = $kredit;
+        // Use filtered method with pagination
+        $select = 'tbl_kredit.*, tbl_users.nama_lengkap, tbl_anggota.no_anggota, tbl_anggota.alamat';
+        $data['kredit'] = $this->kreditModel->getFilteredKreditsWithData([], $select);
+        
+        // For pagination, we'll need to modify this if needed
         $data['pager'] = $this->kreditModel->pager;
 
         return view('kredit/detail_kredit_anggota', $data);
@@ -517,46 +553,38 @@ class KreditController extends Controller
     {
         $currentRole = session('level');
         
+        // Custom select with alias untuk nama_anggota
+        $select = 'tbl_kredit.*, tbl_users.nama_lengkap as nama_anggota, tbl_anggota.no_anggota, tbl_anggota.alamat';
+        
         switch ($currentRole) {
             case 'Bendahara':
                 // Bendahara melihat pengajuan dengan status "Diajukan" DAN "Hasil Penilaian Appraiser"
-                $pengajuan1 = $this->kreditModel->where('status_kredit', 'Diajukan')->findAll();
-                $pengajuan2 = $this->kreditModel->where('status_kredit', 'Hasil Penilaian Appraiser')->findAll();
-                $pengajuan = array_merge($pengajuan1, $pengajuan2);
+                $pengajuan = $this->kreditModel->getFilteredKreditsWithData([
+                    'tbl_kredit.status_kredit' => ['Diajukan', 'Hasil Penilaian Appraiser']
+                ], $select);
                 $title = 'Tugas Bendahara - Verifikasi & Teruskan Hasil Appraiser';
                 break;
                 
             case 'Appraiser':
                 // Appraiser melihat pengajuan dengan status "Verifikasi Bendahara"
-                $pengajuan = $this->kreditModel->where('status_kredit', 'Verifikasi Bendahara')->findAll();
+                $pengajuan = $this->kreditModel->getFilteredKreditsWithData([
+                    'tbl_kredit.status_kredit' => 'Verifikasi Bendahara'
+                ], $select);
                 $title = 'Pengajuan Kredit Menunggu Penilaian Appraiser';
                 break;
                 
             case 'Ketua':
                 // Ketua melihat pengajuan dengan status "Siap Persetujuan"
-                $pengajuan = $this->kreditModel->where('status_kredit', 'Siap Persetujuan')->findAll();
+                $pengajuan = $this->kreditModel->getFilteredKreditsWithData([
+                    'tbl_kredit.status_kredit' => 'Siap Persetujuan'
+                ], $select);
                 $title = 'Pengajuan Kredit Menunggu Persetujuan Final';
                 break;
                 
             default:
-                // Anggota melihat pengajuan mereka sendiri
-                $userId = session('user_id');
-                $anggota = $this->anggotaModel->where('id_user', $userId)->first();
-                if ($anggota) {
-                    $pengajuan = $this->kreditModel->where('id_anggota', $anggota['id'])->findAll();
-                } else {
-                    $pengajuan = [];
-                }
+                // Anggota melihat pengajuan mereka sendiri (akan difilter otomatis)
+                $pengajuan = $this->kreditModel->getFilteredKreditsWithData([], $select);
                 $title = 'Pengajuan Kredit Saya';
-        }
-
-        // Load nama anggota untuk setiap pengajuan
-        foreach ($pengajuan as &$item) {
-            $anggota = $this->anggotaModel
-                ->select('tbl_anggota.*, tbl_users.nama_lengkap')
-                ->join('tbl_users', 'tbl_users.id_anggota_ref = tbl_anggota.id_anggota', 'left')
-                ->find($item['id_anggota']);
-            $item['nama_anggota'] = $anggota['nama_lengkap'] ?? 'N/A';
         }
 
         $data = [
@@ -703,6 +731,39 @@ class KreditController extends Controller
         ];
 
         return view('kredit/teruskan_hasil_appraiser', $data);
+    }
+
+    /**
+     * View document with access control
+     */
+    public function viewDocument($filename)
+    {
+        // Cari kredit yang memiliki dokumen ini
+        $kredit = $this->kreditModel->where('dokumen_agunan LIKE', '%' . $filename)->first();
+        
+        if (!$kredit) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Dokumen tidak ditemukan.');
+        }
+
+        // Cek akses menggunakan sistem filtering yang sudah ada
+        if (!canAccessData($kredit)) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Anda tidak memiliki akses ke dokumen ini.');
+        }
+
+        // Path ke file
+        $filePath = WRITEPATH . 'uploads/dokumen_kredit/' . $filename;
+        
+        if (!file_exists($filePath)) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('File tidak ditemukan.');
+        }
+
+        // Serve file dengan content type yang tepat
+        $mime = mime_content_type($filePath);
+        
+        return $this->response
+            ->setHeader('Content-Type', $mime)
+            ->setHeader('Content-Disposition', 'inline; filename="' . $filename . '"')
+            ->setBody(file_get_contents($filePath));
     }
 
 }

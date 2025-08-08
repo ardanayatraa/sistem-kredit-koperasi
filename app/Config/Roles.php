@@ -19,16 +19,10 @@ class Roles
             'view_profile'
         ],
         'Ketua' => [
-            'dashboard_ketua',
-            'view_beranda',
-            'view_pengajuan_kredit', // Pengajuan Kredit (view only)
-            'view_detail_kredit_anggota', // Detail Kredit Anggota
+            'dashboard_ketua', // Dashboard access
             'view_laporan_kredit_koperasi', // Laporan Kredit Koperasi
-            'view_riwayat_persetujuan', // Riwayat Persetujuan
-            'change_password', // Ganti Password
-            'manage_users',
-            'manage_bunga',
-            'approve_kredit' // Untuk approval
+            'change_password' // Ganti Password
+            // Logout doesn't require permission - handled by AuthController
         ],
         'Anggota' => [
             'dashboard_anggota',

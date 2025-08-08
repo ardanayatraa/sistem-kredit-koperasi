@@ -18,7 +18,7 @@ class AdminSeeder extends Seeder
                 'username' => 'ketua_koperasi',
                 'email' => 'ketua@koperasi.com',
                 'password' => 'ketua123',
-                'level' => 'Ketua Koperasi',
+                'level' => 'Ketua',
                 'no_hp' => '081234567890',
                 'status' => 'active'
             ],

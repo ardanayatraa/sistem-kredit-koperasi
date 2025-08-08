@@ -12,7 +12,7 @@ $currentUserLevel = session()->get('level');
             <h1 class="text-2xl font-bold text-gray-900">Pembayaran Angsuran</h1>
             <p class="text-sm text-gray-600 mt-1">Kelola data pembayaran angsuran</p>
         </div>
-        <a href="/pembayaran_angsuran/create" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-blue-700 transition-colors">
+        <a href="/pembayaran-angsuran/new" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-blue-700 transition-colors">
             <i class="bx bx-plus h-4 w-4"></i>
             Tambah Pembayaran
         </a>
@@ -83,7 +83,7 @@ $currentUserLevel = session()->get('level');
                 <button type="submit" class="px-4 py-2 bg-blue-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-blue-700 transition-colors">
                     Cari
                 </button>
-                <a href="/pembayaran_angsuran" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                <a href="/pembayaran-angsuran" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
                     Reset
                 </a>
             </div>
@@ -97,11 +97,11 @@ $currentUserLevel = session()->get('level');
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Angsuran</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Anggota</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Angsuran Ke</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Bayar</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Bayar</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metode</th>
-                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aktif/Nonaktif</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Verifikasi</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
@@ -113,7 +113,11 @@ $currentUserLevel = session()->get('level');
                                 <?= esc($pembayaran['id_pembayaran']) ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <?= esc($pembayaran['id_angsuran']) ?>
+                                <?= esc($pembayaran['nama_lengkap'] ?? 'N/A') ?><br>
+                                <small class="text-gray-500"><?= esc($pembayaran['no_anggota'] ?? '') ?></small>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <span class="font-medium"><?= esc($pembayaran['angsuran_ke']) ?></span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">
                                 Rp <?= number_format($pembayaran['jumlah_bayar'], 0, ',', '.') ?>
@@ -122,30 +126,48 @@ $currentUserLevel = session()->get('level');
                                 <?= date('d/m/Y', strtotime($pembayaran['tanggal_bayar'])) ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                    <?= esc($pembayaran['metode_pembayaran']) ?>
+                                <?php
+                                $statusVerifikasi = $pembayaran['status_verifikasi'] ?? 'Menunggu';
+                                $badgeClass = match($statusVerifikasi) {
+                                    'Terverifikasi' => 'bg-green-100 text-green-800',
+                                    'Ditolak' => 'bg-red-100 text-red-800',
+                                    default => 'bg-yellow-100 text-yellow-800'
+                                };
+                                ?>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?= $badgeClass ?>">
+                                    <?= esc($statusVerifikasi) ?>
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <?php if ($currentUserLevel && Roles::can($currentUserLevel, 'manage_pembayaran_angsuran')): ?>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox"
-                                               class="sr-only peer"
-                                               id="toggle-<?= esc($pembayaran['id_pembayaran']) ?>"
-                                               <?= ($pembayaran['status_aktif'] ?? 'Aktif') === 'Aktif' ? 'checked' : '' ?>
-                                               onchange="togglePembayaranAngsuranStatus(<?= esc($pembayaran['id_pembayaran']) ?>, this)">
-                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                                    </label>
-                                <?php else: ?>
-                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-                                        <?= esc($pembayaran['status_aktif'] ?? 'Aktif') === 'Aktif' ? 'Aktif' : 'Tidak Aktif' ?>
-                                    </span>
-                                <?php endif; ?>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                <a href="/pembayaran_angsuran/show/<?= esc($pembayaran['id_pembayaran']) ?>" class="text-blue-600 hover:text-blue-900">Detail</a>
-                                <a href="/pembayaran_angsuran/edit/<?= esc($pembayaran['id_pembayaran']) ?>" class="text-green-600 hover:text-green-900">Edit</a>
-                                <a href="/pembayaran_angsuran/delete/<?= esc($pembayaran['id_pembayaran']) ?>" class="text-red-600 hover:text-red-900" onclick="return confirm('Yakin ingin menghapus data ini?')">Hapus</a>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex items-center space-x-2">
+                                    <!-- Bukti Pembayaran -->
+                                    <?php if (!empty($pembayaran['bukti_pembayaran'])): ?>
+                                        <a href="/uploads/bukti_pembayaran/<?= esc($pembayaran['bukti_pembayaran']) ?>"
+                                           target="_blank"
+                                           class="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-blue-600 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                            <i class="bx bx-image h-3 w-3 mr-1"></i>
+                                            Bukti
+                                        </a>
+                                    <?php endif; ?>
+                                    
+                                    <!-- Verifikasi Actions -->
+                                    <?php if (($pembayaran['status_verifikasi'] ?? 'Menunggu') === 'Menunggu' && $currentUserLevel && Roles::can($currentUserLevel, 'manage_pembayaran_angsuran')): ?>
+                                        <button onclick="verifikasiPembayaran(<?= esc($pembayaran['id_pembayaran']) ?>)"
+                                                class="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                            <i class="bx bx-check h-3 w-3 mr-1"></i>
+                                            Terima
+                                        </button>
+                                        <button onclick="tolakPembayaran(<?= esc($pembayaran['id_pembayaran']) ?>)"
+                                                class="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                            <i class="bx bx-x h-3 w-3 mr-1"></i>
+                                            Tolak
+                                        </button>
+                                    <?php endif; ?>
+                                    
+                                    <!-- Detail -->
+                                    <a href="/pembayaran-angsuran/show/<?= esc($pembayaran['id_pembayaran']) ?>"
+                                       class="text-blue-600 hover:text-blue-900">Detail</a>
+                                </div>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -155,7 +177,7 @@ $currentUserLevel = session()->get('level');
                                 <div class="flex flex-col items-center gap-2">
                                     <i class="bx bx-file-invoice h-12 w-12 text-gray-400"></i>
                                     <p>Belum ada data pembayaran angsuran</p>
-                                    <a href="/pembayaran_angsuran/create" class="text-blue-600 hover:text-blue-900 font-medium">Tambah pembayaran pertama</a>
+                                    <a href="/pembayaran-angsuran/new" class="text-blue-600 hover:text-blue-900 font-medium">Tambah pembayaran pertama</a>
                                 </div>
                             </td>
                         </tr>
@@ -191,6 +213,72 @@ $currentUserLevel = session()->get('level');
 </div>
 
 <script>
+    // Verifikasi pembayaran
+    function verifikasiPembayaran(id) {
+        if (confirm('Apakah Anda yakin ingin memverifikasi pembayaran ini?')) {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            
+            fetch('/pembayaran-angsuran/verifikasi/' + id, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    // Refresh page after 2 seconds
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    showNotification(data.message || 'Gagal memverifikasi pembayaran', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Terjadi kesalahan saat memverifikasi pembayaran', 'error');
+            });
+        }
+    }
+
+    // Tolak pembayaran
+    function tolakPembayaran(id) {
+        const alasan = prompt('Masukkan alasan penolakan:', '');
+        
+        if (alasan !== null && alasan.trim() !== '') {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            
+            fetch('/pembayaran-angsuran/tolak/' + id, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({ alasan: alasan })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    // Refresh page after 2 seconds
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    showNotification(data.message || 'Gagal menolak pembayaran', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Terjadi kesalahan saat menolak pembayaran', 'error');
+            });
+        }
+    }
+
     // Toggle pembayaran angsuran status
     function togglePembayaranAngsuranStatus(id, element) {
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -235,14 +323,7 @@ $currentUserLevel = session()->get('level');
         }`;
         notification.innerHTML = `
             <div class="flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    ${type === 'success' ?
-                            '<i class="bx bx-check-circle h-5 w-5 mr-2"></i>' :
-                            type === 'error' ?
-                            '<i class="bx bx-times-circle h-5 w-5 mr-2"></i>' :
-                            '<i class="bx bx-info-circle h-5 w-5 mr-2"></i>'
-                    }
-                </svg>
+                <i class="bx ${type === 'success' ? 'bx-check-circle' : type === 'error' ? 'bx-times-circle' : 'bx-info-circle'} h-5 w-5 mr-2"></i>
                 <span>${message}</span>
             </div>
         `;

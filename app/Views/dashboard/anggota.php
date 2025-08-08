@@ -252,10 +252,76 @@
         </div>
     </div>
 
+    <!-- Payment Action Section -->
+    <?php if (!empty($jadwalPembayaran)): ?>
+    <div class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg shadow-lg p-6 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-xl font-bold mb-2">Ada Angsuran yang Perlu Dibayar!</h3>
+                <p class="text-orange-100">
+                    Anda memiliki <?= count($jadwalPembayaran) ?> angsuran yang belum dibayar.
+                    <?php
+                    $nextDue = null;
+                    foreach ($jadwalPembayaran as $jadwal) {
+                        if (!$nextDue || strtotime($jadwal['tanggal_jatuh_tempo']) < strtotime($nextDue['tanggal_jatuh_tempo'])) {
+                            $nextDue = $jadwal;
+                        }
+                    }
+                    if ($nextDue):
+                        $daysLeft = (strtotime($nextDue['tanggal_jatuh_tempo']) - strtotime(date('Y-m-d'))) / (60*60*24);
+                        if ($daysLeft < 0):
+                    ?>
+                        <br>Pembayaran terdekat sudah terlambat <?= abs($daysLeft) ?> hari!
+                    <?php elseif ($daysLeft == 0): ?>
+                        <br>Pembayaran terdekat jatuh tempo hari ini!
+                    <?php else: ?>
+                        <br>Pembayaran terdekat dalam <?= $daysLeft ?> hari.
+                    <?php endif; endif; ?>
+                </p>
+            </div>
+            <div class="flex flex-col gap-2">
+                <a href="<?= base_url('angsuran/bayar') ?>" class="bg-white text-orange-600 px-6 py-3 rounded-lg font-semibold hover:bg-orange-50 transition-colors shadow-md">
+                    <svg class="inline h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                    </svg>
+                    Bayar Angsuran
+                </a>
+                <a href="<?= base_url('riwayat-pembayaran') ?>" class="text-orange-100 hover:text-white text-sm text-center underline">
+                    Lihat Riwayat →
+                </a>
+            </div>
+        </div>
+    </div>
+    <?php else: ?>
+    <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white">
+        <div class="flex items-center">
+            <svg class="h-8 w-8 text-green-200 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+                <h3 class="text-xl font-bold mb-1">Selamat!</h3>
+                <p class="text-green-100">Semua angsuran Anda sudah lunas atau belum ada kredit aktif.</p>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <!-- Quick Actions -->
     <div class="bg-white rounded-lg shadow p-6">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">Aksi Cepat</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <a href="<?= base_url('angsuran/bayar') ?>" class="flex items-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors">
+                <div class="p-2 bg-orange-100 rounded-lg mr-3">
+                    <svg class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-900">Bayar Angsuran</p>
+                    <p class="text-xs text-gray-500">Lakukan pembayaran</p>
+                </div>
+            </a>
+
             <a href="<?= base_url('riwayat-kredit') ?>" class="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
                 <div class="p-2 bg-blue-100 rounded-lg mr-3">
                     <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -289,19 +355,6 @@
                 <div>
                     <p class="text-sm font-medium text-gray-900">Simulasi Bunga</p>
                     <p class="text-xs text-gray-500">Hitung simulasi</p>
-                </div>
-            </a>
-
-            <a href="<?= base_url('beranda') ?>" class="flex items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
-                <div class="p-2 bg-purple-100 rounded-lg mr-3">
-                    <svg class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m7 7l5 5 5-5" />
-                    </svg>
-                </div>
-                <div>
-                    <p class="text-sm font-medium text-gray-900">Beranda</p>
-                    <p class="text-xs text-gray-500">Kembali ke beranda</p>
                 </div>
             </a>
         </div>

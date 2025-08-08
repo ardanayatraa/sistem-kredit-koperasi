@@ -8,6 +8,15 @@
                 <h2 class="text-xl font-semibold text-gray-900">Riwayat Pembayaran</h2>
                 <p class="text-sm text-gray-600 mt-1">Riwayat pembayaran angsuran kredit Anda</p>
             </div>
+            <div class="flex items-center space-x-3">
+                <a href="<?= base_url('bayar-angsuran') ?>"
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 transition-colors">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                    </svg>
+                    Bayar Angsuran
+                </a>
+            </div>
         </div>
     </div>
 

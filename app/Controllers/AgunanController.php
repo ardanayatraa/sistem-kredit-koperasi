@@ -14,6 +14,7 @@ class AgunanController extends BaseController
     {
         $this->kreditModel = new KreditModel();
         $this->anggotaModel = new AnggotaModel();
+        helper('data_filter');
     }
 
     public function index()
@@ -23,16 +24,11 @@ class AgunanController extends BaseController
             'headerTitle' => 'Data Agunan'
         ];
 
-        // Menampilkan semua kredit yang memiliki agunan
-        $agunan = $this->kreditModel
-            ->select('tbl_kredit.*, tbl_users.nama_lengkap, tbl_anggota.nik')
-            ->join('tbl_anggota', 'tbl_kredit.id_anggota = tbl_anggota.id_anggota')
-            ->join('tbl_users', 'tbl_anggota.id_anggota = tbl_users.id_anggota_ref')
-            ->where('tbl_kredit.jenis_agunan IS NOT NULL')
-            ->orderBy('tbl_kredit.created_at', 'DESC')
-            ->paginate(10);
-
-        $data['agunan'] = $agunan;
+        // Use filtered method to get kredits with agunan
+        $select = 'tbl_kredit.*, tbl_users.nama_lengkap, tbl_anggota.nik';
+        $additionalWhere = ['tbl_kredit.jenis_agunan IS NOT NULL' => null];
+        
+        $data['agunan'] = $this->kreditModel->getFilteredKreditsWithData($additionalWhere, $select);
         $data['pager'] = $this->kreditModel->pager;
 
         return view('agunan/index', $data);
@@ -45,17 +41,14 @@ class AgunanController extends BaseController
             'headerTitle' => 'Daftar Agunan - Appraiser'
         ];
 
-        // Untuk Appraiser - menampilkan agunan yang perlu diverifikasi
-        $agunan = $this->kreditModel
-            ->select('tbl_kredit.*, tbl_users.nama_lengkap, tbl_anggota.nik')
-            ->join('tbl_anggota', 'tbl_kredit.id_anggota = tbl_anggota.id_anggota')
-            ->join('tbl_users', 'tbl_anggota.id_anggota = tbl_users.id_anggota_ref')
-            ->where('tbl_kredit.jenis_agunan IS NOT NULL')
-            ->orderBy('tbl_kredit.created_at', 'DESC')
-            ->paginate(10);
-
-        $data['agunan'] = $agunan;
-        $data['pager'] = $this->kreditModel->pager;
+        // Use filtered method (without pagination untuk sementara)
+        $select = 'tbl_kredit.*, tbl_users.nama_lengkap, tbl_anggota.nik';
+        $additionalWhere = ['tbl_kredit.jenis_agunan IS NOT NULL' => null];
+        
+        $data['agunan'] = $this->kreditModel->getFilteredKreditsWithData($additionalWhere, $select);
+        
+        // Create dummy pager untuk menghindari error
+        $data['pager'] = null;
 
         return view('agunan/daftar_agunan', $data);
     }
@@ -67,16 +60,15 @@ class AgunanController extends BaseController
             'headerTitle' => 'Verifikasi Agunan'
         ];
 
-        // Tampilkan semua KECUALI yang sudah "Disetujui"
-        $agunan = $this->kreditModel
-            ->select('tbl_kredit.*, tbl_users.nama_lengkap, tbl_anggota.nik, tbl_anggota.no_anggota')
-            ->join('tbl_anggota', 'tbl_kredit.id_anggota = tbl_anggota.id_anggota')
-            ->join('tbl_users', 'tbl_anggota.id_anggota = tbl_users.id_anggota_ref')
-            ->where('tbl_kredit.jenis_agunan IS NOT NULL') // Hanya yang memiliki agunan
-            ->where('tbl_kredit.jenis_agunan !=', '') // Pastikan jenis agunan tidak kosong
-            ->where('tbl_kredit.status_kredit !=', 'Disetujui') // Kecuali yang sudah disetujui
-            ->orderBy('tbl_kredit.created_at', 'DESC')
-            ->paginate(10);
+        // Use filtered method for agunan verification (exclude already approved)
+        $select = 'tbl_kredit.*, tbl_users.nama_lengkap, tbl_anggota.nik, tbl_anggota.no_anggota';
+        $additionalWhere = [
+            'tbl_kredit.jenis_agunan IS NOT NULL' => null,
+            'tbl_kredit.jenis_agunan !=' => '',
+            'tbl_kredit.status_kredit !=' => 'Disetujui'
+        ];
+        
+        $agunan = $this->kreditModel->getFilteredKreditsWithData($additionalWhere, $select);
 
         // Simple debug - log count hasil
         log_message('debug', 'Verifikasi Agunan - Total found: ' . count($agunan));
@@ -89,21 +81,24 @@ class AgunanController extends BaseController
 
     public function show($id)
     {
-        $kredit = $this->kreditModel
-            ->select('tbl_kredit.*, tbl_users.nama_lengkap, tbl_anggota.nik, tbl_anggota.alamat, tbl_users.no_hp')
-            ->join('tbl_anggota', 'tbl_kredit.id_anggota = tbl_anggota.id_anggota')
-            ->join('tbl_users', 'tbl_anggota.id_anggota = tbl_users.id_anggota_ref')
-            ->find($id);
+        // Use access-controlled method
+        $kredit = $this->kreditModel->findWithAccess($id);
 
         if (!$kredit) {
-            session()->setFlashdata('error', 'Data tidak ditemukan');
+            session()->setFlashdata('error', 'Data tidak ditemukan atau Anda tidak memiliki akses');
             return redirect()->back();
         }
+
+        // Get additional anggota data if needed
+        $anggota = $this->anggotaModel
+            ->select('tbl_anggota.*, tbl_users.nama_lengkap, tbl_users.no_hp')
+            ->join('tbl_users', 'tbl_users.id_anggota_ref = tbl_anggota.id_anggota')
+            ->find($kredit['id_anggota']);
 
         $data = [
             'title' => 'Detail Agunan',
             'headerTitle' => 'Detail Agunan',
-            'kredit' => $kredit
+            'kredit' => array_merge($kredit, $anggota ? $anggota : [])
         ];
 
         return view('agunan/show', $data);
@@ -133,22 +128,71 @@ class AgunanController extends BaseController
 
     public function approve($id)
     {
-        $kredit = $this->kreditModel->find($id);
+        // Use access-controlled method
+        $kredit = $this->kreditModel->findWithAccess($id);
         if (!$kredit) {
-            session()->setFlashdata('error', 'Data tidak ditemukan');
+            session()->setFlashdata('error', 'Data tidak ditemukan atau Anda tidak memiliki akses');
             return redirect()->to('/verifikasi-agunan');
         }
 
         $catatanAppraiser = $this->request->getPost('catatan_appraiser');
+        $nilaiAgunan = $this->request->getPost('nilai_agunan'); // Process nilai_agunan from form
 
         // Debug log
         log_message('debug', 'Approve Agunan - ID: ' . $id);
         log_message('debug', 'Status sebelum: ' . ($kredit['status_kredit'] ?? 'NULL'));
         log_message('debug', 'Catatan Appraiser: ' . ($catatanAppraiser ?? 'NULL'));
+        log_message('debug', 'Nilai Agunan: ' . ($nilaiAgunan ?? 'NULL'));
 
         $updateData = [
-            'status_kredit' => 'Disetujui', // Ubah status ke Disetujui
-            'catatan_appraiser' => $catatanAppraiser, // Simpan catatan appraiser
+            'status_kredit' => 'Disetujui', // Set status to Disetujui when approved
+            'catatan_appraiser' => $catatanAppraiser, // Save appraiser notes
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+
+        // Add nilai_taksiran_agunan if provided
+        if (!empty($nilaiAgunan)) {
+            $updateData['nilai_taksiran_agunan'] = $nilaiAgunan;
+            log_message('debug', 'Adding nilai_taksiran_agunan: ' . $nilaiAgunan);
+        }
+
+        $result = $this->kreditModel->update($id, $updateData);
+        log_message('debug', 'Update result: ' . ($result ? 'SUCCESS' : 'FAILED'));
+
+        if ($result) {
+            // Verify update worked
+            $updatedKredit = $this->kreditModel->find($id);
+            log_message('debug', 'Status setelah: ' . ($updatedKredit['status_kredit'] ?? 'NULL'));
+            log_message('debug', 'Catatan tersimpan: ' . ($updatedKredit['catatan_appraiser'] ?? 'NULL'));
+            log_message('debug', 'Nilai tersimpan: ' . ($updatedKredit['nilai_taksiran_agunan'] ?? 'NULL'));
+            
+            session()->setFlashdata('success', 'Agunan berhasil disetujui dengan nilai taksiran dan catatan');
+        } else {
+            session()->setFlashdata('error', 'Gagal menyetujui agunan');
+        }
+
+        return redirect()->to('/verifikasi-agunan');
+    }
+
+    public function reject($id)
+    {
+        // Use access-controlled method
+        $kredit = $this->kreditModel->findWithAccess($id);
+        if (!$kredit) {
+            session()->setFlashdata('error', 'Data tidak ditemukan atau Anda tidak memiliki akses');
+            return redirect()->to('/verifikasi-agunan');
+        }
+
+        $catatan = $this->request->getPost('catatan_appraiser');
+
+        // Debug log
+        log_message('debug', 'Reject Agunan - ID: ' . $id);
+        log_message('debug', 'Status sebelum: ' . ($kredit['status_kredit'] ?? 'NULL'));
+        log_message('debug', 'Catatan Appraiser: ' . ($catatan ?? 'NULL'));
+
+        $updateData = [
+            'status_kredit' => 'Ditolak', // Set status to Ditolak when rejected
+            'catatan_appraiser' => $catatan,
             'updated_at' => date('Y-m-d H:i:s')
         ];
 
@@ -159,33 +203,8 @@ class AgunanController extends BaseController
             // Verify update worked
             $updatedKredit = $this->kreditModel->find($id);
             log_message('debug', 'Status setelah: ' . ($updatedKredit['status_kredit'] ?? 'NULL'));
-            log_message('debug', 'Catatan tersimpan: ' . ($updatedKredit['catatan_appraiser'] ?? 'NULL'));
             
-            session()->setFlashdata('success', 'Agunan berhasil disetujui dengan catatan');
-        } else {
-            session()->setFlashdata('error', 'Gagal menyetujui agunan');
-        }
-
-        return redirect()->to('/verifikasi-agunan');
-    }
-
-    public function reject($id)
-    {
-        $kredit = $this->kreditModel->find($id);
-        if (!$kredit) {
-            session()->setFlashdata('error', 'Data tidak ditemukan');
-            return redirect()->to('/verifikasi-agunan');
-        }
-
-        $catatan = $this->request->getPost('catatan_appraiser');
-
-        $updateData = [
-            'catatan_appraiser' => $catatan,
-            'updated_at' => date('Y-m-d H:i:s')
-        ];
-
-        if ($this->kreditModel->update($id, $updateData)) {
-            session()->setFlashdata('success', 'Agunan ditolak');
+            session()->setFlashdata('success', 'Agunan berhasil ditolak');
         } else {
             session()->setFlashdata('error', 'Gagal menolak agunan');
         }
@@ -208,13 +227,14 @@ class AgunanController extends BaseController
         $statusVerifikasi = $json->status_verifikasi;
 
         // Debug log
-        log_message('debug', 'Proses Verifikasi - ID: ' . $kreditId . ', Status: ' . $statusVerifikasi);
+        log_message('debug', 'Proses Verifikasi JSON - ID: ' . $kreditId . ', Status: ' . $statusVerifikasi);
 
-        $kredit = $this->kreditModel->find($kreditId);
+        // Use access-controlled method
+        $kredit = $this->kreditModel->findWithAccess($kreditId);
         if (!$kredit) {
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Data kredit tidak ditemukan'
+                'message' => 'Data kredit tidak ditemukan atau Anda tidak memiliki akses'
             ])->setStatusCode(404);
         }
 
@@ -225,12 +245,15 @@ class AgunanController extends BaseController
             'updated_at' => date('Y-m-d H:i:s')
         ];
 
-        // Hanya ubah ke "Disetujui" jika verified, kalau rejected tetap status lama
+        // Handle status changes properly
         if ($statusVerifikasi === 'verified') {
-            $updateData['status_kredit'] = 'Disetujui'; // Langsung disetujui
+            $updateData['status_kredit'] = 'Disetujui'; // Set to Disetujui when verified
             log_message('debug', 'Will update status to: Disetujui');
+        } elseif ($statusVerifikasi === 'rejected') {
+            $updateData['status_kredit'] = 'Ditolak'; // Set to Ditolak when rejected
+            log_message('debug', 'Will update status to: Ditolak');
         } else {
-            log_message('debug', 'Status will remain unchanged');
+            log_message('debug', 'Status will remain unchanged for: ' . $statusVerifikasi);
         }
 
         $result = $this->kreditModel->update($kreditId, $updateData);
@@ -241,9 +264,12 @@ class AgunanController extends BaseController
             $updatedKredit = $this->kreditModel->find($kreditId);
             log_message('debug', 'Status setelah: ' . ($updatedKredit['status_kredit'] ?? 'NULL'));
             
+            $message = $statusVerifikasi === 'verified' ? 'Agunan berhasil disetujui' :
+                      ($statusVerifikasi === 'rejected' ? 'Agunan berhasil ditolak' : 'Verifikasi berhasil disimpan');
+            
             return $this->response->setJSON([
                 'success' => true,
-                'message' => 'Verifikasi berhasil disimpan'
+                'message' => $message
             ]);
         } else {
             return $this->response->setJSON([
@@ -296,9 +322,10 @@ class AgunanController extends BaseController
 
     public function edit($id)
     {
-        $kredit = $this->kreditModel->find($id);
+        // Use access-controlled method
+        $kredit = $this->kreditModel->findWithAccess($id);
         if (!$kredit) {
-            session()->setFlashdata('error', 'Data tidak ditemukan');
+            session()->setFlashdata('error', 'Data tidak ditemukan atau Anda tidak memiliki akses');
             return redirect()->to('/agunan');
         }
 
@@ -344,5 +371,59 @@ class AgunanController extends BaseController
         ];
 
         return view('agunan/print', $data);
+    }
+
+    public function nilai($id)
+    {
+        $kredit = $this->kreditModel
+            ->select('tbl_kredit.*, tbl_users.nama_lengkap, tbl_anggota.nik, tbl_anggota.alamat, tbl_users.no_hp')
+            ->join('tbl_anggota', 'tbl_kredit.id_anggota = tbl_anggota.id_anggota')
+            ->join('tbl_users', 'tbl_anggota.id_anggota = tbl_users.id_anggota_ref')
+            ->find($id);
+
+        if (!$kredit) {
+            session()->setFlashdata('error', 'Data tidak ditemukan');
+            return redirect()->to('/agunan');
+        }
+
+        $data = [
+            'title' => 'Penilaian Nilai Agunan',
+            'headerTitle' => 'Penilaian Nilai Agunan',
+            'kredit' => $kredit
+        ];
+
+        return view('agunan/nilai', $data);
+    }
+
+    public function simpanNilai($id)
+    {
+        $kredit = $this->kreditModel->find($id);
+        if (!$kredit) {
+            session()->setFlashdata('error', 'Data tidak ditemukan');
+            return redirect()->to('/agunan');
+        }
+
+        $nilaiTaksiran = $this->request->getPost('nilai_taksiran');
+        $catatanPenilaian = $this->request->getPost('catatan_penilaian');
+
+        // Validasi input
+        if (empty($nilaiTaksiran)) {
+            session()->setFlashdata('error', 'Nilai taksiran harus diisi');
+            return redirect()->back()->withInput();
+        }
+
+        $updateData = [
+            'nilai_taksiran_agunan' => $nilaiTaksiran,
+            'catatan_appraiser' => $catatanPenilaian,
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+
+        if ($this->kreditModel->update($id, $updateData)) {
+            session()->setFlashdata('success', 'Penilaian nilai agunan berhasil disimpan');
+        } else {
+            session()->setFlashdata('error', 'Gagal menyimpan penilaian nilai agunan');
+        }
+
+        return redirect()->to('/agunan');
     }
 }

@@ -88,52 +88,6 @@
         </h3>
         
         <div class="space-y-4">
-            <!-- Dokumen KTP -->
-            <div class="border border-gray-200 rounded-lg p-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <i class="bx bx-id-card text-2xl text-blue-600"></i>
-                        <div>
-                            <h4 class="font-medium text-gray-900">KTP</h4>
-                            <p class="text-sm text-gray-500">Kartu Tanda Penduduk</p>
-                        </div>
-                    </div>
-                    <?php if (!empty($kredit['file_ktp'])): ?>
-                        <a href="<?= base_url('writable/uploads/kredit/' . $kredit['file_ktp']) ?>" 
-                           target="_blank"
-                           class="inline-flex items-center gap-1 px-3 py-1 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition-colors">
-                            <i class="bx bx-show text-sm"></i>
-                            Lihat
-                        </a>
-                    <?php else: ?>
-                        <span class="text-sm text-gray-500">Tidak ada file</span>
-                    <?php endif; ?>
-                </div>
-            </div>
-
-            <!-- Dokumen Slip Gaji -->
-            <div class="border border-gray-200 rounded-lg p-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <i class="bx bx-receipt text-2xl text-green-600"></i>
-                        <div>
-                            <h4 class="font-medium text-gray-900">Slip Gaji</h4>
-                            <p class="text-sm text-gray-500">Bukti penghasilan</p>
-                        </div>
-                    </div>
-                    <?php if (!empty($kredit['file_slip_gaji'])): ?>
-                        <a href="<?= base_url('writable/uploads/kredit/' . $kredit['file_slip_gaji']) ?>" 
-                           target="_blank"
-                           class="inline-flex items-center gap-1 px-3 py-1 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 transition-colors">
-                            <i class="bx bx-show text-sm"></i>
-                            Lihat
-                        </a>
-                    <?php else: ?>
-                        <span class="text-sm text-gray-500">Tidak ada file</span>
-                    <?php endif; ?>
-                </div>
-            </div>
-
             <!-- Dokumen Agunan -->
             <div class="border border-gray-200 rounded-lg p-4">
                 <div class="flex items-center justify-between">
@@ -144,8 +98,8 @@
                             <p class="text-sm text-gray-500">Sertifikat/dokumen kepemilikan agunan</p>
                         </div>
                     </div>
-                    <?php if (!empty($kredit['file_agunan'])): ?>
-                        <a href="<?= base_url('writable/uploads/kredit/' . $kredit['file_agunan']) ?>" 
+                    <?php if (!empty($kredit['dokumen_agunan'])): ?>
+                        <a href="<?= base_url('writable/uploads/' . $kredit['dokumen_agunan']) ?>"
                            target="_blank"
                            class="inline-flex items-center gap-1 px-3 py-1 bg-purple-600 text-white text-sm font-medium rounded hover:bg-purple-700 transition-colors">
                             <i class="bx bx-show text-sm"></i>
@@ -158,7 +112,7 @@
             </div>
         </div>
 
-        <?php if (empty($kredit['file_ktp']) && empty($kredit['file_slip_gaji']) && empty($kredit['file_agunan'])): ?>
+        <?php if (empty($kredit['dokumen_agunan'])): ?>
         <div class="text-center py-8">
             <i class="bx bx-file-blank text-6xl text-gray-400 mb-4"></i>
             <p class="text-gray-500">Belum ada dokumen yang diunggah</p>

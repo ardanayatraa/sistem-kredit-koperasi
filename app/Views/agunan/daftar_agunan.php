@@ -29,7 +29,7 @@
                     <?php foreach ($agunan as $index => $item): ?>
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <?= $index + 1 + (($pager->getCurrentPage() - 1) * $pager->getPerPage()) ?>
+                                <?= $pager ? ($index + 1 + (($pager->getCurrentPage() - 1) * $pager->getPerPage())) : ($index + 1) ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-medium text-gray-900"><?= esc($item['nama_lengkap']) ?></div>
@@ -90,7 +90,7 @@
     </div>
 
     <!-- Pagination -->
-    <?php if (!empty($agunan)): ?>
+    <?php if (!empty($agunan) && $pager): ?>
         <div class="border-t border-gray-200 px-6 py-4">
             <?= $pager->links() ?>
         </div>
