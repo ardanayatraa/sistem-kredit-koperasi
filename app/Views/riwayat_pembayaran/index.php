@@ -46,11 +46,25 @@
                                 Rp <?= number_format($item['jumlah_bayar'], 0, ',', '.') ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <?= date('d/m/Y', strtotime($item['tanggal_pembayaran'])) ?>
+                                <?= date('d/m/Y', strtotime($item['tanggal_bayar'])) ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    Lunas
+                                <?php
+                                $statusVerifikasi = $item['status_verifikasi'] ?? 'pending';
+                                $statusDisplay = match($statusVerifikasi) {
+                                    'approved' => 'Disetujui',
+                                    'rejected' => 'Ditolak',
+                                    default => 'Pending'
+                                };
+                                $statusColor = match($statusVerifikasi) {
+                                    'approved' => 'green',
+                                    'rejected' => 'red',
+                                    default => 'yellow'
+                                };
+                                ?>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-<?= $statusColor ?>-100 text-<?= $statusColor ?>-800">
+                                    <i class="bx <?= match($statusVerifikasi) { 'approved' => 'bx-check-circle', 'rejected' => 'bx-x-circle', default => 'bx-time-five' } ?> mr-1"></i>
+                                    <?= esc($statusDisplay) ?>
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">

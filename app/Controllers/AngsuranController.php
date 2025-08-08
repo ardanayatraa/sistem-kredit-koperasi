@@ -385,7 +385,8 @@ class AngsuranController extends Controller
         $data = [
             'angsuran' => $angsuran,
             'total_dibayar' => $totalDibayar['jumlah_bayar'] ?? 0,
-            'validation' => session()->getFlashdata('validation')
+            'validation' => session()->getFlashdata('validation'),
+            'isOverdue' => strtotime($angsuran['tgl_jatuh_tempo']) < strtotime('now')
         ];
 
         return view('angsuran/form_bayar', $data);
@@ -462,8 +463,11 @@ class AngsuranController extends Controller
             // Upload file bukti pembayaran
             $file = $this->request->getFile('bukti_pembayaran');
             if ($file->isValid() && !$file->hasMoved()) {
+                $uploadPath = WRITEPATH . 'uploads/pembayaran_angsuran';
+                if (!is_dir($uploadPath)) { mkdir($uploadPath, 0777, true); }
+                
                 $fileName = $file->getRandomName();
-                $file->move(WRITEPATH . '../public/uploads/bukti_pembayaran', $fileName);
+                $file->move($uploadPath, $fileName);
             } else {
                 return redirect()->back()->with('error', 'Gagal mengupload bukti pembayaran');
             }
@@ -476,9 +480,8 @@ class AngsuranController extends Controller
                 'jumlah_bayar' => $this->request->getPost('jumlah_bayar'),
                 'tanggal_bayar' => date('Y-m-d H:i:s'),
                 'metode_pembayaran' => $this->request->getPost('metode_pembayaran'),
-                'bukti_pembayaran' => 'uploads/bukti_pembayaran/' . $fileName,
-                'keterangan' => $this->request->getPost('keterangan') ?? 'Pembayaran melalui portal anggota',
-                'status_verifikasi' => 'Menunggu',
+                'bukti_pembayaran' => $fileName, // Store only filename, not full path
+                'status_verifikasi' => 'pending', // Use consistent status with PembayaranAngsuranController
                 'created_at' => date('Y-m-d H:i:s')
             ];
 

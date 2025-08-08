@@ -211,7 +211,7 @@ class Home extends BaseController
         // Calculate total active credit amount
         $totalKreditAktif = 0;
         foreach ($kreditAktif as $kredit) {
-            $totalKreditAktif += $kredit['jumlah_kredit'];
+            $totalKreditAktif += $kredit['jumlah_pengajuan'];
         }
         
         // Get credit history for table display

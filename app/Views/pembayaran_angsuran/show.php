@@ -9,12 +9,12 @@
             <p class="text-sm text-gray-600 mt-1">Informasi lengkap pembayaran angsuran</p>
         </div>
         <div class="flex flex-col sm:flex-row gap-2">
-            <a href="/pembayaran_angsuran/edit/<?= $pembayaran_angsuran['id_pembayaran_angsuran'] ?>" 
+            <a href="/pembayaran-angsuran/edit/<?= $pembayaran_angsuran['id_pembayaran'] ?>"
                class="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
                 <i class="bx bx-edit h-4 w-4"></i>
                 Edit
             </a>
-            <a href="/pembayaran_angsuran" 
+            <a href="/pembayaran-angsuran"
                class="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors">
                 <i class="bx bx-arrow-left h-4 w-4"></i>
                 Kembali
@@ -29,7 +29,7 @@
                 <!-- ID Pembayaran -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">ID Pembayaran</label>
-                    <p class="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-lg"><?= esc($pembayaran_angsuran['id_pembayaran_angsuran']) ?></p>
+                    <p class="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-lg"><?= esc($pembayaran_angsuran['id_pembayaran']) ?></p>
                 </div>
 
                 <!-- Tanggal Bayar -->
@@ -48,12 +48,22 @@
                     </p>
                 </div>
 
-                <!-- Status -->
+                <!-- Status Verifikasi -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Lunas
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Status Verifikasi</label>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                        <?= ($pembayaran_angsuran['status_verifikasi'] ?? 'pending') === 'approved' ? 'bg-green-100 text-green-800' :
+                           (($pembayaran_angsuran['status_verifikasi'] ?? 'pending') === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800') ?>">
+                        <?= ucfirst($pembayaran_angsuran['status_verifikasi'] ?? 'pending') ?>
                     </span>
+                </div>
+
+                <!-- Verifikator -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Diverifikasi oleh</label>
+                    <p class="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-lg">
+                        <?= !empty($pembayaran_angsuran['nama_verifikator']) ? esc($pembayaran_angsuran['nama_verifikator']) : 'Belum diverifikasi' ?>
+                    </p>
                 </div>
 
                 <!-- Keterangan -->
@@ -98,7 +108,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Jatuh Tempo</label>
                     <p class="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-lg">
-                        <?= date('d F Y', strtotime($angsuran['tanggal_jatuh_tempo'])) ?>
+                        <?= date('d F Y', strtotime($angsuran['tgl_jatuh_tempo'])) ?>
                     </p>
                 </div>
             </div>
@@ -116,7 +126,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Kredit</label>
                     <p class="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-lg font-semibold">
-                        Rp <?= number_format($kredit['jumlah_kredit'], 0, ',', '.') ?>
+                        Rp <?= number_format($kredit['jumlah_pengajuan'], 0, ',', '.') ?>
                     </p>
                 </div>
 
@@ -130,17 +140,17 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Kredit</label>
                     <p class="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-lg">
-                        <?= date('d F Y', strtotime($kredit['tanggal_kredit'])) ?>
+                        <?= date('d F Y', strtotime($kredit['tanggal_pengajuan'])) ?>
                     </p>
                 </div>
 
                 <!-- Status Kredit -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Status Kredit</label>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                        <?= $kredit['status'] === 'AKTIF' ? 'bg-green-100 text-green-800' : 
-                           ($kredit['status'] === 'LUNAS' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800') ?>">
-                        <?= esc($kredit['status']) ?>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                        <?= $kredit['status_kredit'] === 'AKTIF' ? 'bg-green-100 text-green-800' :
+                           ($kredit['status_kredit'] === 'LUNAS' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800') ?>">
+                        <?= esc($kredit['status_kredit']) ?>
                     </span>
                 </div>
             </div>
@@ -163,7 +173,7 @@
 <script>
 function confirmDelete() {
     if (confirm('Apakah Anda yakin ingin menghapus pembayaran angsuran ini?')) {
-        window.location.href = '/pembayaran_angsuran/delete/<?= $pembayaran_angsuran['id_pembayaran_angsuran'] ?>';
+        window.location.href = '/pembayaran-angsuran/delete/<?= $pembayaran_angsuran['id_pembayaran'] ?>';
     }
 }
 

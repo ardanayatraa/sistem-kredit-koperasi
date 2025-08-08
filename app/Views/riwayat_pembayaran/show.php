@@ -61,19 +61,43 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-500">Tanggal Pembayaran</label>
-                            <p class="mt-1 text-sm text-gray-900"><?= date('d F Y', strtotime($pembayaran['tanggal_pembayaran'])) ?></p>
+                            <p class="mt-1 text-sm text-gray-900"><?= date('d F Y', strtotime($pembayaran['tanggal_bayar'])) ?></p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-500">Metode Pembayaran</label>
                             <p class="mt-1 text-sm text-gray-900"><?= esc($pembayaran['metode_pembayaran'] ?? 'Tunai') ?></p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-500">Status</label>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                <i class="bx bx-check-circle mr-1"></i>
-                                Lunas
+                            <label class="block text-sm font-medium text-gray-500">Status Verifikasi</label>
+                            <?php
+                            $statusVerifikasi = $pembayaran['status_verifikasi'] ?? 'pending';
+                            $statusDisplay = match($statusVerifikasi) {
+                                'approved' => 'Disetujui',
+                                'rejected' => 'Ditolak',
+                                default => 'Menunggu Verifikasi'
+                            };
+                            $statusColor = match($statusVerifikasi) {
+                                'approved' => 'green',
+                                'rejected' => 'red',
+                                default => 'yellow'
+                            };
+                            $statusIcon = match($statusVerifikasi) {
+                                'approved' => 'bx-check-circle',
+                                'rejected' => 'bx-x-circle',
+                                default => 'bx-time-five'
+                            };
+                            ?>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-<?= $statusColor ?>-100 text-<?= $statusColor ?>-800">
+                                <i class="bx <?= $statusIcon ?> mr-1"></i>
+                                <?= esc($statusDisplay) ?>
                             </span>
                         </div>
+                        <?php if (!empty($pembayaran['denda']) && $pembayaran['denda'] > 0): ?>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500">Denda</label>
+                            <p class="mt-1 text-sm text-red-600">Rp <?= number_format($pembayaran['denda'], 0, ',', '.') ?></p>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

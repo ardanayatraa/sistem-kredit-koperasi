@@ -70,6 +70,24 @@
             font-weight: bold;
             display: inline-block;
         }
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .status-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            display: inline-block;
+        }
         .footer {
             margin-top: 40px;
             text-align: center;
@@ -133,16 +151,37 @@
             </div>
             <div class="row">
                 <div class="col-label">Tanggal Pembayaran</div>
-                <div class="col-value">: <?= date('d F Y', strtotime($pembayaran['tanggal_pembayaran'])) ?></div>
+                <div class="col-value">: <?= date('d F Y', strtotime($pembayaran['tanggal_bayar'])) ?></div>
             </div>
             <div class="row">
                 <div class="col-label">Metode Pembayaran</div>
                 <div class="col-value">: <?= esc($pembayaran['metode_pembayaran'] ?? 'Tunai') ?></div>
             </div>
             <div class="row">
-                <div class="col-label">Status</div>
-                <div class="col-value">: <span class="status">LUNAS</span></div>
+                <div class="col-label">Status Verifikasi</div>
+                <div class="col-value">:
+                    <?php
+                    $statusVerifikasi = $pembayaran['status_verifikasi'] ?? 'pending';
+                    $statusDisplay = match($statusVerifikasi) {
+                        'approved' => 'DISETUJUI',
+                        'rejected' => 'DITOLAK',
+                        default => 'MENUNGGU VERIFIKASI'
+                    };
+                    $statusClass = match($statusVerifikasi) {
+                        'approved' => 'status',
+                        'rejected' => 'status-rejected',
+                        default => 'status-pending'
+                    };
+                    ?>
+                    <span class="<?= $statusClass ?>"><?= esc($statusDisplay) ?></span>
+                </div>
             </div>
+            <?php if (!empty($pembayaran['denda']) && $pembayaran['denda'] > 0): ?>
+            <div class="row">
+                <div class="col-label">Denda</div>
+                <div class="col-value">: <span style="color: #dc3545;">Rp <?= number_format($pembayaran['denda'], 0, ',', '.') ?></span></div>
+            </div>
+            <?php endif; ?>
         </div>
 
         <!-- Data Kredit -->

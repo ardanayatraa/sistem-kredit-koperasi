@@ -37,7 +37,7 @@
                             <?php if (!empty($kredit_list)): ?>
                                 <?php foreach ($kredit_list as $kredit): ?>
                                     <option value="<?= esc($kredit['id_kredit']) ?>" <?= old('id_kredit', $angsuran['id_kredit'] ?? '') == $kredit['id_kredit'] ? 'selected' : '' ?>>
-                                        ID: <?= esc($kredit['id_kredit']) ?> - <?= esc($kredit['nama_anggota']) ?> (Rp <?= number_format($kredit['jumlah_kredit'], 0, ',', '.') ?>)
+                                        ID: <?= esc($kredit['id_kredit']) ?> - <?= esc($kredit['nama_anggota']) ?> (Rp <?= number_format($kredit['jumlah_pengajuan'], 0, ',', '.') ?>)
                                     </option>
                                 <?php endforeach; ?>
                             <?php endif; ?>

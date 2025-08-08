@@ -108,7 +108,7 @@
                 <h3 class="text-lg font-semibold text-gray-900">
                     <i class="bx bx-credit-card text-blue-600 mr-2"></i>
                     Kredit ID: <?= $item['kredit']['id_kredit'] ?> -
-                    Rp <?= number_format($item['kredit']['jumlah_kredit'], 0, ',', '.') ?>
+                    Rp <?= number_format($item['kredit']['jumlah_pengajuan'], 0, ',', '.') ?>
                 </h3>
                 <div class="flex items-center space-x-2">
                     <a href="/angsuran/jadwal/<?= $item['kredit']['id_kredit'] ?>"

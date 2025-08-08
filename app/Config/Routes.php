@@ -210,9 +210,13 @@ $routes->group('pembayaran-angsuran', ['filter' => 'role:manage_pembayaran_angsu
     $routes->get('show/(:num)', 'PembayaranAngsuranController::show/$1');
     $routes->post('toggle-status/(:num)', 'PembayaranAngsuranController::toggleStatus/$1');
     
-    // Routes untuk verifikasi pembayaran (untuk Bendahara/Admin)
-    $routes->post('verifikasi/(:num)', 'PembayaranAngsuranController::verifikasiPembayaran/$1');
-    $routes->post('tolak/(:num)', 'PembayaranAngsuranController::tolakPembayaran/$1');
+    // Routes untuk halaman dan proses verifikasi pembayaran (untuk Bendahara/Admin)
+    $routes->get('verifikasi', 'PembayaranAngsuranController::verifikasi');
+    $routes->get('verifikasi-detail/(:num)', 'PembayaranAngsuranController::verifikasiDetail/$1');
+    $routes->post('verifikasi-approve/(:num)', 'PembayaranAngsuranController::verifikasiApprove/$1');
+    $routes->post('verifikasi-reject/(:num)', 'PembayaranAngsuranController::verifikasiReject/$1');
+    $routes->post('verifikasi-pembayaran/(:num)', 'PembayaranAngsuranController::verifikasiPembayaran/$1');
+    $routes->post('tolak-pembayaran/(:num)', 'PembayaranAngsuranController::tolakPembayaran/$1');
     
     // Route untuk AJAX get angsuran by anggota (untuk Bendahara)
     $routes->post('get-angsuran-by-anggota', 'PembayaranAngsuranController::getAngsuranByAnggota');

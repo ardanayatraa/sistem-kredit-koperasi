@@ -16,7 +16,6 @@ class PembayaranAngsuranModel extends Model
         'bukti_pembayaran',
         'denda',
         'id_bendahara_verifikator',
-        'status_verifikasi',
         'created_at',
         'updated_at'
     ];
@@ -77,8 +76,7 @@ class PembayaranAngsuranModel extends Model
                 ->join('tbl_angsuran', 'tbl_angsuran.id_angsuran = tbl_pembayaran_angsuran.id_angsuran')
                 ->join('tbl_kredit', 'tbl_kredit.id_kredit = tbl_angsuran.id_kredit_ref')
                 ->join('tbl_anggota', 'tbl_kredit.id_anggota = tbl_anggota.id_anggota')
-                ->join('tbl_users', 'tbl_users.id_anggota_ref = tbl_anggota.id_anggota')
-                ->join('tbl_users as verifikator', 'verifikator.id_user = tbl_pembayaran_angsuran.id_bendahara_verifikator', 'left');
+                ->join('tbl_users', 'tbl_users.id_anggota_ref = tbl_anggota.id_anggota');
         
         // Apply user-based filtering
         $builder = applyDataScopeToQuery($builder, 'tbl_kredit');

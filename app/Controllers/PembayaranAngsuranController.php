@@ -42,6 +42,34 @@ class PembayaranAngsuranController extends Controller
         return view('pembayaran_angsuran/index', $data);
     }
 
+    /**
+     * Dashboard verifikasi pembayaran untuk Bendahara
+     */
+    public function verifikasi()
+    {
+        $currentUserLevel = session()->get('level');
+        
+        if (!in_array($currentUserLevel, ['Bendahara', 'Ketua'])) {
+            session()->setFlashdata('error', 'Akses ditolak. Hanya Bendahara yang dapat mengakses halaman ini.');
+            return redirect()->to('/dashboard');
+        }
+
+        // Get pembayaran yang pending verifikasi
+        $pembayaranPending = $this->pembayaranAngsuranModel->getFilteredPembayaranWithData(
+            ['tbl_pembayaran_angsuran.status_verifikasi' => 'pending'],
+            'tbl_pembayaran_angsuran.*, tbl_angsuran.angsuran_ke, tbl_angsuran.jumlah_angsuran,
+             tbl_kredit.id_kredit, tbl_users.nama_lengkap, tbl_anggota.no_anggota'
+        );
+
+        $data = [
+            'title' => 'Verifikasi Pembayaran Angsuran',
+            'headerTitle' => 'Verifikasi Pembayaran Angsuran',
+            'pembayaran_pending' => $pembayaranPending
+        ];
+
+        return view('pembayaran_angsuran/verifikasi', $data);
+    }
+
     public function new()
     {
         // Method ini untuk BENDAHARA - perlu pilih anggota dan angsuran
@@ -111,7 +139,7 @@ class PembayaranAngsuranController extends Controller
         $angsuranList = $angsuranModel
             ->select('tbl_angsuran.id_angsuran as id, tbl_angsuran.angsuran_ke, tbl_angsuran.jumlah_angsuran,
                      tbl_angsuran.tgl_jatuh_tempo, tbl_angsuran.status_pembayaran as status,
-                     tbl_kredit.nomor_kredit')
+                     tbl_kredit.id_kredit')
             ->join('tbl_kredit', 'tbl_kredit.id_kredit = tbl_angsuran.id_kredit_ref')
             ->where('tbl_kredit.id_anggota', $anggotaId)
             ->whereIn('tbl_angsuran.status_pembayaran', ['Belum Bayar', 'Bayar Sebagian'])
@@ -136,7 +164,7 @@ class PembayaranAngsuranController extends Controller
                 'jumlah_angsuran' => $angsuran['jumlah_angsuran'],
                 'tanggal_jatuh_tempo' => $angsuran['tgl_jatuh_tempo'],
                 'status' => $angsuran['status'] === 'Belum Bayar' ? 'belum_bayar' : 'sebagian',
-                'nomor_kredit' => $angsuran['nomor_kredit'],
+                'id_kredit' => $angsuran['id_kredit'],
                 'denda' => $dendaAmount
             ];
         }
@@ -173,7 +201,7 @@ class PembayaranAngsuranController extends Controller
         
         // Get angsuran detail with kredit info
         $angsuran = $angsuranModel
-            ->select('tbl_angsuran.*, tbl_kredit.nomor_kredit')
+            ->select('tbl_angsuran.*, tbl_kredit.id_kredit')
             ->join('tbl_kredit', 'tbl_kredit.id_kredit = tbl_angsuran.id_kredit_ref')
             ->find($angsuranId);
 
@@ -197,7 +225,7 @@ class PembayaranAngsuranController extends Controller
         return $this->response->setJSON([
             'success' => true,
             'data' => [
-                'nomor_kredit' => $angsuran['nomor_kredit'],
+                'id_kredit' => $angsuran['id_kredit'],
                 'angsuran_ke' => $angsuran['angsuran_ke'],
                 'tanggal_jatuh_tempo' => $angsuran['tgl_jatuh_tempo'],
                 'jumlah_angsuran' => $angsuran['jumlah_angsuran'],
@@ -237,8 +265,9 @@ class PembayaranAngsuranController extends Controller
             'jumlah_bayar' => $this->request->getPost('jumlah_bayar'),
             'metode_pembayaran' => $this->request->getPost('metode_pembayaran'),
             'bukti_pembayaran' => $buktiPembayaranName,
-            'denda' => $this->request->getPost('denda'),
-            'id_bendahara_verifikator' => $this->request->getPost('id_bendahara_verifikator'),
+            'denda' => $this->request->getPost('denda') ?: 0,
+            'status_verifikasi' => 'pending', // Default ke pending untuk verifikasi manual
+            // id_bendahara_verifikator akan diisi saat verifikasi (nullable)
         ];
 
         $this->pembayaranAngsuranModel->insert($data);
@@ -310,10 +339,25 @@ class PembayaranAngsuranController extends Controller
 
     public function show($id = null)
     {
-        $data['pembayaran_angsuran'] = $this->pembayaranAngsuranModel->findWithAccess($id);
-        if (empty($data['pembayaran_angsuran'])) {
+        // Get pembayaran with complete joined data including verifikator info
+        $pembayaranData = $this->pembayaranAngsuranModel->getFilteredPembayaranWithData(
+            ['tbl_pembayaran_angsuran.id_pembayaran' => $id],
+            'tbl_pembayaran_angsuran.*, tbl_angsuran.*, tbl_kredit.*, tbl_users.nama_lengkap as nama_anggota,
+             tbl_anggota.no_anggota, tbl_anggota.nik, verifikator.nama_lengkap as nama_verifikator'
+        );
+        
+        if (empty($pembayaranData)) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException('Pembayaran Angsuran dengan ID ' . $id . ' tidak ditemukan atau Anda tidak memiliki akses.');
         }
+        
+        $pembayaran = $pembayaranData[0]; // Get first result
+        
+        $data = [
+            'pembayaran_angsuran' => $pembayaran,
+            'angsuran' => $pembayaran, // Contains all angsuran fields
+            'kredit' => $pembayaran     // Contains all kredit fields
+        ];
+        
         return view('pembayaran_angsuran/show', $data);
     }
 
@@ -472,9 +516,9 @@ class PembayaranAngsuranController extends Controller
         }
 
         try {
-            // Update status verifikasi menjadi Terverifikasi
+            // Update status verifikasi menjadi approved
             $this->pembayaranAngsuranModel->update($id, [
-                'status_verifikasi' => 'Terverifikasi',
+                'status_verifikasi' => 'approved',
                 'id_bendahara_verifikator' => session()->get('id_user')
             ]);
 
@@ -483,10 +527,11 @@ class PembayaranAngsuranController extends Controller
             $angsuran = $angsuranModel->find($pembayaran['id_angsuran']);
             
             if ($angsuran) {
-                // Hitung total yang sudah dibayar dan terverifikasi untuk angsuran ini
+                // Hitung total yang sudah dibayar dan approved untuk angsuran ini
                 $totalDibayar = $this->pembayaranAngsuranModel
                     ->selectSum('jumlah_bayar')
                     ->where('id_angsuran', $pembayaran['id_angsuran'])
+                    ->where('status_verifikasi', 'approved')
                     ->first();
 
                 $jumlahTerbayar = $totalDibayar['jumlah_bayar'] ?? 0;
@@ -548,13 +593,190 @@ class PembayaranAngsuranController extends Controller
         }
 
         try {
-            // Update status verifikasi menjadi Ditolak
+            // Update status verifikasi menjadi rejected
             $alasan = $this->request->getPost('alasan') ?? 'Tidak ada alasan yang diberikan';
             
             $this->pembayaranAngsuranModel->update($id, [
-                'status_verifikasi' => 'Ditolak',
+                'status_verifikasi' => 'rejected',
+                'id_bendahara_verifikator' => session()->get('id_user')
+            ]);
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Pembayaran berhasil ditolak dengan alasan: ' . $alasan
+            ]);
+
+        } catch (\Exception $e) {
+            log_message('error', 'Error rejecting payment: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ])->setStatusCode(500);
+        }
+    }
+
+    /**
+     * Tampilkan detail pembayaran untuk verifikasi
+     */
+    public function verifikasiDetail($id = null)
+    {
+        $currentUserLevel = session()->get('level');
+        
+        if (!in_array($currentUserLevel, ['Bendahara', 'Ketua'])) {
+            session()->setFlashdata('error', 'Akses ditolak. Hanya Bendahara atau Ketua yang dapat mengakses halaman ini.');
+            return redirect()->to('/dashboard');
+        }
+
+        // Get pembayaran with complete data including verifikator info
+        $pembayaranData = $this->pembayaranAngsuranModel->getFilteredPembayaranWithData(
+            ['tbl_pembayaran_angsuran.id_pembayaran' => $id],
+            'tbl_pembayaran_angsuran.*, tbl_angsuran.angsuran_ke, tbl_angsuran.jumlah_angsuran,
+             tbl_kredit.id_kredit, tbl_users.nama_lengkap, tbl_anggota.no_anggota, tbl_anggota.nik,
+             verifikator.nama_lengkap as nama_verifikator'
+        );
+        
+        if (empty($pembayaranData)) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Pembayaran Angsuran dengan ID ' . $id . ' tidak ditemukan atau Anda tidak memiliki akses.');
+        }
+        
+        $pembayaran = $pembayaranData[0];
+        
+        $data = [
+            'title' => 'Verifikasi Pembayaran Angsuran',
+            'headerTitle' => 'Verifikasi Pembayaran Angsuran',
+            'pembayaran' => $pembayaran
+        ];
+        
+        return view('pembayaran_angsuran/verifikasi_detail', $data);
+    }
+
+    /**
+     * Approve pembayaran angsuran
+     */
+    public function verifikasiApprove($id = null)
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->to('/pembayaran-angsuran');
+        }
+
+        $currentUserLevel = session()->get('level');
+        
+        if (!in_array($currentUserLevel, ['Bendahara', 'Ketua'])) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Akses ditolak'
+            ])->setStatusCode(403);
+        }
+
+        $pembayaran = $this->pembayaranAngsuranModel->find($id);
+        if (empty($pembayaran)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Data pembayaran tidak ditemukan'
+            ])->setStatusCode(404);
+        }
+
+        if ($pembayaran['status_verifikasi'] !== 'pending') {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Pembayaran sudah diverifikasi sebelumnya'
+            ])->setStatusCode(400);
+        }
+
+        try {
+            // Update status verifikasi menjadi approved
+            $this->pembayaranAngsuranModel->update($id, [
+                'status_verifikasi' => 'approved',
+                'id_bendahara_verifikator' => session()->get('id_user')
+            ]);
+
+            // Update status pembayaran angsuran
+            $angsuranModel = new \App\Models\AngsuranModel();
+            $angsuran = $angsuranModel->find($pembayaran['id_angsuran']);
+            
+            if ($angsuran) {
+                // Hitung total yang sudah dibayar dan approved untuk angsuran ini
+                $totalDibayar = $this->pembayaranAngsuranModel
+                    ->selectSum('jumlah_bayar')
+                    ->where('id_angsuran', $pembayaran['id_angsuran'])
+                    ->where('status_verifikasi', 'approved')
+                    ->first();
+
+                $jumlahTerbayar = $totalDibayar['jumlah_bayar'] ?? 0;
+                
+                // Update status angsuran berdasarkan total pembayaran
+                if ($jumlahTerbayar >= $angsuran['jumlah_angsuran']) {
+                    $angsuranModel->update($angsuran['id_angsuran'], [
+                        'status_pembayaran' => 'Lunas'
+                    ]);
+                    $message = 'Pembayaran berhasil diverifikasi. Angsuran sudah lunas.';
+                } else {
+                    $angsuranModel->update($angsuran['id_angsuran'], [
+                        'status_pembayaran' => 'Bayar Sebagian'
+                    ]);
+                    $sisaBayar = $angsuran['jumlah_angsuran'] - $jumlahTerbayar;
+                    $message = "Pembayaran berhasil diverifikasi. Sisa pembayaran: Rp " . number_format($sisaBayar, 0, ',', '.');
+                }
+            } else {
+                $message = 'Pembayaran berhasil diverifikasi.';
+            }
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => $message
+            ]);
+
+        } catch (\Exception $e) {
+            log_message('error', 'Error approving payment: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat verifikasi: ' . $e->getMessage()
+            ])->setStatusCode(500);
+        }
+    }
+
+    /**
+     * Reject pembayaran angsuran
+     */
+    public function verifikasiReject($id = null)
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->to('/pembayaran-angsuran');
+        }
+
+        $currentUserLevel = session()->get('level');
+        
+        if (!in_array($currentUserLevel, ['Bendahara', 'Ketua'])) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Akses ditolak'
+            ])->setStatusCode(403);
+        }
+
+        $pembayaran = $this->pembayaranAngsuranModel->find($id);
+        if (empty($pembayaran)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Data pembayaran tidak ditemukan'
+            ])->setStatusCode(404);
+        }
+
+        if ($pembayaran['status_verifikasi'] !== 'pending') {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Pembayaran sudah diverifikasi sebelumnya'
+            ])->setStatusCode(400);
+        }
+
+        $jsonInput = json_decode($this->request->getBody(), true);
+        $alasan = $jsonInput['alasan'] ?? 'Tidak ada alasan yang diberikan';
+
+        try {
+            // Update status verifikasi menjadi rejected
+            $this->pembayaranAngsuranModel->update($id, [
+                'status_verifikasi' => 'rejected',
                 'id_bendahara_verifikator' => session()->get('id_user'),
-                'keterangan' => 'Ditolak: ' . $alasan
+                'keterangan' => $alasan
             ]);
 
             return $this->response->setJSON([

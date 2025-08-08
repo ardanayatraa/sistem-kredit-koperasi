@@ -104,7 +104,7 @@
                         <?php foreach ($kreditSaya as $kredit): ?>
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                    Rp <?= number_format($kredit['jumlah_kredit'], 0, ',', '.') ?>
+                                    Rp <?= number_format($kredit['jumlah_pengajuan'], 0, ',', '.') ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     <?= number_format($kredit['bunga'], 2) ?>%

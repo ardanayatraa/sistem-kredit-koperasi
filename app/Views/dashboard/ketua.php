@@ -126,7 +126,7 @@
                                         <?= esc($kredit['nama_lengkap']) ?>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        Rp <?= number_format($kredit['jumlah_kredit'], 0, ',', '.') ?>
+                                        Rp <?= number_format($kredit['jumlah_pengajuan'], 0, ',', '.') ?>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         <?= date('d/m/Y', strtotime($kredit['tanggal_pengajuan'])) ?>
