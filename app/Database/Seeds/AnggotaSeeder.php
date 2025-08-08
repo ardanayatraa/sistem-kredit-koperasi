@@ -19,11 +19,9 @@ class AnggotaSeeder extends Seeder
                 'tanggal_lahir' => '1985-05-15',
                 'alamat' => 'Jl. Sudirman No. 123, Jakarta Pusat',
                 'pekerjaan' => 'Pegawai Swasta',
-                'tanggal_pendaftaran' => '2024-01-15',
-                'status_keanggotaan' => 'Aktif',
-                'dokumen_ktp' => 'ktp_sample_1.jpg',
-                'dokumen_kk' => 'kk_sample_1.jpg',
-                'dokumen_slip_gaji' => 'slip_gaji_sample_1.jpg'
+                'tanggal_pendaftaran' => '2023-07-15', // 6+ bulan yang lalu untuk syarat minimal
+                'status_keanggotaan' => 'Aktif'
+                // Dokumen akan diupload langsung oleh anggota saat diperlukan
             ],
             [
                 'no_anggota' => 'KOPL-0002',
@@ -32,11 +30,8 @@ class AnggotaSeeder extends Seeder
                 'tanggal_lahir' => '1990-08-20',
                 'alamat' => 'Jl. Asia Afrika No. 456, Bandung',
                 'pekerjaan' => 'Wiraswasta',
-                'tanggal_pendaftaran' => '2024-02-10',
-                'status_keanggotaan' => 'Aktif',
-                'dokumen_ktp' => 'ktp_sample_2.jpg',
-                'dokumen_kk' => 'kk_sample_2.jpg',
-                'dokumen_slip_gaji' => 'slip_gaji_sample_2.jpg'
+                'tanggal_pendaftaran' => '2023-08-10', // 6+ bulan yang lalu
+                'status_keanggotaan' => 'Aktif'
             ],
             [
                 'no_anggota' => 'KOPL-0003',
@@ -45,11 +40,8 @@ class AnggotaSeeder extends Seeder
                 'tanggal_lahir' => '1987-12-03',
                 'alamat' => 'Jl. Tunjungan No. 789, Surabaya',
                 'pekerjaan' => 'PNS',
-                'tanggal_pendaftaran' => '2024-03-05',
-                'status_keanggotaan' => 'Aktif',
-                'dokumen_ktp' => 'ktp_sample_3.jpg',
-                'dokumen_kk' => 'kk_sample_3.jpg',
-                'dokumen_slip_gaji' => 'slip_gaji_sample_3.jpg'
+                'tanggal_pendaftaran' => '2023-09-05', // 6+ bulan yang lalu
+                'status_keanggotaan' => 'Aktif'
             ],
             [
                 'no_anggota' => 'KOPL-0004',
@@ -58,11 +50,8 @@ class AnggotaSeeder extends Seeder
                 'tanggal_lahir' => '1992-04-18',
                 'alamat' => 'Jl. Imam Bonjol No. 321, Medan',
                 'pekerjaan' => 'Guru',
-                'tanggal_pendaftaran' => '2024-04-12',
-                'status_keanggotaan' => 'Tidak Aktif',
-                'dokumen_ktp' => 'ktp_sample_4.jpg',
-                'dokumen_kk' => 'kk_sample_4.jpg',
-                'dokumen_slip_gaji' => 'slip_gaji_sample_4.jpg'
+                'tanggal_pendaftaran' => '2024-04-12', // Baru 4 bulan (tidak memenuhi syarat kredit)
+                'status_keanggotaan' => 'Aktif'
             ],
             [
                 'no_anggota' => 'KOPL-0005',
@@ -71,11 +60,8 @@ class AnggotaSeeder extends Seeder
                 'tanggal_lahir' => '1988-11-25',
                 'alamat' => 'Jl. Malioboro No. 654, Yogyakarta',
                 'pekerjaan' => 'Dokter',
-                'tanggal_pendaftaran' => '2024-05-08',
-                'status_keanggotaan' => 'Aktif',
-                'dokumen_ktp' => 'ktp_sample_5.jpg',
-                'dokumen_kk' => 'kk_sample_5.jpg',
-                'dokumen_slip_gaji' => 'slip_gaji_sample_5.jpg'
+                'tanggal_pendaftaran' => '2023-11-08', // 6+ bulan yang lalu
+                'status_keanggotaan' => 'Aktif'
             ]
         ];
 

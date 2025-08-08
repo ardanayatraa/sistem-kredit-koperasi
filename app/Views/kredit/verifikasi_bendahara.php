@@ -102,35 +102,14 @@
                     </div>
                 </div>
 
-                <!-- Dokumen Anggota -->
+                <!-- Informasi Tambahan -->
                 <div class="mt-6">
-                    <h4 class="text-sm font-medium text-gray-900 mb-3">Dokumen Anggota:</h4>
-                    <div class="grid grid-cols-2 gap-3">
-                        <?php if (!empty($anggota['dokumen_ktp'])): ?>
-                            <a href="/<?= $anggota['dokumen_ktp'] ?>" target="_blank"
-                               class="flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors">
-                                <i class="bx bx-id-card h-4 w-4"></i>
-                                Lihat KTP
-                            </a>
-                        <?php else: ?>
-                            <button class="flex items-center justify-center gap-2 px-3 py-2 bg-gray-400 text-white text-sm rounded cursor-not-allowed" disabled>
-                                <i class="bx bx-x h-4 w-4"></i>
-                                KTP Tidak Ada
-                            </button>
-                        <?php endif ?>
-
-                        <?php if (!empty($anggota['dokumen_slip_gaji'])): ?>
-                            <a href="/<?= $anggota['dokumen_slip_gaji'] ?>" target="_blank"
-                               class="flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors">
-                                <i class="bx bx-receipt h-4 w-4"></i>
-                                Lihat Slip Gaji
-                            </a>
-                        <?php else: ?>
-                            <button class="flex items-center justify-center gap-2 px-3 py-2 bg-gray-400 text-white text-sm rounded cursor-not-allowed" disabled>
-                                <i class="bx bx-x h-4 w-4"></i>
-                                Slip Gaji Tidak Ada
-                            </button>
-                        <?php endif ?>
+                    <h4 class="text-sm font-medium text-gray-900 mb-3">Status Verifikasi:</h4>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <p class="text-xs text-gray-600">
+                            Sebagai Bendahara, Anda perlu memverifikasi kelayakan anggota dan kesesuaian dokumen agunan
+                            untuk pengajuan kredit ini sebelum diteruskan ke Appraiser untuk penilaian agunan.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -214,7 +193,7 @@
                               id="catatan_bendahara" name="catatan_bendahara" rows="4" required
                               placeholder="Berikan catatan hasil verifikasi dokumen anggota dan kelayakan pengajuan..."></textarea>
                     <p class="mt-1 text-xs text-gray-500">
-                        Jelaskan hasil verifikasi dokumen KTP, slip gaji, dokumen agunan, dan kelayakan anggota
+                        Jelaskan hasil verifikasi kelayakan anggota, kesesuaian dokumen agunan, dan rekomendasi Anda
                     </p>
                 </div>
 

@@ -15,7 +15,7 @@ class MainSeeder extends Seeder
         $this->call('AdminSeeder');
         echo "\n";
         
-        // 2. Anggota
+        // 2. Anggota (tanpa dokumen dummy)
         echo "2. Membuat data Anggota...\n";
         $this->call('AnggotaSeeder');
         echo "\n";
@@ -25,39 +25,19 @@ class MainSeeder extends Seeder
         $this->call('BungaSeeder');
         echo "\n";
         
-        // 4. Kredit (depend on Anggota)
-        echo "4. Membuat data Kredit...\n";
-        $this->call('KreditSeeder');
-        echo "\n";
-        
-        // 5. Pencairan (depend on Kredit & Bunga)
-        echo "5. Membuat data Pencairan...\n";
-        $this->call('PencairanSeeder');
-        echo "\n";
-        
-        // 6. Angsuran (depend on Kredit)
-        echo "6. Membuat data Angsuran...\n";
-        $this->call('AngsuranSeeder');
-        echo "\n";
-        
-        // 7. Pembayaran Angsuran (depend on Angsuran & Users)
-        echo "7. Membuat data Pembayaran Angsuran...\n";
-        $this->call('PembayaranAngsuranSeeder');
-        echo "\n";
-        
-        // 8. Link User Anggota with Anggota Data
-        echo "8. Menghubungkan User Anggota dengan Data Anggota...\n";
+        // 4. Link User Anggota with Anggota Data
+        echo "4. Menghubungkan User Anggota dengan Data Anggota...\n";
         $this->linkUserAnggotaWithAnggotaData();
         echo "\n";
         
         echo "=== Seeder Selesai! ===\n";
-        echo "Data demo telah berhasil dibuat untuk semua role:\n";
+        echo "Data dasar telah berhasil dibuat untuk semua role:\n";
         echo "- Ketua Koperasi: username 'ketua_koperasi', password 'ketua123'\n";
         echo "- Bendahara: username 'bendahara', password 'bendahara123'\n";
         echo "- Appraiser: username 'appraiser', password 'appraiser123'\n";
         echo "- Anggota: username 'anggota_demo', password 'anggota123'\n\n";
         echo "Silakan login dengan salah satu akun di atas untuk menguji sistem.\n";
-        echo "Semua data sudah dilengkapi dengan status aktif/nonaktif yang dapat di-toggle sesuai role.\n";
+        echo "Sistem siap untuk digunakan tanpa data agunan dummy.\n";
         echo "User dengan level 'Anggota' sudah dikaitkan dengan data anggota yang sesuai.\n";
     }
     
