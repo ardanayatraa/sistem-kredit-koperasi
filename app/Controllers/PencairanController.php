@@ -28,9 +28,9 @@ class PencairanController extends Controller
         $kreditModel = new \App\Models\KreditModel();
         $bungaModel = new \App\Models\BungaModel();
         
-        // Get approved kredits that haven't been disbursed yet - with filtering
+        // Get kredits ready for disbursement that haven't been disbursed yet - with filtering
         $select = 'tbl_kredit.*, tbl_users.nama_lengkap';
-        $additionalWhere = ['tbl_kredit.status_kredit' => 'Disetujui'];
+        $additionalWhere = ['tbl_kredit.status_kredit' => 'Siap Dicairkan'];
         $approvedKredits = $kreditModel->getFilteredKreditsWithData($additionalWhere, $select);
         
         // Filter out kredits that already have pencairan
@@ -83,15 +83,22 @@ class PencairanController extends Controller
         try {
             $pencairanId = $this->pencairanModel->insert($data);
             
-            // Auto-generate jadwal angsuran setelah pencairan berhasil
             if ($pencairanId) {
+                // Update credit status to fully disbursed
+                $kreditModel = new \App\Models\KreditModel();
+                $kreditModel->update($data['id_kredit'], [
+                    'status_kredit' => 'Sudah Dicairkan',
+                    'status_pencairan' => 'Sudah Dicairkan'
+                ]);
+                
+                // Auto-generate jadwal angsuran setelah pencairan berhasil
                 $angsuranController = new \App\Controllers\AngsuranController();
                 $result = $angsuranController->generateAngsuranPertamaInternal($data['id_kredit']);
                 
                 if ($result && $result['success']) {
-                    $message = 'Data pencairan berhasil ditambahkan dan jadwal angsuran telah dibuat otomatis.';
+                    $message = 'Pencairan berhasil! Status kredit diperbarui dan jadwal angsuran telah dibuat otomatis.';
                 } else {
-                    $message = 'Data pencairan berhasil ditambahkan. Namun, jadwal angsuran perlu dibuat manual.';
+                    $message = 'Pencairan berhasil! Status kredit diperbarui. Namun, jadwal angsuran perlu dibuat manual.';
                 }
             } else {
                 $message = 'Data pencairan berhasil ditambahkan.';

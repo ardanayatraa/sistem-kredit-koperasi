@@ -67,16 +67,17 @@ class KreditController extends Controller
             return redirect()->back()->withInput()->with('errors', ['id_anggota' => 'Anggota tidak ditemukan.']);
         }
 
-        // Cek minimal 6 bulan sejak tanggal pendaftaran
-        $tanggalPendaftaran = new \DateTime($anggota['tanggal_pendaftaran']);
-        $sekarang = new \DateTime();
-        $selisih = $tanggalPendaftaran->diff($sekarang);
-        $totalBulan = ($selisih->y * 12) + $selisih->m;
-
-        if ($totalBulan < 6) {
-            $sisaBulan = 6 - $totalBulan;
+        // 🔍 CHECK 6 MONTHS MEMBERSHIP RULE - Using new field tanggal_masuk_anggota
+        $eligibility = $this->anggotaModel->checkCreditEligibility($anggota['id_anggota']);
+        
+        if (!$eligibility['eligible']) {
             return redirect()->back()->withInput()->with('errors', [
-                'id_anggota' => "Syarat keanggotaan: Minimal 6 bulan sejak tanggal pendaftaran. Anda masih butuh {$sisaBulan} bulan lagi."
+                'id_anggota' =>
+                    '❌ TIDAK MEMENUHI SYARAT KEANGGOTAAN' . "\n" .
+                    '📅 Tanggal Masuk: ' . date('d/m/Y', strtotime($eligibility['tanggal_masuk'])) . "\n" .
+                    '⏳ Sudah anggota: ' . $eligibility['months_completed'] . ' bulan' . "\n" .
+                    '⚠️ Masih perlu menunggu: ' . $eligibility['months_remaining'] . ' bulan lagi' . "\n" .
+                    'Syarat: Minimal 6 bulan menjadi anggota untuk dapat mengajukan kredit'
             ]);
         }
 
@@ -433,7 +434,8 @@ class KreditController extends Controller
 
             $data = [
                 'catatan_bendahara' => $catatanBendahara,
-                'tanggal_verifikasi_bendahara' => date('Y-m-d H:i:s')
+                'tanggal_verifikasi_bendahara' => date('Y-m-d H:i:s'),
+                'status_verifikasi' => $statusVerifikasi // 🔧 FIX: Simpan status verifikasi ke database
             ];
 
             // Fix logic dengan debugging yang lebih jelas
@@ -513,13 +515,15 @@ class KreditController extends Controller
             $data = [
                 'nilai_taksiran_agunan' => $nilaiTaksiranAgunan,
                 'catatan_appraiser' => $catatanAppraiser,
-                'tanggal_penilaian_appraiser' => date('Y-m-d H:i:s')
+                'tanggal_penilaian_appraiser' => date('Y-m-d H:i:s'),
+                'status_verifikasi' => $rekomendasiAppraiser // 🔧 FIX: Simpan rekomendasi appraiser sebagai status verifikasi
             ];
 
             if ($rekomendasiAppraiser === 'Disetujui') {
-                $data['status_kredit'] = 'Hasil Penilaian Appraiser';
-                log_message('info', 'ALUR KREDIT: Appraiser menyetujui pengajuan ID ' . $id . ', dikembalikan ke Bendahara untuk diteruskan');
-                $successMsg = 'Penilaian agunan selesai. Hasil dikembalikan ke Bendahara untuk diteruskan ke tahap persetujuan.';
+                // ALUR FIX: Langsung teruskan ke Ketua setelah Appraiser setuju
+                $data['status_kredit'] = 'Siap Persetujuan';
+                log_message('info', 'ALUR KREDIT: Appraiser menyetujui pengajuan ID ' . $id . ', langsung diteruskan ke Ketua untuk persetujuan final');
+                $successMsg = 'Penilaian agunan DISETUJUI. Pengajuan langsung diteruskan ke Ketua untuk persetujuan final.';
             } else {
                 $data['status_kredit'] = 'Ditolak Appraiser';
                 log_message('info', 'ALUR KREDIT: Appraiser menolak pengajuan ID ' . $id);
@@ -558,11 +562,11 @@ class KreditController extends Controller
         
         switch ($currentRole) {
             case 'Bendahara':
-                // Bendahara melihat pengajuan dengan status "Diajukan" DAN "Hasil Penilaian Appraiser"
+                // Bendahara melihat pengajuan dengan status "Diajukan" DAN "Disetujui Ketua" (untuk pencairan)
                 $pengajuan = $this->kreditModel->getFilteredKreditsWithData([
-                    'tbl_kredit.status_kredit' => ['Diajukan', 'Hasil Penilaian Appraiser']
+                    'tbl_kredit.status_kredit' => ['Diajukan', 'Disetujui Ketua']
                 ], $select);
-                $title = 'Tugas Bendahara - Verifikasi & Teruskan Hasil Appraiser';
+                $title = 'Tugas Bendahara - Verifikasi Awal & Proses Pencairan';
                 break;
                 
             case 'Appraiser':
@@ -631,13 +635,16 @@ class KreditController extends Controller
 
             $data = [
                 'catatan_ketua' => $catatanKetua,
-                'tanggal_keputusan_ketua' => date('Y-m-d H:i:s')
+                'tanggal_keputusan_ketua' => date('Y-m-d H:i:s'),
+                'status_verifikasi' => $keputusanFinal // 🔧 FIX: Simpan keputusan final sebagai status verifikasi
             ];
 
             if ($keputusanFinal === 'Disetujui') {
-                $data['status_kredit'] = 'Disetujui';
-                log_message('info', 'ALUR KREDIT: Ketua menyetujui pengajuan ID ' . $id . ', kredit siap dicairkan');
-                $successMsg = 'Pengajuan kredit disetujui. Anggota dapat melakukan pencairan kredit.';
+                $data['status_kredit'] = 'Disetujui Ketua';
+                $data['status_pencairan'] = 'Menunggu';
+                $data['tanggal_persetujuan_ketua'] = date('Y-m-d H:i:s');
+                log_message('info', 'ALUR KREDIT: Ketua menyetujui pengajuan ID ' . $id . ', dikembalikan ke Bendahara untuk pencairan');
+                $successMsg = 'Pengajuan kredit disetujui. Dikembalikan ke Bendahara untuk proses pencairan.';
             } else {
                 $data['status_kredit'] = 'Ditolak Final';
                 log_message('info', 'ALUR KREDIT: Ketua menolak pengajuan ID ' . $id);
@@ -731,6 +738,121 @@ class KreditController extends Controller
         ];
 
         return view('kredit/teruskan_hasil_appraiser', $data);
+    }
+
+    /**
+     * ALUR KOPERASI MITRA SEJAHTRA: Method untuk Bendahara proses pencairan setelah persetujuan Ketua
+     * Step: Ketua setuju → Bendahara → Pencairan
+     */
+    public function prosesPencairan($id = null)
+    {
+        // Cek akses role Bendahara
+        if (!hasPermission('bendahara')) {
+            return redirect()->to('/')->with('error', 'Akses ditolak. Hanya Bendahara yang dapat memproses pencairan.');
+        }
+
+        $kredit = $this->kreditModel->find($id);
+        if (!$kredit) {
+            return redirect()->to('/kredit')->with('error', 'Data kredit tidak ditemukan.');
+        }
+
+        // Cek status harus "Disetujui Ketua"
+        if ($kredit['status_kredit'] !== 'Disetujui Ketua') {
+            return redirect()->to('/kredit')->with('error', 'Status kredit tidak dapat diproses. Status saat ini: ' . $kredit['status_kredit']);
+        }
+
+        if ($this->request->getMethod() === 'POST') {
+            $rules = [
+                'catatan_pencairan_bendahara' => 'required|max_length[255]',
+                'keputusan_pencairan' => 'required|in_list[Siap Dicairkan,Perlu Review]'
+            ];
+
+            if (!$this->validate($rules)) {
+                return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+            }
+
+            $keputusanPencairan = $this->request->getPost('keputusan_pencairan');
+            $catatanPencairan = $this->request->getPost('catatan_pencairan_bendahara');
+
+            $data = [
+                'catatan_pencairan_bendahara' => $catatanPencairan,
+                'tanggal_proses_pencairan' => date('Y-m-d H:i:s')
+            ];
+
+            if ($keputusanPencairan === 'Siap Dicairkan') {
+                $data['status_kredit'] = 'Dicairkan';
+                $data['status_pencairan'] = 'Dicairkan';
+                
+                // 🚀 AUTO-CREATE PENCAIRAN RECORD DAN GENERATE SEMUA ANGSURAN
+                try {
+                    // 1. Create pencairan record otomatis
+                    $pencairanModel = new \App\Models\PencairanModel();
+                    $existingPencairan = $pencairanModel->where('id_kredit', $id)->first();
+                    
+                    if (!$existingPencairan) {
+                        // Get bunga default (bisa disesuaikan logic-nya)
+                        $bungaModel = new \App\Models\BungaModel();
+                        $defaultBunga = $bungaModel->where('status_aktif', 'Aktif')->first();
+                        
+                        if (!$defaultBunga) {
+                            return redirect()->back()->with('error', 'Data bunga tidak ditemukan. Hubungi administrator.');
+                        }
+                        
+                        $pencairanData = [
+                            'id_kredit' => $id,
+                            'id_bunga' => $defaultBunga['id_bunga'],
+                            'jumlah_dicairkan' => $kredit['jumlah_pengajuan'],
+                            'tanggal_pencairan' => date('Y-m-d'),
+                            'catatan_pencairan' => 'Pencairan otomatis oleh Bendahara - ' . $catatanPencairan,
+                            'created_at' => date('Y-m-d H:i:s')
+                        ];
+                        
+                        $pencairanModel->insert($pencairanData);
+                        log_message('info', 'AUTO-PENCAIRAN: Record pencairan dibuat untuk kredit ID ' . $id);
+                    }
+                    
+                    // 2. Generate HANYA angsuran ke-1 (user request: bertahap, bukan sekaligus)
+                    $angsuranController = new \App\Controllers\AngsuranController();
+                    $result = $angsuranController->generateAngsuranPertamaInternal($id);
+                    
+                    if ($result['success']) {
+                        log_message('info', 'ALUR KREDIT: Bendahara berhasil mencairkan ID ' . $id . ', angsuran ke-1 dibuat otomatis');
+                        $successMsg = 'Kredit berhasil dicairkan! ' . $result['message'] . ' Angsuran akan dibuat bertahap setelah pembayaran lunas.';
+                    } else {
+                        log_message('error', 'AUTO-ANGSURAN ERROR: ' . $result['message']);
+                        $successMsg = 'Kredit dicairkan, namun ada masalah dengan pembuatan angsuran: ' . $result['message'];
+                    }
+                    
+                } catch (\Exception $e) {
+                    log_message('error', 'AUTO-PENCAIRAN ERROR: ' . $e->getMessage());
+                    $successMsg = 'Kredit dicairkan, namun terjadi masalah: ' . $e->getMessage();
+                }
+                
+            } else {
+                $data['status_kredit'] = 'Perlu Review Bendahara';
+                $data['status_pencairan'] = 'Menunggu';
+                log_message('info', 'ALUR KREDIT: Bendahara memerlukan review lebih lanjut untuk ID ' . $id);
+                $successMsg = 'Kredit memerlukan review lebih lanjut sebelum pencairan.';
+            }
+
+            $this->kreditModel->update($id, $data);
+            return redirect()->to('/kredit/pengajuan-untuk-role')->with('success', $successMsg);
+        }
+
+        // Load anggota data with user info
+        $anggota = $this->anggotaModel
+            ->select('tbl_anggota.*, tbl_users.nama_lengkap')
+            ->join('tbl_users', 'tbl_users.id_anggota_ref = tbl_anggota.id_anggota', 'left')
+            ->find($kredit['id_anggota']);
+        
+        // Load view untuk proses pencairan
+        $data = [
+            'title' => 'Proses Pencairan - Bendahara',
+            'kredit' => $kredit,
+            'anggota' => $anggota
+        ];
+
+        return view('kredit/proses_pencairan', $data);
     }
 
     /**

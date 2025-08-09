@@ -22,9 +22,9 @@ $currentUserLevel = session()->get('level');
     <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
         <div class="flex items-center justify-between">
             <div class="min-w-0">
-                <p class="text-sm font-medium text-gray-600 truncate">Active Users</p>
+                <p class="text-sm font-medium text-gray-600 truncate">User Aktif</p>
                 <p class="text-2xl font-bold text-green-600">
-                    <?= count(array_filter($users ?? [], function($user) { return ($user['status'] ?? 'active') === 'active'; })) ?>
+                    <?= count(array_filter($users ?? [], function($user) { return ($user['status'] ?? 'Aktif') === 'Aktif'; })) ?>
                 </p>
             </div>
             <div class="p-2 bg-green-50 rounded-lg flex-shrink-0">
@@ -153,9 +153,9 @@ $currentUserLevel = session()->get('level');
                                 </span>
                             </td>
                             <td class="hidden sm:table-cell px-4 sm:px-6 py-4 whitespace-nowrap">
-                                <?php $status = $row['status'] ?? 'active'; ?>
-                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full <?= $status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' ?>">
-                                    <?= ucfirst($status) ?>
+                                <?php $status = $row['status'] ?? 'Aktif'; ?>
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full <?= $status === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' ?>">
+                                    <?= $status ?>
                                 </span>
                             </td>
                             <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

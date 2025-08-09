@@ -241,7 +241,10 @@ $routes->group('kredit', ['filter' => 'role:manage_kredit'], function($routes) {
     $routes->get('show/(:num)', 'KreditController::show/$1');
     $routes->post('toggle-status/(:num)', 'KreditController::toggleStatus/$1');
     $routes->post('verify-agunan', 'KreditController::verifyAgunan');
-    
+});
+
+// 🔥 WORKFLOW ROUTES - NO FILTER RESTRICTIONS (Role checking in controller)
+$routes->group('kredit', ['filter' => 'auth'], function($routes) {
     // ALUR KOPERASI MITRA SEJAHTRA: Workflow Management Routes
     $routes->get('pengajuan-untuk-role', 'KreditController::pengajuanUntukRole');
     $routes->get('verifikasi-bendahara/(:num)', 'KreditController::verifikasiBendahara/$1');
@@ -252,6 +255,17 @@ $routes->group('kredit', ['filter' => 'role:manage_kredit'], function($routes) {
     $routes->post('teruskan-hasil-appraiser/(:num)', 'KreditController::teruskanHasilAppraiser/$1');
     $routes->get('persetujuan-final/(:num)', 'KreditController::persetujuanFinal/$1');
     $routes->post('persetujuan-final/(:num)', 'KreditController::persetujuanFinal/$1');
+    $routes->get('proses-pencairan/(:num)', 'KreditController::prosesPencairan/$1');
+    $routes->post('proses-pencairan/(:num)', 'KreditController::prosesPencairan/$1');
+    
+    // Missing workflow routes that might be needed
+    $routes->get('pengajuan-per-role', 'KreditController::pengajuanUntukRole'); // Alias untuk backward compatibility
+    $routes->get('verifikasi-dokumen/(:num)', 'KreditController::verifikasiBendahara/$1'); // Alias untuk verifikasi
+    $routes->post('verifikasi-dokumen/(:num)', 'KreditController::verifikasiBendahara/$1'); // POST untuk verifikasi
+});
+// Dashboard anggota route (create if missing)
+$routes->group('dashboard-anggota', ['filter' => 'role:view_riwayat_kredit'], function($routes) {
+    $routes->get('/', 'Home::dashboardAnggota');
 });
 
 // Rute untuk Laporan Kredit (Full CRUD untuk Bendahara)

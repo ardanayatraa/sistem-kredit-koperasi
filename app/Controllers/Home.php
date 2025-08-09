@@ -15,6 +15,7 @@ class Home extends BaseController
     protected $pencairanModel;
     protected $angsuranModel;
     protected $pembayaranAngsuranModel;
+    protected $userModel;
 
     public function __construct()
     {
@@ -23,6 +24,7 @@ class Home extends BaseController
         $this->pencairanModel = new PencairanModel();
         $this->angsuranModel = new AngsuranModel();
         $this->pembayaranAngsuranModel = new PembayaranAngsuranModel();
+        $this->userModel = new \App\Models\UserModel();
     }
 
     public function index()
@@ -138,12 +140,40 @@ class Home extends BaseController
     // Specific dashboard methods for each role
     public function dashboardBendahara()
     {
-        $stats = $this->getRoleBasedStats('Bendahara');
+        // 🔥 WORKFLOW FOCUS: Only get essential tasks for Bendahara
+        // 1. Pengajuan baru perlu verifikasi dokumen (status: "Diajukan")
+        $pengajuanBaruBendahara = $this->kreditModel
+            ->where('status_kredit', 'Diajukan')
+            ->orderBy('tanggal_pengajuan', 'ASC')
+            ->findAll();
+        
+        // 2. Kredit siap dicairkan (status: "Disetujui Ketua")
+        $kreditSiapCair = $this->kreditModel
+            ->where('status_kredit', 'Disetujui Ketua')
+            ->orderBy('tanggal_persetujuan_ketua', 'ASC')
+            ->findAll();
+        
+        // Add user names efficiently
+        foreach ($pengajuanBaruBendahara as &$pengajuan) {
+            $anggota = $this->anggotaModel->find($pengajuan['id_anggota']);
+            if ($anggota) {
+                $user = $this->userModel->where('id_anggota_ref', $anggota['id_anggota'])->first();
+                $pengajuan['nama_lengkap'] = $user['nama_lengkap'] ?? 'Unknown';
+            }
+        }
+        
+        foreach ($kreditSiapCair as &$kredit) {
+            $anggota = $this->anggotaModel->find($kredit['id_anggota']);
+            if ($anggota) {
+                $user = $this->userModel->where('id_anggota_ref', $anggota['id_anggota'])->first();
+                $kredit['nama_lengkap'] = $user['nama_lengkap'] ?? 'Unknown';
+            }
+        }
+            
         $data = [
             'title' => 'Dashboard Bendahara',
-            'headerTitle' => 'Dashboard Bendahara',
-            'stats' => $stats['bendahara'],
-            'userLevel' => 'Bendahara'
+            'pengajuanBaruBendahara' => $pengajuanBaruBendahara,
+            'kreditSiapCair' => $kreditSiapCair
         ];
 
         return view('dashboard/bendahara', $data);
@@ -151,12 +181,25 @@ class Home extends BaseController
 
     public function dashboardKetua()
     {
-        $stats = $this->getRoleBasedStats('Ketua');
+        // 🔥 WORKFLOW FOCUS: Only get essential tasks for Ketua
+        // Kredit yang siap untuk persetujuan final (status: "Siap Persetujuan")
+        $kreditSiapDisetujui = $this->kreditModel
+            ->where('status_kredit', 'Siap Persetujuan')
+            ->orderBy('tanggal_pengajuan', 'ASC')
+            ->findAll();
+            
+        // Add user names efficiently
+        foreach ($kreditSiapDisetujui as &$kredit) {
+            $anggota = $this->anggotaModel->find($kredit['id_anggota']);
+            if ($anggota) {
+                $user = $this->userModel->where('id_anggota_ref', $anggota['id_anggota'])->first();
+                $kredit['nama_lengkap'] = $user['nama_lengkap'] ?? 'Unknown';
+            }
+        }
+        
         $data = [
             'title' => 'Dashboard Ketua',
-            'headerTitle' => 'Dashboard Ketua',
-            'stats' => $stats['ketua'],
-            'userLevel' => 'Ketua'
+            'kreditSiapDisetujui' => $kreditSiapDisetujui
         ];
 
         return view('dashboard/ketua', $data);
@@ -164,12 +207,25 @@ class Home extends BaseController
 
     public function dashboardAppraiser()
     {
-        $stats = $this->getRoleBasedStats('Appraiser');
+        // 🔥 WORKFLOW FOCUS: Only get essential tasks for Appraiser
+        // Kredit yang siap dinilai agunannya (status: "Verifikasi Bendahara")
+        $kreditSiapDinilai = $this->kreditModel
+            ->where('status_kredit', 'Verifikasi Bendahara')
+            ->orderBy('tanggal_pengajuan', 'ASC')
+            ->findAll();
+            
+        // Add user names efficiently
+        foreach ($kreditSiapDinilai as &$kredit) {
+            $anggota = $this->anggotaModel->find($kredit['id_anggota']);
+            if ($anggota) {
+                $user = $this->userModel->where('id_anggota_ref', $anggota['id_anggota'])->first();
+                $kredit['nama_lengkap'] = $user['nama_lengkap'] ?? 'Unknown';
+            }
+        }
+            
         $data = [
             'title' => 'Dashboard Appraiser',
-            'headerTitle' => 'Dashboard Appraiser',
-            'stats' => $stats['appraiser'],
-            'userLevel' => 'Appraiser'
+            'kreditSiapDinilai' => $kreditSiapDinilai
         ];
 
         return view('dashboard/appraiser', $data);
@@ -177,7 +233,7 @@ class Home extends BaseController
 
     public function dashboardAnggota()
     {
-        $userId = session()->get('user_id');
+        $userId = session()->get('id_user');
         
         // Get anggota ID from users table
         $userModel = new \App\Models\UserModel();
@@ -214,48 +270,86 @@ class Home extends BaseController
             $totalKreditAktif += $kredit['jumlah_pengajuan'];
         }
         
-        // Get credit history for table display
+        // Get credit history for table display with additional calculations
         $kreditSaya = $this->kreditModel
             ->where('id_anggota', $idAnggota)
             ->orderBy('tanggal_pengajuan', 'DESC')
             ->limit(5)
             ->findAll();
             
-        // Get payment schedule (unpaid installments)
-        $jadwalPembayaran = $this->angsuranModel
-            ->where('id_anggota', $idAnggota)
-            ->where('status_pembayaran', 'Belum Dibayar')
-            ->orderBy('tanggal_jatuh_tempo', 'ASC')
-            ->limit(5)
-            ->findAll();
+        // Add bunga and jumlah_angsuran data to each credit record
+        foreach ($kreditSaya as &$kredit) {
+            // Get default interest rate (you can modify this logic based on your business rules)
+            $bungaModel = new \App\Models\BungaModel();
+            $defaultBunga = $bungaModel->where('status_aktif', 'Aktif')->first();
             
-        // Get recent payments
+            // Set default values
+            $kredit['bunga'] = $defaultBunga['persentase_bunga'] ?? 12; // Default 12% if no active interest found
+            
+            // Calculate monthly installment (simple calculation)
+            if ($kredit['jangka_waktu'] > 0) {
+                $principal = $kredit['jumlah_pengajuan'];
+                $interest = $kredit['bunga'] / 100;
+                $months = $kredit['jangka_waktu'];
+                
+                // Simple interest calculation (you may want to use compound interest)
+                $totalAmount = $principal + ($principal * $interest * ($months / 12));
+                $kredit['jumlah_angsuran'] = $totalAmount / $months;
+            } else {
+                $kredit['jumlah_angsuran'] = 0;
+            }
+        }
+            
+        // Get payment schedule using existing model method (unpaid installments)
+        $allAngsuranData = $this->angsuranModel->getAngsuranByAnggota($idAnggota, ['tbl_angsuran.status_pembayaran' => 'Belum Dibayar']);
+        usort($allAngsuranData, function($a, $b) {
+            return strtotime($a['tgl_jatuh_tempo']) - strtotime($b['tgl_jatuh_tempo']);
+        });
+        $jadwalPembayaran = array_slice($allAngsuranData, 0, 5);
+            
+        // Get recent payments using model method
         $pembayaranTerakhir = $this->pembayaranAngsuranModel
-            ->select('pembayaran_angsuran.*, angsuran.angsuran_ke')
-            ->join('angsuran', 'angsuran.id_angsuran = pembayaran_angsuran.id_angsuran')
-            ->where('angsuran.id_anggota', $idAnggota)
-            ->orderBy('pembayaran_angsuran.tanggal_pembayaran', 'DESC')
+            ->select('tbl_pembayaran_angsuran.*, tbl_angsuran.angsuran_ke')
+            ->join('tbl_angsuran', 'tbl_angsuran.id_angsuran = tbl_pembayaran_angsuran.id_angsuran')
+            ->join('tbl_kredit', 'tbl_kredit.id_kredit = tbl_angsuran.id_kredit_ref')
+            ->where('tbl_kredit.id_anggota', $idAnggota)
+            ->orderBy('tbl_pembayaran_angsuran.tanggal_bayar', 'DESC')
             ->limit(5)
             ->findAll();
             
-        // Calculate total paid
+        // Calculate total paid from ALL payments
+        $allPembayaran = $this->pembayaranAngsuranModel
+            ->select('tbl_pembayaran_angsuran.jumlah_bayar')
+            ->join('tbl_angsuran', 'tbl_angsuran.id_angsuran = tbl_pembayaran_angsuran.id_angsuran')
+            ->join('tbl_kredit', 'tbl_kredit.id_kredit = tbl_angsuran.id_kredit_ref')
+            ->where('tbl_kredit.id_anggota', $idAnggota)
+            ->findAll();
+            
         $totalTerbayar = 0;
-        foreach ($pembayaranTerakhir as $pembayaran) {
+        foreach ($allPembayaran as $pembayaran) {
             $totalTerbayar += $pembayaran['jumlah_bayar'];
         }
         
-        // Count remaining installments
-        $sisaAngsuran = $this->angsuranModel
-            ->where('id_anggota', $idAnggota)
-            ->where('status_pembayaran', 'Belum Dibayar')
-            ->countAllResults();
+        // Count remaining installments (unpaid installments)
+        // Contoh: Jika kredit 12 bulan dan sudah bayar 2, maka sisa angsuran = 10
+        $allUnpaidInstallments = $this->angsuranModel->getAngsuranByAnggota($idAnggota, ['tbl_angsuran.status_pembayaran' => 'Belum Dibayar']);
+        $sisaAngsuran = count($allUnpaidInstallments);
             
-        // Determine payment status
-        $overdueCount = $this->angsuranModel
-            ->where('id_anggota', $idAnggota)
-            ->where('status_pembayaran', 'Belum Dibayar')
-            ->where('tanggal_jatuh_tempo <', date('Y-m-d'))
-            ->countAllResults();
+        // Get total installments and paid installments for progress calculation
+        $allAngsuran = $this->angsuranModel->getAngsuranByAnggota($idAnggota);
+        $totalAngsuran = count($allAngsuran);
+        $angsuranTerbayar = count($this->angsuranModel->getAngsuranByAnggota($idAnggota, ['tbl_angsuran.status_pembayaran' => 'Lunas']));
+            
+        // Determine payment status (check overdue)
+        $overdueAngsuran = $this->angsuranModel->getAngsuranByAnggota($idAnggota, [
+            'tbl_angsuran.status_pembayaran' => 'Belum Dibayar'
+        ]);
+        $overdueCount = 0;
+        foreach ($overdueAngsuran as $angsuran) {
+            if (strtotime($angsuran['tgl_jatuh_tempo']) < strtotime(date('Y-m-d'))) {
+                $overdueCount++;
+            }
+        }
             
         $statusPembayaran = $overdueCount > 0 ? 'terlambat' : 'lancar';
 
@@ -268,6 +362,8 @@ class Home extends BaseController
             'sisaAngsuran' => $sisaAngsuran,
             'totalTerbayar' => $totalTerbayar,
             'statusPembayaran' => $statusPembayaran,
+            'totalAngsuran' => $totalAngsuran,
+            'angsuranTerbayar' => $angsuranTerbayar,
             'kreditSaya' => $kreditSaya,
             'pembayaranTerakhir' => $pembayaranTerakhir,
             'jadwalPembayaran' => $jadwalPembayaran
@@ -370,19 +466,10 @@ class Home extends BaseController
                 }))]
             ],
             'anggota' => [
-                ['title' => 'Kredit Aktif', 'icon' => 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z', 'color' => 'blue', 'value' => count(array_filter($this->kreditModel->findAll(), function($item) {
-                    return isset($item['id_anggota']) && $item['id_anggota'] == session()->get('id_anggota_ref') &&
-                           isset($item['status_aktif']) && $item['status_aktif'] === 'Aktif';
-                }))],
-                ['title' => 'Angsuran Bulan Ini', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'color' => 'green', 'value' => count(array_filter($this->angsuranModel->findAll(), function($item) {
-                    return isset($item['id_anggota']) && $item['id_anggota'] == session()->get('id_anggota_ref') &&
-                           isset($item['tanggal_jatuh_tempo']) && date('n', strtotime($item['tanggal_jatuh_tempo'])) === date('n');
-                }))],
-                ['title' => 'Sisa Pokok', 'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1', 'color' => 'yellow', 'value' => 'Rp 0'], // Will be calculated with proper logic
-                ['title' => 'Pembayaran Terdekat', 'icon' => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', 'color' => 'red', 'value' => count(array_filter($this->angsuranModel->findAll(), function($item) {
-                    return isset($item['id_anggota']) && $item['id_anggota'] == session()->get('id_anggota_ref') &&
-                           isset($item['tanggal_jatuh_tempo']) && strtotime($item['tanggal_jatuh_tempo']) <= strtotime(date('Y-m-d', strtotime('+7 days')));
-                }))]
+                ['title' => 'Kredit Aktif', 'icon' => 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z', 'color' => 'blue', 'value' => 'Rp 0'],
+                ['title' => 'Angsuran Bulan Ini', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'color' => 'green', 'value' => '0'],
+                ['title' => 'Sisa Pokok', 'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1', 'color' => 'yellow', 'value' => 'Rp 0'],
+                ['title' => 'Pembayaran Terdekat', 'icon' => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', 'color' => 'red', 'value' => '0 hari']
             ]
         ];
 

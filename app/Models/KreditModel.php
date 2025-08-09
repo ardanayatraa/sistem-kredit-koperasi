@@ -21,6 +21,9 @@ class KreditModel extends Model
         'catatan_ketua',
         'status_kredit',
         'status_aktif',
+        'status_pencairan',
+        'catatan_pencairan_bendahara',
+        'tanggal_persetujuan_ketua',
         'dokumen_agunan',
         'created_at',
         'updated_at'

@@ -3,10 +3,191 @@
 <?= $this->section('content') ?>
 <div class="space-y-6">
     <!-- Header -->
-    <div class="bg-white rounded-lg shadow p-6">
-        <h1 class="text-2xl font-bold text-gray-900 mb-2">Dashboard Anggota</h1>
-        <p class="text-gray-600">Selamat datang, <?= esc($userData['nama_lengkap'] ?? 'Anggota') ?>!</p>
-        <p class="text-sm text-gray-500">Kelola kredit dan pembayaran Anda dari dashboard ini.</p>
+    <div class="bg-gradient-to-r from-orange-600 to-orange-800 rounded-lg p-6 text-white">
+        <h1 class="text-2xl font-bold mb-2">🏠 Dashboard Anggota</h1>
+        <p class="text-orange-100">Selamat datang, <?= esc($userData['nama_lengkap'] ?? 'Anggota') ?>!</p>
+        <p class="text-sm text-orange-200">Kelola pengajuan kredit dan pembayaran Anda</p>
+    </div>
+
+    <!-- 🔥 WORKFLOW STATUS FOR ANGGOTA -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <svg class="h-6 w-6 text-orange-600 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                    </svg>
+                    <h3 class="text-lg font-semibold text-gray-900">Status Pengajuan Kredit Anda</h3>
+                </div>
+                <div class="text-sm text-gray-500"><span class="text-orange-600 font-semibold">ANGGOTA</span> → Bendahara → Appraiser → Ketua → Bendahara</div>
+            </div>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal Pengajuan</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jumlah Kredit</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jangka Waktu</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status Alur</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <?php if (!empty($kreditSaya)): ?>
+                        <?php foreach ($kreditSaya as $kredit): ?>
+                        <tr class="hover:bg-orange-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <?= date('d/m/Y', strtotime($kredit['tanggal_pengajuan'])) ?>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                Rp <?= number_format($kredit['jumlah_pengajuan'], 0, ',', '.') ?>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                <?= $kredit['jangka_waktu'] ?> bulan
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex items-center space-x-1">
+                                        <?php
+                                        $status = $kredit['status_kredit'] ?? 'Diajukan';
+                                        switch($status) {
+                                            case 'Diajukan':
+                                                echo '<div class="w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div><span class="text-xs text-orange-600 font-semibold">ANGGOTA</span>';
+                                                echo '<svg class="w-3 h-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>';
+                                                echo '<div class="w-3 h-3 bg-gray-300 rounded-full"></div><span class="text-xs text-gray-400">Bendahara</span>';
+                                                break;
+                                            case 'Verifikasi Bendahara':
+                                                echo '<div class="w-3 h-3 bg-green-500 rounded-full"></div><span class="text-xs text-green-600">Anggota</span>';
+                                                echo '<svg class="w-3 h-3 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>';
+                                                echo '<div class="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div><span class="text-xs text-blue-600 font-semibold">BENDAHARA</span>';
+                                                echo '<svg class="w-3 h-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>';
+                                                echo '<div class="w-3 h-3 bg-gray-300 rounded-full"></div><span class="text-xs text-gray-400">Appraiser</span>';
+                                                break;
+                                            case 'Siap Persetujuan':
+                                                echo '<div class="w-3 h-3 bg-green-500 rounded-full"></div><span class="text-xs text-green-600">Anggota</span>';
+                                                echo '<svg class="w-3 h-3 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>';
+                                                echo '<div class="w-3 h-3 bg-green-500 rounded-full"></div><span class="text-xs text-green-600">Bendahara</span>';
+                                                echo '<svg class="w-3 h-3 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>';
+                                                echo '<div class="w-3 h-3 bg-green-500 rounded-full"></div><span class="text-xs text-green-600">Appraiser</span>';
+                                                echo '<svg class="w-3 h-3 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>';
+                                                echo '<div class="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></div><span class="text-xs text-purple-600 font-semibold">KETUA</span>';
+                                                break;
+                                            case 'Disetujui Ketua':
+                                                echo '<div class="w-3 h-3 bg-green-500 rounded-full"></div><span class="text-xs text-green-600">Anggota</span>';
+                                                echo '<svg class="w-3 h-3 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>';
+                                                echo '<div class="w-3 h-3 bg-green-500 rounded-full"></div><span class="text-xs text-green-600">Bendahara</span>';
+                                                echo '<svg class="w-3 h-3 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>';
+                                                echo '<div class="w-3 h-3 bg-green-500 rounded-full"></div><span class="text-xs text-green-600">Appraiser</span>';
+                                                echo '<svg class="w-3 h-3 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>';
+                                                echo '<div class="w-3 h-3 bg-green-500 rounded-full"></div><span class="text-xs text-green-600">Ketua</span>';
+                                                echo '<svg class="w-3 h-3 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>';
+                                                echo '<div class="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div><span class="text-xs text-blue-600 font-semibold">BENDAHARA</span>';
+                                                break;
+                                            default:
+                                                echo '<div class="w-3 h-3 bg-green-500 rounded-full"></div><span class="text-xs text-green-600">SELESAI</span>';
+                                        }
+                                        ?>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <?php
+                                $statusColor = '';
+                                $statusText = '';
+                                switch ($kredit['status_kredit'] ?? 'Diajukan') {
+                                    case 'Diajukan':
+                                        $statusColor = 'orange';
+                                        $statusText = 'Menunggu Verifikasi';
+                                        break;
+                                    case 'Verifikasi Bendahara':
+                                        $statusColor = 'blue';
+                                        $statusText = 'Verifikasi Dokumen';
+                                        break;
+                                    case 'Siap Persetujuan':
+                                        $statusColor = 'purple';
+                                        $statusText = 'Menunggu Persetujuan';
+                                        break;
+                                    case 'Disetujui Ketua':
+                                        $statusColor = 'green';
+                                        $statusText = 'Menunggu Pencairan';
+                                        break;
+                                    case 'Aktif':
+                                        $statusColor = 'green';
+                                        $statusText = 'Aktif';
+                                        break;
+                                    case 'Lunas':
+                                        $statusColor = 'blue';
+                                        $statusText = 'Lunas';
+                                        break;
+                                    case 'Ditolak':
+                                        $statusColor = 'red';
+                                        $statusText = 'Ditolak';
+                                        break;
+                                    default:
+                                        $statusColor = 'gray';
+                                        $statusText = 'Unknown';
+                                }
+                                ?>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-<?= $statusColor ?>-100 text-<?= $statusColor ?>-800">
+                                    <?= $statusText ?>
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <?php
+                                switch ($kredit['status_kredit'] ?? 'Diajukan') {
+                                    case 'Diajukan':
+                                        echo 'Pengajuan sedang diperiksa';
+                                        break;
+                                    case 'Verifikasi Bendahara':
+                                        echo 'Dokumen sedang diverifikasi';
+                                        break;
+                                    case 'Siap Persetujuan':
+                                        echo 'Agunan sudah dinilai, menunggu keputusan';
+                                        break;
+                                    case 'Disetujui Ketua':
+                                        echo 'Disetujui! Menunggu pencairan dana';
+                                        break;
+                                    case 'Aktif':
+                                        echo 'Kredit sudah berjalan';
+                                        break;
+                                    case 'Lunas':
+                                        echo 'Pembayaran telah selesai';
+                                        break;
+                                    case 'Ditolak':
+                                        echo 'Pengajuan tidak disetujui';
+                                        break;
+                                    default:
+                                        echo '-';
+                                }
+                                ?>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                    <tr>
+                        <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                            <div class="flex flex-col items-center">
+                                <svg class="h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                <h3 class="text-lg font-semibold text-gray-700">Belum Ada Pengajuan Kredit</h3>
+                                <p>Klik tombol di bawah untuk mengajukan kredit pertama Anda</p>
+                                <a href="<?= base_url('kredit') ?>" class="mt-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700">
+                                    <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                    </svg>
+                                    Ajukan Kredit Sekarang
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Summary Cards -->
@@ -36,7 +217,11 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-600">Sisa Angsuran</p>
-                    <p class="text-2xl font-semibold text-gray-900"><?= number_format($sisaAngsuran ?? 0) ?> bulan</p>
+                    <?php if (($sisaAngsuran ?? 0) > 0): ?>
+                        <p class="text-2xl font-semibold text-gray-900"><?= number_format($sisaAngsuran) ?> bulan</p>
+                    <?php else: ?>
+                        <p class="text-2xl font-semibold text-green-600">Lunas</p>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -119,22 +304,34 @@
                                     <?php
                                     $statusColor = '';
                                     $statusText = '';
-                                    switch ($kredit['status']) {
-                                        case 'aktif':
+                                    switch ($kredit['status_kredit'] ?? 'Pending') {
+                                        case 'Aktif':
                                             $statusColor = 'green';
                                             $statusText = 'Aktif';
                                             break;
-                                        case 'lunas':
+                                        case 'Lunas':
                                             $statusColor = 'blue';
                                             $statusText = 'Lunas';
                                             break;
-                                        case 'bermasalah':
+                                        case 'Ditolak':
                                             $statusColor = 'red';
-                                            $statusText = 'Bermasalah';
+                                            $statusText = 'Ditolak';
+                                            break;
+                                        case 'Disetujui Ketua':
+                                            $statusColor = 'purple';
+                                            $statusText = 'Disetujui';
+                                            break;
+                                        case 'Verifikasi Bendahara':
+                                            $statusColor = 'blue';
+                                            $statusText = 'Verifikasi';
+                                            break;
+                                        case 'Siap Persetujuan':
+                                            $statusColor = 'yellow';
+                                            $statusText = 'Pending Approval';
                                             break;
                                         default:
                                             $statusColor = 'gray';
-                                            $statusText = 'Pending';
+                                            $statusText = 'Diajukan';
                                     }
                                     ?>
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-<?= $statusColor ?>-100 text-<?= $statusColor ?>-800">
@@ -181,7 +378,7 @@
                                         Angsuran ke-<?= $pembayaran['angsuran_ke'] ?>
                                     </p>
                                     <p class="text-xs text-gray-500">
-                                        <?= date('d/m/Y', strtotime($pembayaran['tanggal_pembayaran'])) ?>
+                                        <?= date('d/m/Y', strtotime($pembayaran['tanggal_bayar'])) ?>
                                     </p>
                                 </div>
                                 <div class="text-right">
@@ -206,69 +403,25 @@
             </div>
         </div>
 
-        <!-- Jadwal Pembayaran -->
-        <div class="bg-white rounded-lg shadow">
-            <div class="p-6 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">Jadwal Pembayaran</h3>
-            </div>
-            <div class="p-6">
-                <?php if (!empty($jadwalPembayaran)): ?>
-                    <div class="space-y-4">
-                        <?php foreach ($jadwalPembayaran as $jadwal): ?>
-                            <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-900">
-                                        Angsuran ke-<?= $jadwal['angsuran_ke'] ?>
-                                    </p>
-                                    <p class="text-xs text-gray-500">
-                                        Jatuh tempo: <?= date('d/m/Y', strtotime($jadwal['tanggal_jatuh_tempo'])) ?>
-                                    </p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-sm font-semibold text-gray-900">
-                                        Rp <?= number_format($jadwal['jumlah_angsuran'], 0, ',', '.') ?>
-                                    </p>
-                                    <?php
-                                    $today = date('Y-m-d');
-                                    $jatuhTempo = $jadwal['tanggal_jatuh_tempo'];
-                                    $isOverdue = $today > $jatuhTempo;
-                                    ?>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium <?= $isOverdue ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800' ?>">
-                                        <?= $isOverdue ? 'Terlambat' : 'Belum Bayar' ?>
-                                    </span>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                <?php else: ?>
-                    <div class="text-center py-8 text-gray-500">
-                        <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <p>Tidak ada jadwal pembayaran</p>
-                    </div>
-                <?php endif; ?>
-            </div>
-        </div>
     </div>
 
     <!-- Payment Action Section -->
-    <?php if (!empty($jadwalPembayaran)): ?>
+    <?php if (($sisaAngsuran ?? 0) > 0): ?>
     <div class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg shadow-lg p-6 text-white">
         <div class="flex items-center justify-between">
             <div>
                 <h3 class="text-xl font-bold mb-2">Ada Angsuran yang Perlu Dibayar!</h3>
                 <p class="text-orange-100">
-                    Anda memiliki <?= count($jadwalPembayaran) ?> angsuran yang belum dibayar.
+                    Anda memiliki <?= $sisaAngsuran ?? 0 ?> angsuran yang belum dibayar.
                     <?php
                     $nextDue = null;
                     foreach ($jadwalPembayaran as $jadwal) {
-                        if (!$nextDue || strtotime($jadwal['tanggal_jatuh_tempo']) < strtotime($nextDue['tanggal_jatuh_tempo'])) {
+                        if (!$nextDue || strtotime($jadwal['tgl_jatuh_tempo']) < strtotime($nextDue['tgl_jatuh_tempo'])) {
                             $nextDue = $jadwal;
                         }
                     }
                     if ($nextDue):
-                        $daysLeft = (strtotime($nextDue['tanggal_jatuh_tempo']) - strtotime(date('Y-m-d'))) / (60*60*24);
+                        $daysLeft = (strtotime($nextDue['tgl_jatuh_tempo']) - strtotime(date('Y-m-d'))) / (60*60*24);
                         if ($daysLeft < 0):
                     ?>
                         <br>Pembayaran terdekat sudah terlambat <?= abs($daysLeft) ?> hari!

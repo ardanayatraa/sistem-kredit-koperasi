@@ -140,12 +140,14 @@
                                     $statusColors = [
                                         'Diajukan' => 'bg-yellow-100 text-yellow-800',
                                         'Verifikasi Bendahara' => 'bg-blue-100 text-blue-800',
-                                        'Hasil Penilaian Appraiser' => 'bg-purple-100 text-purple-800',
-                                        'Siap Persetujuan' => 'bg-green-100 text-green-800',
-                                        'Disetujui' => 'bg-green-100 text-green-800',
+                                        'Siap Persetujuan' => 'bg-indigo-100 text-indigo-800',
+                                        'Disetujui Ketua' => 'bg-purple-100 text-purple-800',
+                                        'Siap Dicairkan' => 'bg-green-100 text-green-800',
+                                        'Sudah Dicairkan' => 'bg-emerald-100 text-emerald-800',
                                         'Ditolak Bendahara' => 'bg-red-100 text-red-800',
                                         'Ditolak Appraiser' => 'bg-red-100 text-red-800',
-                                        'Ditolak Final' => 'bg-red-100 text-red-800'
+                                        'Ditolak Final' => 'bg-red-100 text-red-800',
+                                        'Perlu Review Bendahara' => 'bg-orange-100 text-orange-800'
                                     ];
                                     $statusClass = $statusColors[$item['status_kredit']] ?? 'bg-gray-100 text-gray-800';
                                     ?>
@@ -159,25 +161,25 @@
                                             <a href="/kredit/verifikasi-bendahara/<?= $item['id_kredit'] ?>"
                                                class="inline-flex items-center gap-1 px-3 py-1.5 bg-yellow-600 text-white text-xs font-medium rounded hover:bg-yellow-700 transition-colors">
                                                 <i class="bx bx-check h-3 w-3"></i>
-                                                Verifikasi Awal
+                                                VERIFIKASI DOKUMEN
                                             </a>
-                                        <?php elseif ($currentRole === 'Bendahara' && $item['status_kredit'] === 'Hasil Penilaian Appraiser'): ?>
-                                            <a href="/kredit/teruskan-hasil-appraiser/<?= $item['id_kredit'] ?>"
-                                               class="inline-flex items-center gap-1 px-3 py-1.5 bg-purple-600 text-white text-xs font-medium rounded hover:bg-purple-700 transition-colors">
-                                                <i class="bx bx-right-arrow-alt h-3 w-3"></i>
-                                                Teruskan Hasil
+                                        <?php elseif ($currentRole === 'Bendahara' && $item['status_kredit'] === 'Disetujui Ketua'): ?>
+                                            <a href="/kredit/proses-pencairan/<?= $item['id_kredit'] ?>"
+                                               class="inline-flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded hover:bg-green-700 transition-colors">
+                                                <i class="bx bx-money h-3 w-3"></i>
+                                                PROSES PENCAIRAN
                                             </a>
                                         <?php elseif ($currentRole === 'Appraiser' && $item['status_kredit'] === 'Verifikasi Bendahara'): ?>
                                             <a href="/kredit/penilaian-appraiser/<?= $item['id_kredit'] ?>"
-                                               class="inline-flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded hover:bg-green-700 transition-colors">
+                                               class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 transition-colors">
                                                 <i class="bx bx-search h-3 w-3"></i>
-                                                Nilai Agunan
+                                                NILAI AGUNAN
                                             </a>
                                         <?php elseif ($currentRole === 'Ketua' && $item['status_kredit'] === 'Siap Persetujuan'): ?>
                                             <a href="/kredit/persetujuan-final/<?= $item['id_kredit'] ?>"
                                                class="inline-flex items-center gap-1 px-3 py-1.5 bg-purple-600 text-white text-xs font-medium rounded hover:bg-purple-700 transition-colors">
                                                 <i class="bx bx-crown h-3 w-3"></i>
-                                                Setujui Final
+                                                PERSETUJUAN FINAL
                                             </a>
                                         <?php endif; ?>
                                         

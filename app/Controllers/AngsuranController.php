@@ -131,48 +131,164 @@ class AngsuranController extends BaseController
                 return ['success' => false, 'message' => 'Jadwal angsuran sudah dibuat sebelumnya'];
             }
 
-            // Hitung angsuran bulanan
-            $jangkaWaktu = $kredit['jangka_waktu']; // dalam bulan
-            $jumlahKredit = $pencairan['jumlah_dicairkan'];
-            $bunga = 0.02; // 2% per bulan (bisa diambil dari tabel bunga)
+            // Ambil data bunga dari pencairan
+            $bungaModel = new \App\Models\BungaModel();
+            $bunga = $bungaModel->find($pencairan['id_bunga']);
+            if (!$bunga) {
+                return ['success' => false, 'message' => 'Data bunga tidak ditemukan'];
+            }
 
-            // Rumus angsuran bulanan = (Pokok + Bunga) / Jangka Waktu
-            $bungaTotal = $jumlahKredit * $bunga * $jangkaWaktu;
-            $totalKembali = $jumlahKredit + $bungaTotal;
-            $angsuranPerBulan = $totalKembali / $jangkaWaktu;
+            // Load InterestCalculator library
+            $interestCalculator = new \App\Libraries\InterestCalculator();
 
-            // Buat HANYA angsuran ke-1 setelah pencairan
-            $tanggalPencairan = new \DateTime($pencairan['tanggal_pencairan']);
-            $tanggalJatuhTempo = clone $tanggalPencairan;
-            $tanggalJatuhTempo->add(new \DateInterval("P1M")); // 1 bulan setelah pencairan
+            // Parameter kalkulasi
+            $principal = $pencairan['jumlah_dicairkan'];
+            $rate = $bunga['persentase_bunga'];
+            $periods = $kredit['jangka_waktu'];
+            $interestType = $bunga['tipe_bunga'];
 
-            $angsuranPertama = [
-                'id_kredit_ref' => $id_kredit,
-                'angsuran_ke' => 1,
-                'jumlah_angsuran' => round($angsuranPerBulan, 0),
-                'tgl_jatuh_tempo' => $tanggalJatuhTempo->format('Y-m-d'),
-                'status_pembayaran' => 'Belum Bayar'
-            ];
+            // Generate jadwal lengkap dengan bunga otomatis
+            $schedule = $interestCalculator->calculateInstallmentSchedule(
+                $principal, $rate, $periods, $interestType
+            );
 
-            // Insert hanya angsuran ke-1
-            $this->angsuranModel->insert($angsuranPertama);
+            // Generate tanggal jatuh tempo
+            $scheduleWithDates = $interestCalculator->generateDueDates(
+                $pencairan['tanggal_pencairan'], $periods, $schedule
+            );
 
-            return [
-                'success' => true,
-                'message' => "Angsuran ke-1 berhasil dibuat setelah pencairan",
-                'data' => [
-                    'angsuran_ke' => 1,
-                    'angsuran_per_bulan' => round($angsuranPerBulan, 0),
-                    'jatuh_tempo' => $tanggalJatuhTempo->format('d/m/Y'),
-                    'total_jangka_waktu' => $jangkaWaktu
-                ]
-            ];
+            // Insert HANYA angsuran ke-1 dari jadwal yang telah dihitung
+            if (!empty($scheduleWithDates)) {
+                $angsuranPertama = [
+                    'id_kredit_ref' => $id_kredit,
+                    'angsuran_ke' => $scheduleWithDates[0]['angsuran_ke'],
+                    'jumlah_angsuran' => $scheduleWithDates[0]['jumlah_angsuran'],
+                    'tgl_jatuh_tempo' => $scheduleWithDates[0]['tgl_jatuh_tempo'],
+                    'status_pembayaran' => 'Belum Bayar'
+                ];
+
+                // Insert hanya angsuran ke-1
+                $this->angsuranModel->insert($angsuranPertama);
+
+                // Hitung total untuk informasi
+                $totals = $interestCalculator->calculateTotals($scheduleWithDates);
+
+                return [
+                    'success' => true,
+                    'message' => "Angsuran ke-1 berhasil dibuat dengan kalkulasi bunga {$interestType}",
+                    'data' => [
+                        'angsuran_ke' => 1,
+                        'angsuran_per_bulan' => $scheduleWithDates[0]['jumlah_angsuran'],
+                        'jatuh_tempo' => date('d/m/Y', strtotime($scheduleWithDates[0]['tgl_jatuh_tempo'])),
+                        'total_jangka_waktu' => $periods,
+                        'tipe_bunga' => $interestType,
+                        'rate' => $rate . '%',
+                        'total_pembayaran' => $totals['total_pembayaran'],
+                        'total_bunga' => $totals['total_bunga']
+                    ]
+                ];
+            } else {
+                return ['success' => false, 'message' => 'Gagal membuat jadwal angsuran'];
+            }
 
         } catch (\Exception $e) {
             return ['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()];
         }
-}
-/**
+    }
+
+    /**
+     * 🚀 GENERATE SEMUA ANGSURAN SEKALIGUS untuk internal call (dari KreditController)
+     * Returns array instead of JSON response
+     * USER REQUEST: "ketika bendahra mencairkan kan harusnya otomatis create pencairan dan kalau duah buat angsuran ke 1 nya k dan sterusnya"
+     */
+    public function generateAllAngsuranSekaligusInternal($id_kredit)
+    {
+        try {
+            // Ambil data kredit
+            $kredit = $this->kreditModel->find($id_kredit);
+            if (!$kredit) {
+                return ['success' => false, 'message' => 'Data kredit tidak ditemukan'];
+            }
+
+            // Cek apakah sudah ada pencairan
+            $pencairan = $this->pencairanModel->where('id_kredit', $id_kredit)->first();
+            if (!$pencairan) {
+                return ['success' => false, 'message' => 'Kredit belum dicairkan'];
+            }
+
+            // Cek apakah jadwal sudah dibuat
+            $existingAngsuran = $this->angsuranModel->where('id_kredit_ref', $id_kredit)->countAllResults();
+            if ($existingAngsuran > 0) {
+                return ['success' => false, 'message' => 'Jadwal angsuran sudah dibuat sebelumnya'];
+            }
+
+            // Ambil data bunga dari pencairan
+            $bungaModel = new \App\Models\BungaModel();
+            $bunga = $bungaModel->find($pencairan['id_bunga']);
+            if (!$bunga) {
+                return ['success' => false, 'message' => 'Data bunga tidak ditemukan'];
+            }
+
+            // Load InterestCalculator library
+            $interestCalculator = new \App\Libraries\InterestCalculator();
+
+            // Parameter kalkulasi
+            $principal = $pencairan['jumlah_dicairkan'];
+            $rate = $bunga['persentase_bunga'];
+            $periods = $kredit['jangka_waktu'];
+            $interestType = $bunga['tipe_bunga'];
+
+            // Generate jadwal lengkap dengan bunga otomatis
+            $schedule = $interestCalculator->calculateInstallmentSchedule(
+                $principal, $rate, $periods, $interestType
+            );
+
+            // Generate tanggal jatuh tempo
+            $scheduleWithDates = $interestCalculator->generateDueDates(
+                $pencairan['tanggal_pencairan'], $periods, $schedule
+            );
+
+            // Insert SEMUA angsuran dari jadwal yang telah dihitung
+            $insertedCount = 0;
+            if (!empty($scheduleWithDates)) {
+                foreach ($scheduleWithDates as $item) {
+                    $angsuranData = [
+                        'id_kredit_ref' => $id_kredit,
+                        'angsuran_ke' => $item['angsuran_ke'],
+                        'jumlah_angsuran' => $item['jumlah_angsuran'],
+                        'tgl_jatuh_tempo' => $item['tgl_jatuh_tempo'],
+                        'status_pembayaran' => 'Belum Bayar'
+                    ];
+
+                    $this->angsuranModel->insert($angsuranData);
+                    $insertedCount++;
+                }
+
+                // Hitung total untuk informasi
+                $totals = $interestCalculator->calculateTotals($scheduleWithDates);
+
+                return [
+                    'success' => true,
+                    'message' => "Berhasil membuat {$insertedCount} jadwal angsuran dengan kalkulasi bunga {$interestType}",
+                    'data' => [
+                        'total_angsuran_dibuat' => $insertedCount,
+                        'periode_jangka_waktu' => $periods . ' bulan',
+                        'tipe_bunga' => $interestType,
+                        'rate' => $rate . '%',
+                        'total_pembayaran' => $totals['total_pembayaran'],
+                        'total_bunga' => $totals['total_bunga']
+                    ]
+                ];
+            } else {
+                return ['success' => false, 'message' => 'Gagal membuat jadwal angsuran'];
+            }
+
+        } catch (\Exception $e) {
+            return ['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()];
+        }
+    }
+
+    /**
      * Generate angsuran berikutnya setelah pembayaran lunas
      */
     public function generateAngsuranBerikutnya($id_kredit)
@@ -224,24 +340,50 @@ class AngsuranController extends BaseController
                 return redirect()->back();
             }
 
-            // Hitung angsuran bulanan (sama seperti sebelumnya)
-            $jumlahKredit = $pencairan['jumlah_dicairkan'];
-            $bunga = 0.02; // 2% per bulan
-            $bungaTotal = $jumlahKredit * $bunga * $jangkaWaktu;
-            $totalKembali = $jumlahKredit + $bungaTotal;
-            $angsuranPerBulan = $totalKembali / $jangkaWaktu;
+            // Ambil data bunga dari pencairan untuk kalkulasi yang akurat
+            $bungaModel = new \App\Models\BungaModel();
+            $bunga = $bungaModel->find($pencairan['id_bunga']);
+            if (!$bunga) {
+                session()->setFlashdata('error', 'Data bunga tidak ditemukan');
+                return redirect()->back();
+            }
 
-            // Hitung tanggal jatuh tempo (1 bulan setelah angsuran sebelumnya)
-            $tanggalTerakhir = new \DateTime($angsuranTerakhir['tgl_jatuh_tempo']);
-            $tanggalBerikutnya = clone $tanggalTerakhir;
-            $tanggalBerikutnya->add(new \DateInterval("P1M"));
+            // Load InterestCalculator library
+            $interestCalculator = new \App\Libraries\InterestCalculator();
 
-            // Buat angsuran berikutnya
+            // Generate jadwal lengkap untuk mendapatkan angsuran yang tepat
+            $schedule = $interestCalculator->calculateInstallmentSchedule(
+                $pencairan['jumlah_dicairkan'],
+                $bunga['persentase_bunga'],
+                $jangkaWaktu,
+                $bunga['tipe_bunga']
+            );
+
+            // Generate tanggal jatuh tempo
+            $scheduleWithDates = $interestCalculator->generateDueDates(
+                $pencairan['tanggal_pencairan'], $jangkaWaktu, $schedule
+            );
+
+            // Ambil angsuran sesuai urutan yang benar
+            $targetSchedule = null;
+            foreach ($scheduleWithDates as $item) {
+                if ($item['angsuran_ke'] == $angsuranBerikutnya) {
+                    $targetSchedule = $item;
+                    break;
+                }
+            }
+
+            if (!$targetSchedule) {
+                session()->setFlashdata('error', 'Gagal menghitung angsuran berikutnya');
+                return redirect()->back();
+            }
+
+            // Buat angsuran berikutnya dengan nilai yang tepat
             $angsuranBaru = [
                 'id_kredit_ref' => $id_kredit,
                 'angsuran_ke' => $angsuranBerikutnya,
-                'jumlah_angsuran' => round($angsuranPerBulan, 0),
-                'tgl_jatuh_tempo' => $tanggalBerikutnya->format('Y-m-d'),
+                'jumlah_angsuran' => $targetSchedule['jumlah_angsuran'],
+                'tgl_jatuh_tempo' => $targetSchedule['tgl_jatuh_tempo'],
                 'status_pembayaran' => 'Belum Bayar'
             ];
 
