@@ -428,17 +428,6 @@
         </div>
     </div>
     <?php else: ?>
-    <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white">
-        <div class="flex items-center">
-            <svg class="h-8 w-8 text-green-200 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <div>
-                <h3 class="text-xl font-bold mb-1">Selamat!</h3>
-                <p class="text-green-100">Semua angsuran Anda sudah lunas atau belum ada kredit aktif.</p>
-            </div>
-        </div>
-    </div>
     <?php endif; ?>
 
     <!-- Quick Actions -->
