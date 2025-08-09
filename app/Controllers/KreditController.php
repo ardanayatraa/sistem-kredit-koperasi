@@ -419,7 +419,7 @@ class KreditController extends Controller
         if ($this->request->getMethod() === 'POST') {
             $rules = [
                 'catatan_bendahara' => 'required|max_length[255]',
-                'status_verifikasi' => 'required|in_list[Diterima,Ditolak]'
+                'status_verifikasi' => 'required|in_list[verified,rejected]'
             ];
 
             if (!$this->validate($rules)) {
@@ -439,11 +439,11 @@ class KreditController extends Controller
             ];
 
             // Fix logic dengan debugging yang lebih jelas
-            if ($statusVerifikasi === 'Diterima') {
+            if ($statusVerifikasi === 'verified') {
                 $data['status_kredit'] = 'Verifikasi Bendahara';
                 log_message('info', 'ALUR KREDIT: Bendahara MENERIMA pengajuan ID ' . $id . ', diteruskan ke Appraiser. Status akan menjadi: Verifikasi Bendahara');
                 $successMsg = 'Pengajuan kredit berhasil diverifikasi dan DITERIMA. Diteruskan ke Appraiser untuk penilaian agunan.';
-            } elseif ($statusVerifikasi === 'Ditolak') {
+            } elseif ($statusVerifikasi === 'rejected') {
                 $data['status_kredit'] = 'Ditolak Bendahara';
                 log_message('info', 'ALUR KREDIT: Bendahara MENOLAK pengajuan ID ' . $id . '. Status akan menjadi: Ditolak Bendahara');
                 $successMsg = 'Pengajuan kredit ditolak. Anggota akan mendapat notifikasi.';
@@ -501,7 +501,7 @@ class KreditController extends Controller
             $rules = [
                 'nilai_taksiran_agunan' => 'required|numeric|greater_than[0]',
                 'catatan_appraiser' => 'required|max_length[255]',
-                'rekomendasi_appraiser' => 'required|in_list[Disetujui,Ditolak]'
+                'rekomendasi_appraiser' => 'required|in_list[verified,rejected]'
             ];
 
             if (!$this->validate($rules)) {
@@ -519,7 +519,7 @@ class KreditController extends Controller
                 'status_verifikasi' => $rekomendasiAppraiser // 🔧 FIX: Simpan rekomendasi appraiser sebagai status verifikasi
             ];
 
-            if ($rekomendasiAppraiser === 'Disetujui') {
+            if ($rekomendasiAppraiser === 'verified') {
                 // ALUR FIX: Langsung teruskan ke Ketua setelah Appraiser setuju
                 $data['status_kredit'] = 'Siap Persetujuan';
                 log_message('info', 'ALUR KREDIT: Appraiser menyetujui pengajuan ID ' . $id . ', langsung diteruskan ke Ketua untuk persetujuan final');
@@ -623,7 +623,7 @@ class KreditController extends Controller
         if ($this->request->getMethod() === 'POST') {
             $rules = [
                 'catatan_ketua' => 'required|max_length[255]',
-                'keputusan_final' => 'required|in_list[Disetujui,Ditolak]'
+                'keputusan_final' => 'required|in_list[verified,rejected]'
             ];
 
             if (!$this->validate($rules)) {
@@ -639,7 +639,7 @@ class KreditController extends Controller
                 'status_verifikasi' => $keputusanFinal // 🔧 FIX: Simpan keputusan final sebagai status verifikasi
             ];
 
-            if ($keputusanFinal === 'Disetujui') {
+            if ($keputusanFinal === 'verified') {
                 $data['status_kredit'] = 'Disetujui Ketua';
                 $data['status_pencairan'] = 'Menunggu';
                 $data['tanggal_persetujuan_ketua'] = date('Y-m-d H:i:s');

@@ -207,24 +207,6 @@
             </div>
         </div>
 
-        <!-- Sisa Angsuran -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center">
-                <div class="p-2 bg-yellow-100 rounded-lg">
-                    <svg class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-600">Sisa Angsuran</p>
-                    <?php if (($sisaAngsuran ?? 0) > 0): ?>
-                        <p class="text-2xl font-semibold text-gray-900"><?= number_format($sisaAngsuran) ?> bulan</p>
-                    <?php else: ?>
-                        <p class="text-2xl font-semibold text-green-600">Lunas</p>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
 
         <!-- Total Terbayar -->
         <div class="bg-white rounded-lg shadow p-6">

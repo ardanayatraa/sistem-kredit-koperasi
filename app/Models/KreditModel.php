@@ -20,6 +20,7 @@ class KreditModel extends Model
         'catatan_appraiser',
         'catatan_ketua',
         'status_kredit',
+        'status_verifikasi',
         'status_aktif',
         'status_pencairan',
         'catatan_pencairan_bendahara',
