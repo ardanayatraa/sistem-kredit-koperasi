@@ -27,6 +27,14 @@ class Home extends BaseController
         $this->userModel = new \App\Models\UserModel();
     }
 
+    /**
+     * Halaman beranda utama sistem
+     *
+     * Menampilkan dashboard sesuai dengan role pengguna (Bendahara, Ketua, Appraiser, Anggota)
+     * dengan konfigurasi tampilan dan statistik yang berbeda untuk setiap role
+     *
+     * @return string View halaman beranda
+     */
     public function index()
     {
         $userLevel = session()->get('level');
@@ -138,6 +146,15 @@ class Home extends BaseController
     }
 
     // Specific dashboard methods for each role
+    /**
+     * Dashboard khusus untuk role Bendahara
+     *
+     * Menampilkan tugas-tugas Bendahara dalam workflow kredit:
+     * 1. Pengajuan baru yang perlu verifikasi dokumen (status: "Diajukan")
+     * 2. Kredit yang sudah disetujui Ketua dan siap dicairkan (status: "Disetujui Ketua")
+     *
+     * @return string View dashboard Bendahara
+     */
     public function dashboardBendahara()
     {
         // 🔥 WORKFLOW FOCUS: Only get essential tasks for Bendahara
@@ -179,6 +196,15 @@ class Home extends BaseController
         return view('dashboard/bendahara', $data);
     }
 
+    /**
+     * Dashboard khusus untuk role Ketua Koperasi
+     *
+     * Menampilkan kredit yang siap untuk persetujuan final oleh Ketua.
+     * Hanya menampilkan pengajuan dengan status "Siap Persetujuan" yang sudah
+     * melewati verifikasi Bendahara dan penilaian Appraiser
+     *
+     * @return string View dashboard Ketua
+     */
     public function dashboardKetua()
     {
         // 🔥 WORKFLOW FOCUS: Only get essential tasks for Ketua
@@ -205,6 +231,15 @@ class Home extends BaseController
         return view('dashboard/ketua', $data);
     }
 
+    /**
+     * Dashboard khusus untuk role Appraiser
+     *
+     * Menampilkan kredit yang perlu dinilai agunannya oleh Appraiser.
+     * Hanya menampilkan pengajuan dengan status "Verifikasi Bendahara" yang sudah
+     * diverifikasi oleh Bendahara dan siap untuk penilaian agunan
+     *
+     * @return string View dashboard Appraiser
+     */
     public function dashboardAppraiser()
     {
         // 🔥 WORKFLOW FOCUS: Only get essential tasks for Appraiser
@@ -231,6 +266,18 @@ class Home extends BaseController
         return view('dashboard/appraiser', $data);
     }
 
+    /**
+     * Dashboard khusus untuk role Anggota
+     *
+     * Menampilkan informasi lengkap untuk anggota koperasi:
+     * - Riwayat pengajuan kredit
+     * - Statistik kredit aktif, total terbayar, status pembayaran
+     * - Jadwal pembayaran yang belum lunas
+     * - Riwayat pembayaran terakhir
+     * - Aksi cepat untuk pembayaran dan melihat riwayat
+     *
+     * @return string View dashboard Anggota
+     */
     public function dashboardAnggota()
     {
         $userId = session()->get('id_user');
@@ -372,6 +419,14 @@ class Home extends BaseController
         return view('dashboard/anggota', $data);
     }
 
+    /**
+     * Halaman beranda alternatif
+     *
+     * Halaman beranda sederhana yang dapat digunakan sebagai landing page
+     * atau halaman informasi umum koperasi
+     *
+     * @return string View halaman beranda
+     */
     public function beranda()
     {
         $data = [
@@ -383,11 +438,31 @@ class Home extends BaseController
         return view('beranda/index', $data);
     }
 
+    /**
+     * Halaman landing page publik
+     *
+     * Halaman yang dapat diakses tanpa login, berisi informasi umum
+     * tentang koperasi dan sistem kredit
+     *
+     * @return string View landing page
+     */
     public function landingPage(): string
     {
         return view('landing_page');
     }
 
+    /**
+     * Mengambil statistik berdasarkan role pengguna
+     *
+     * Menghitung berbagai statistik yang relevan untuk setiap role:
+     * - Bendahara: kredit aktif, pencairan, pembayaran hari ini, angsuran terlambat
+     * - Ketua: total anggota, kredit disetujui, pending review, laporan bulanan
+     * - Appraiser: verifikasi hari ini, menunggu verifikasi, terverifikasi, perlu review
+     * - Anggota: kredit aktif, angsuran bulan ini, sisa pokok, pembayaran terdekat
+     *
+     * @param string $userLevel Level/role pengguna (Bendahara/Ketua/Appraiser/Anggota)
+     * @return array Statistik berdasarkan role
+     */
     private function getRoleBasedStats($userLevel)
     {
         // Helper function to count records

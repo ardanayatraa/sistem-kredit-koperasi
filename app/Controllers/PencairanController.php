@@ -16,6 +16,14 @@ class PencairanController extends Controller
         helper(['form', 'url', 'data_filter']);
     }
 
+    /**
+     * Menampilkan halaman daftar pencairan dengan kontrol akses
+     *
+     * Method ini menampilkan daftar semua pencairan yang dapat diakses pengguna
+     * berdasarkan role mereka. Data pencairan dilengkapi dengan informasi kredit dan anggota.
+     *
+     * @return \CodeIgniter\HTTP\ResponseInterface Halaman daftar pencairan
+     */
     public function index()
     {
         // Use filtered method with user-based access control
@@ -23,6 +31,15 @@ class PencairanController extends Controller
         return view('pencairan/index', $data);
     }
 
+    /**
+     * Menampilkan form untuk membuat pencairan baru
+     *
+     * Method ini menyiapkan data untuk form pencairan, termasuk daftar kredit yang
+     * sudah disetujui (status: "Siap Dicairkan") dan belum memiliki pencairan,
+     * serta daftar tingkat bunga yang aktif.
+     *
+     * @return \CodeIgniter\HTTP\ResponseInterface Halaman form pencairan baru
+     */
     public function new()
     {
         $kreditModel = new \App\Models\KreditModel();
@@ -47,6 +64,15 @@ class PencairanController extends Controller
         return view('pencairan/form', $data);
     }
 
+    /**
+     * Memproses pembuatan pencairan baru
+     *
+     * Method ini memvalidasi data pencairan, mengupload bukti transfer,
+     * menyimpan data pencairan, mengupdate status kredit menjadi "Sudah Dicairkan",
+     * dan otomatis membuat angsuran pertama setelah pencairan berhasil.
+     *
+     * @return \CodeIgniter\HTTP\RedirectResponse Redirect dengan status pembuatan pencairan
+     */
     public function create()
     {
         $rules = [
@@ -112,6 +138,16 @@ class PencairanController extends Controller
         }
     }
 
+    /**
+     * Menampilkan form edit pencairan
+     *
+     * Method ini menyiapkan data untuk form edit pencairan, termasuk data pencairan
+     * yang akan diedit, daftar kredit, dan tingkat bunga aktif. Dilengkapi dengan
+     * validasi akses untuk memastikan pengguna berhak mengedit pencairan tersebut.
+     *
+     * @param int $id ID pencairan yang akan diedit
+     * @return \CodeIgniter\HTTP\ResponseInterface Halaman form edit pencairan
+     */
     public function edit($id = null)
     {
         $kreditModel = new \App\Models\KreditModel();
@@ -131,6 +167,16 @@ class PencairanController extends Controller
         return view('pencairan/form', $data);
     }
 
+    /**
+     * Memproses update data pencairan
+     *
+     * Method ini memvalidasi data perubahan, menangani upload bukti transfer baru
+     * (jika ada), dan memperbarui data pencairan. File lama akan dihapus jika
+     * ada file baru yang diupload.
+     *
+     * @param int $id ID pencairan yang akan diupdate
+     * @return \CodeIgniter\HTTP\RedirectResponse Redirect dengan status update
+     */
     public function update($id = null)
     {
         $pencairan = $this->pencairanModel->find($id);
@@ -171,6 +217,15 @@ class PencairanController extends Controller
         return redirect()->to('/pencairan')->with('success', 'Data pencairan berhasil diperbarui.');
     }
 
+    /**
+     * Menghapus data pencairan
+     *
+     * Method ini menghapus data pencairan dari database beserta file bukti transfer
+     * yang terkait. File fisik di storage juga akan dihapus untuk menghemat ruang.
+     *
+     * @param int $id ID pencairan yang akan dihapus
+     * @return \CodeIgniter\HTTP\RedirectResponse Redirect dengan status penghapusan
+     */
     public function delete($id = null)
     {
         $pencairan = $this->pencairanModel->find($id);
@@ -183,6 +238,15 @@ class PencairanController extends Controller
         return redirect()->to('/pencairan')->with('success', 'Data pencairan berhasil dihapus.');
     }
 
+    /**
+     * Menampilkan detail pencairan
+     *
+     * Method ini menampilkan informasi lengkap tentang pencairan tertentu
+     * dengan validasi akses untuk memastikan pengguna berhak melihat data tersebut.
+     *
+     * @param int $id ID pencairan yang akan ditampilkan
+     * @return \CodeIgniter\HTTP\ResponseInterface Halaman detail pencairan
+     */
     public function show($id = null)
     {
         // Use access-controlled method
@@ -194,7 +258,14 @@ class PencairanController extends Controller
     }
 
     /**
-     * Toggle pencairan status (Aktif/Tidak Aktif)
+     * Mengubah status aktif pencairan (toggle antara Aktif/Tidak Aktif)
+     *
+     * Method AJAX ini mengubah status_aktif pencairan antara "Aktif" dan "Tidak Aktif".
+     * Digunakan untuk menonaktifkan pencairan yang bermasalah tanpa menghapus data.
+     * Mengembalikan response JSON untuk handling di frontend.
+     *
+     * @param int $id ID pencairan yang akan diubah statusnya
+     * @return \CodeIgniter\HTTP\ResponseInterface JSON response dengan status toggle
      */
     public function toggleStatus($id = null)
     {
@@ -219,7 +290,14 @@ class PencairanController extends Controller
     }
 
     /**
-     * View document with access control
+     * Menampilkan dokumen bukti transfer dengan kontrol akses
+     *
+     * Method ini memungkinkan pengguna melihat file bukti transfer pencairan
+     * dengan validasi ketat: file harus ada, terkait dengan pencairan yang valid,
+     * dan pengguna harus memiliki akses ke data pencairan tersebut.
+     *
+     * @param string $filename Nama file bukti transfer yang akan ditampilkan
+     * @return void Output file langsung ke browser atau throw exception jika tidak ada akses
      */
     public function viewDocument($filename)
     {

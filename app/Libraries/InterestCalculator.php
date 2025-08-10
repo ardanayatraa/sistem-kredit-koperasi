@@ -3,18 +3,35 @@
 namespace App\Libraries;
 
 /**
- * Library untuk perhitungan bunga otomatis
- * Mendukung berbagai jenis bunga: Flat, Menurun (Declining), Efektif (Anuitas)
+ * Library untuk perhitungan bunga otomatis sistem kredit koperasi
+ *
+ * Library ini menyediakan berbagai metode perhitungan bunga yang umum digunakan
+ * dalam sistem kredit koperasi:
+ * - Bunga Flat: Bunga dihitung dari pokok awal, tetap setiap bulan
+ * - Bunga Menurun: Bunga dihitung dari saldo menurun, berkurang setiap bulan
+ * - Bunga Efektif (Anuitas): Angsuran tetap, proporsi bunga-pokok berubah
+ *
+ * Setiap method mengembalikan jadwal lengkap dengan rincian pokok, bunga,
+ * dan saldo untuk setiap periode pembayaran.
  */
 class InterestCalculator
 {
     /**
-     * Hitung angsuran dengan bunga flat
-     * 
-     * @param float $principal Pokok pinjaman
-     * @param float $rate Persentase bunga per tahun
+     * Menghitung jadwal angsuran dengan sistem bunga flat
+     *
+     * Sistem bunga flat menghitung bunga berdasarkan pokok pinjaman awal
+     * yang tidak berubah sepanjang periode. Bunga per bulan = (Pokok × Rate) / 12
+     * Angsuran per bulan = (Pokok / Periode) + Bunga Bulanan
+     *
+     * Karakteristik:
+     * - Bunga tetap setiap bulan
+     * - Pokok angsuran tetap setiap bulan
+     * - Total angsuran tetap setiap bulan
+     *
+     * @param float $principal Jumlah pokok pinjaman
+     * @param float $rate Persentase bunga per tahun (contoh: 12 untuk 12%)
      * @param int $periods Jangka waktu dalam bulan
-     * @return array
+     * @return array Jadwal angsuran dengan rincian per periode
      */
     public static function calculateFlatInterest($principal, $rate, $periods)
     {
@@ -44,12 +61,22 @@ class InterestCalculator
     }
     
     /**
-     * Hitung angsuran dengan bunga menurun (declining balance)
-     * 
-     * @param float $principal Pokok pinjaman
-     * @param float $rate Persentase bunga per tahun
+     * Menghitung jadwal angsuran dengan sistem bunga menurun (declining balance)
+     *
+     * Sistem bunga menurun menghitung bunga berdasarkan saldo pokok yang tersisa.
+     * Setiap bulan saldo berkurang sehingga bunga juga berkurang.
+     * Bunga per bulan = Saldo Tersisa × Rate Bulanan
+     *
+     * Karakteristik:
+     * - Pokok angsuran tetap setiap bulan
+     * - Bunga menurun setiap bulan
+     * - Total angsuran menurun setiap bulan
+     * - Lebih menguntungkan untuk nasabah
+     *
+     * @param float $principal Jumlah pokok pinjaman
+     * @param float $rate Persentase bunga per tahun (contoh: 12 untuk 12%)
      * @param int $periods Jangka waktu dalam bulan
-     * @return array
+     * @return array Jadwal angsuran dengan rincian per periode
      */
     public static function calculateDecliningInterest($principal, $rate, $periods)
     {
@@ -78,12 +105,24 @@ class InterestCalculator
     }
     
     /**
-     * Hitung angsuran dengan bunga efektif (anuitas)
-     * 
-     * @param float $principal Pokok pinjaman
-     * @param float $rate Persentase bunga per tahun
+     * Menghitung jadwal angsuran dengan sistem bunga efektif (anuitas)
+     *
+     * Sistem anuitas menghasilkan angsuran yang sama setiap bulan, tetapi
+     * komposisi bunga dan pokok berubah. Di awal lebih banyak bunga,
+     * di akhir lebih banyak pokok.
+     *
+     * Formula: PMT = P × [r(1+r)^n] / [(1+r)^n - 1]
+     *
+     * Karakteristik:
+     * - Total angsuran tetap setiap bulan
+     * - Proporsi bunga menurun setiap bulan
+     * - Proporsi pokok meningkat setiap bulan
+     * - Umum digunakan di perbankan modern
+     *
+     * @param float $principal Jumlah pokok pinjaman
+     * @param float $rate Persentase bunga per tahun (contoh: 12 untuk 12%)
      * @param int $periods Jangka waktu dalam bulan
-     * @return array
+     * @return array Jadwal angsuran dengan rincian per periode
      */
     public static function calculateEffectiveInterest($principal, $rate, $periods)
     {
@@ -118,13 +157,21 @@ class InterestCalculator
     }
     
     /**
-     * Hitung jadwal angsuran berdasarkan tipe bunga
-     * 
-     * @param float $principal Pokok pinjaman
-     * @param float $rate Persentase bunga per tahun
+     * Menghitung jadwal angsuran berdasarkan tipe bunga yang dipilih
+     *
+     * Method utama yang menentukan jenis perhitungan bunga berdasarkan parameter.
+     * Mendukung berbagai variasi nama untuk setiap tipe bunga.
+     *
+     * Tipe yang didukung:
+     * - 'Flat': Bunga flat/tetap
+     * - 'Menurun'/'Declining': Bunga menurun
+     * - 'Efektif'/'Anuitas'/'Effective': Bunga efektif/anuitas
+     *
+     * @param float $principal Jumlah pokok pinjaman
+     * @param float $rate Persentase bunga per tahun (contoh: 12 untuk 12%)
      * @param int $periods Jangka waktu dalam bulan
-     * @param string $interestType Jenis bunga: 'Flat', 'Menurun', 'Efektif'
-     * @return array
+     * @param string $interestType Jenis bunga (default: 'Flat')
+     * @return array Jadwal angsuran lengkap dengan rincian per periode
      */
     public static function calculateInstallmentSchedule($principal, $rate, $periods, $interestType = 'Flat')
     {
@@ -145,12 +192,20 @@ class InterestCalculator
     }
     
     /**
-     * Generate tanggal jatuh tempo untuk setiap angsuran
-     * 
-     * @param string $startDate Tanggal mulai (format Y-m-d)
-     * @param int $periods Jumlah periode
-     * @param array $schedule Jadwal angsuran
-     * @return array
+     * Menambahkan tanggal jatuh tempo untuk setiap angsuran
+     *
+     * Method ini menambahkan kolom 'tgl_jatuh_tempo' ke setiap item dalam
+     * jadwal angsuran berdasarkan tanggal pencairan. Tanggal jatuh tempo
+     * dihitung dengan menambahkan jumlah bulan sesuai urutan angsuran.
+     *
+     * Contoh: Jika pencairan 1 Jan 2024, maka:
+     * - Angsuran ke-1 jatuh tempo: 1 Feb 2024
+     * - Angsuran ke-2 jatuh tempo: 1 Mar 2024, dst.
+     *
+     * @param string $startDate Tanggal pencairan (format Y-m-d)
+     * @param int $periods Jumlah periode (tidak digunakan, bisa dihapus)
+     * @param array $schedule Jadwal angsuran dari method calculate*
+     * @return array Jadwal angsuran dengan tanggal jatuh tempo
      */
     public static function generateDueDates($startDate, $periods, $schedule)
     {
@@ -166,10 +221,14 @@ class InterestCalculator
     }
     
     /**
-     * Hitung total pembayaran dan total bunga
-     * 
-     * @param array $schedule Jadwal angsuran
-     * @return array
+     * Menghitung ringkasan total dari jadwal angsuran
+     *
+     * Method ini menghitung berbagai total dari jadwal angsuran yang sudah dibuat,
+     * berguna untuk menampilkan ringkasan kepada nasabah tentang total kewajiban
+     * dan rincian pembayaran selama periode kredit.
+     *
+     * @param array $schedule Jadwal angsuran lengkap dari method calculate*
+     * @return array Array dengan total_pembayaran, total_bunga, total_pokok, jumlah_periode
      */
     public static function calculateTotals($schedule)
     {

@@ -39,7 +39,13 @@ class KreditModel extends Model
     }
 
     /**
-     * Get filtered kredits based on user scope
+     * Mengambil data kredit berdasarkan akses pengguna
+     *
+     * Method ini menerapkan sistem filtering berdasarkan role pengguna.
+     * Anggota hanya dapat melihat kredit miliknya, sementara staff dapat melihat semua.
+     *
+     * @param array $additionalWhere Kondisi WHERE tambahan untuk filter data
+     * @return array Daftar data kredit yang sudah difilter
      */
     public function getFilteredKredits($additionalWhere = [])
     {
@@ -63,7 +69,14 @@ class KreditModel extends Model
     }
 
     /**
-     * Get filtered kredits with joins
+     * Mengambil data kredit dengan informasi anggota (menggunakan JOIN)
+     *
+     * Method ini mengambil data kredit lengkap dengan informasi anggota dan user
+     * melalui JOIN table. Data tetap difilter berdasarkan hak akses pengguna.
+     *
+     * @param array $additionalWhere Kondisi WHERE tambahan
+     * @param string $select Custom SELECT clause (opsional)
+     * @return array Data kredit dengan informasi anggota
      */
     public function getFilteredKreditsWithData($additionalWhere = [], $select = null)
     {
@@ -96,7 +109,13 @@ class KreditModel extends Model
     }
 
     /**
-     * Find with access control
+     * Mencari data kredit berdasarkan ID dengan kontrol akses
+     *
+     * Method ini memastikan pengguna hanya dapat mengakses data kredit
+     * sesuai dengan hak aksesnya (anggota hanya bisa akses kredit sendiri)
+     *
+     * @param int $id ID kredit yang dicari
+     * @return array|null Data kredit jika ada akses, null jika tidak ada akses
      */
     public function findWithAccess($id)
     {
@@ -110,7 +129,14 @@ class KreditModel extends Model
     }
 
     /**
-     * Get paginated filtered results
+     * Mengambil data kredit dengan pagination dan filter akses
+     *
+     * Method ini menggabungkan sistem filtering akses pengguna dengan
+     * pagination untuk menampilkan data dalam bentuk halaman
+     *
+     * @param int $perPage Jumlah data per halaman (default: 10)
+     * @param array $additionalWhere Kondisi WHERE tambahan
+     * @return array Data kredit yang sudah dipaginasi
      */
     public function getPaginatedFiltered($perPage = 10, $additionalWhere = [])
     {
@@ -133,6 +159,15 @@ class KreditModel extends Model
         return $this->paginate($perPage);
     }
 
+    /**
+     * Mengambil semua data angsuran berdasarkan ID kredit
+     *
+     * Method ini mengambil daftar angsuran yang terkait dengan kredit tertentu
+     * untuk keperluan menampilkan jadwal pembayaran atau riwayat angsuran
+     *
+     * @param int $id_kredit ID kredit yang akan dicari angsurannya
+     * @return array Daftar angsuran untuk kredit tersebut
+     */
     public function getAngsuranByKredit($id_kredit)
     {
         return $this->db->table('tbl_angsuran')

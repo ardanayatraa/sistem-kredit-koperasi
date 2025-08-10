@@ -36,6 +36,7 @@ class AnggotaController extends Controller
             'alamat' => 'required',
             'pekerjaan' => 'required',
             'status_keanggotaan' => 'required',
+            'tanggal_masuk_anggota' => 'required|valid_date',
             'dokumen_ktp' => 'uploaded[dokumen_ktp]|max_size[dokumen_ktp,2048]|ext_in[dokumen_ktp,pdf,jpg,jpeg,png]',
             'dokumen_kk' => 'uploaded[dokumen_kk]|max_size[dokumen_kk,2048]|ext_in[dokumen_kk,pdf,jpg,jpeg,png]',
             'dokumen_slip_gaji' => 'uploaded[dokumen_slip_gaji]|max_size[dokumen_slip_gaji,2048]|ext_in[dokumen_slip_gaji,pdf,jpg,jpeg,png]',
@@ -71,6 +72,7 @@ class AnggotaController extends Controller
             'pekerjaan' => $this->request->getPost('pekerjaan'),
             'tanggal_pendaftaran' => $this->request->getPost('tanggal_pendaftaran'),
             'status_keanggotaan' => $this->request->getPost('status_keanggotaan'),
+            'tanggal_masuk_anggota' => $this->request->getPost('tanggal_masuk_anggota'),
             'dokumen_ktp' => $ktpName,
             'dokumen_kk' => $kkName,
             'dokumen_slip_gaji' => $slipGajiName,
@@ -96,6 +98,7 @@ class AnggotaController extends Controller
             'nik' => 'required|min_length[16]|max_length[16]|is_unique[tbl_anggota.nik,id_anggota,' . $id . ']',
             'tempat_lahir' => 'required', 'tanggal_lahir' => 'required|valid_date', 'alamat' => 'required',
             'pekerjaan' => 'required', 'status_keanggotaan' => 'required',
+            'tanggal_masuk_anggota' => 'required|valid_date',
             'dokumen_ktp' => 'max_size[dokumen_ktp,2048]|ext_in[dokumen_ktp,pdf,jpg,jpeg,png]',
             'dokumen_kk' => 'max_size[dokumen_kk,2048]|ext_in[dokumen_kk,pdf,jpg,jpeg,png]',
             'dokumen_slip_gaji' => 'max_size[dokumen_slip_gaji,2048]|ext_in[dokumen_slip_gaji,pdf,jpg,jpeg,png]',
@@ -108,6 +111,7 @@ class AnggotaController extends Controller
             'tanggal_lahir' => $this->request->getPost('tanggal_lahir'), 'alamat' => $this->request->getPost('alamat'),
             'pekerjaan' => $this->request->getPost('pekerjaan'),
             'status_keanggotaan' => $this->request->getPost('status_keanggotaan'),
+            'tanggal_masuk_anggota' => $this->request->getPost('tanggal_masuk_anggota'),
         ];
 
         $uploadPath = WRITEPATH . 'uploads/anggota';
@@ -181,5 +185,47 @@ class AnggotaController extends Controller
             'message' => 'Status anggota berhasil diubah menjadi ' . $newStatus,
             'new_status' => $newStatus
         ]);
+    }
+
+    /**
+     * View member document with access control
+     */
+    public function viewDocument($filename)
+    {
+        // Cari anggota yang memiliki dokumen ini
+        $anggota = $this->anggotaModel
+            ->where('dokumen_ktp', $filename)
+            ->orWhere('dokumen_kk', $filename)
+            ->orWhere('dokumen_slip_gaji', $filename)
+            ->first();
+        
+        if (!$anggota) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Dokumen tidak ditemukan.');
+        }
+
+        // Basic access control - you can enhance this based on your needs
+        $currentUserLevel = session()->get('level');
+        $currentUserId = session()->get('id_user');
+        
+        // Allow access for admin roles or if it's the member's own document
+        if (!in_array($currentUserLevel, ['Bendahara', 'Ketua', 'Appraiser']) &&
+            session()->get('id_anggota_ref') != $anggota['id_anggota']) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Anda tidak memiliki akses ke dokumen ini.');
+        }
+
+        // Path ke file
+        $filePath = WRITEPATH . 'uploads/anggota/' . $filename;
+        
+        if (!file_exists($filePath)) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('File tidak ditemukan.');
+        }
+
+        // Serve file dengan content type yang tepat
+        $mime = mime_content_type($filePath);
+        
+        return $this->response
+            ->setHeader('Content-Type', $mime)
+            ->setHeader('Content-Disposition', 'inline; filename="' . $filename . '"')
+            ->setBody(file_get_contents($filePath));
     }
 }

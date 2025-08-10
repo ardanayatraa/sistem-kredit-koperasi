@@ -297,6 +297,9 @@ $routes->get('dokumen_kredit/(:any)', 'KreditController::viewDocument/$1', ['fil
 // Route untuk akses file pencairan dengan access control
 $routes->get('uploads/pencairan/(:any)', 'PencairanController::viewDocument/$1', ['filter' => 'auth']);
 
+// Route untuk akses dokumen anggota dengan access control
+$routes->get('uploads/anggota/(:any)', 'AnggotaController::viewDocument/$1', ['filter' => 'auth']);
+
 // Rute untuk melayani file yang diunggah dari writable/uploads (tetap sama)
 $routes->get('writable/uploads/(:segment)/(:any)', function($folder, $filename) {
     $path = WRITEPATH . 'uploads/' . $folder . '/' . $filename;

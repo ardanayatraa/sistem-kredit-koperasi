@@ -168,7 +168,7 @@
         <!-- Footer -->
         <div class="text-center mt-6">
             <p class="text-xs text-gray-400">
-                © 2024 Koperasi Management System
+                © 2025
             </p>
         </div>
     </div>

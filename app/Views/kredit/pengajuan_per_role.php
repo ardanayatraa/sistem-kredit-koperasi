@@ -4,7 +4,17 @@
 <div class="space-y-6">
     <!-- Header -->
     <div class="bg-white rounded-lg shadow p-6">
-        <h1 class="text-2xl font-bold text-gray-900 mb-2"><?= $title ?></h1>
+        <div class="flex items-center justify-between mb-2">
+            <h1 class="text-2xl font-bold text-gray-900"><?= $title ?></h1>
+            
+            <?php if ($currentRole === 'Anggota'): ?>
+                <a href="/kredit" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-blue-700 transition-colors">
+                    <i class="bx bx-plus h-4 w-4"></i>
+                    Ajukan Kredit Baru
+                </a>
+            <?php endif; ?>
+        </div>
+        
         <div class="flex items-center gap-4">
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                 <?php
@@ -94,8 +104,10 @@
         <?php if (empty($pengajuan)): ?>
             <div class="px-6 py-12 text-center">
                 <i class="bx bx-inbox text-gray-400 h-12 w-12 mx-auto mb-4"></i>
-                <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak Ada Tugas</h3>
-                <p class="text-gray-600">
+                <h3 class="text-lg font-medium text-gray-900 mb-2">
+                    <?= $currentRole === 'Anggota' ? 'Belum Ada Pengajuan Kredit' : 'Tidak Ada Tugas' ?>
+                </h3>
+                <p class="text-gray-600 mb-4">
                     <?php
                     switch ($currentRole) {
                         case 'Bendahara':
@@ -107,11 +119,21 @@
                         case 'Ketua':
                             echo 'Tidak ada pengajuan kredit yang menunggu persetujuan final.';
                             break;
+                        case 'Anggota':
+                            echo 'Anda belum memiliki pengajuan kredit. Mulai ajukan kredit untuk keperluan Anda.';
+                            break;
                         default:
                             echo 'Anda belum memiliki pengajuan kredit.';
                     }
                     ?>
                 </p>
+                
+                <?php if ($currentRole === 'Anggota'): ?>
+                    <a href="/kredit" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-blue-700 transition-colors">
+                        <i class="bx bx-plus h-4 w-4"></i>
+                        Ajukan Kredit Sekarang
+                    </a>
+                <?php endif; ?>
             </div>
         <?php else: ?>
             <div class="overflow-x-auto">

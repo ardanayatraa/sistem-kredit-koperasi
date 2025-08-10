@@ -28,6 +28,15 @@ class AnggotaModel extends Model
     protected $useTimestamps = true;
     protected $beforeInsert = ['generateMemberNumber'];
 
+    /**
+     * Generate nomor anggota otomatis saat registrasi
+     *
+     * Method ini dipanggil otomatis sebelum data anggota disimpan (beforeInsert).
+     * Membuat nomor anggota dengan format KOPL-0001, KOPL-0002, dst.
+     *
+     * @param array $data Data anggota yang akan disimpan
+     * @return array Data dengan nomor anggota yang sudah di-generate
+     */
     protected function generateMemberNumber(array $data)
     {
         // If no_anggota is not provided, generate it automatically
@@ -41,10 +50,14 @@ class AnggotaModel extends Model
     }
 
     /**
-     * Check if member is eligible for credit (6 months membership rule)
+     * Mengecek kelayakan anggota untuk mengajukan kredit (aturan 6 bulan keanggotaan)
      *
-     * @param int $id_anggota
-     * @return array ['eligible' => bool, 'months_completed' => int, 'months_remaining' => int]
+     * Method ini menerapkan business rule bahwa anggota harus sudah bergabung
+     * minimal 6 bulan sebelum dapat mengajukan kredit. Perhitungan menggunakan
+     * tanggal_masuk_anggota sebagai acuan.
+     *
+     * @param int $id_anggota ID anggota yang akan dicek kelayakannya
+     * @return array Data kelayakan: eligible, months_completed, months_remaining, message
      */
     public function checkCreditEligibility($id_anggota)
     {
@@ -80,9 +93,13 @@ class AnggotaModel extends Model
     }
 
     /**
-     * Get eligible members for credit (6 months or more)
+     * Mengambil daftar anggota yang layak mengajukan kredit (sudah 6 bulan atau lebih)
      *
-     * @return array
+     * Method ini mengembalikan semua anggota dengan status aktif yang sudah
+     * menjadi anggota selama 6 bulan atau lebih. Digunakan untuk validasi
+     * dan dropdown dalam form pengajuan kredit.
+     *
+     * @return array Daftar anggota yang memenuhi syarat untuk kredit
      */
     public function getEligibleMembersForCredit()
     {
@@ -94,9 +111,12 @@ class AnggotaModel extends Model
     }
 
     /**
-     * Get members who are not yet eligible for credit
+     * Mengambil daftar anggota yang belum layak mengajukan kredit (kurang dari 6 bulan)
      *
-     * @return array
+     * Method ini mengembalikan anggota aktif yang belum mencapai 6 bulan keanggotaan.
+     * Berguna untuk laporan atau notifikasi kapan anggota bisa mengajukan kredit.
+     *
+     * @return array Daftar anggota yang belum memenuhi syarat untuk kredit
      */
     public function getNotEligibleMembersForCredit()
     {

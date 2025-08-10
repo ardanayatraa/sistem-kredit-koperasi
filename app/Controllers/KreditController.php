@@ -19,6 +19,14 @@ class KreditController extends Controller
         helper(['form', 'url', 'permission', 'notification', 'data_filter']);
     }
 
+    /**
+     * Menampilkan daftar semua pengajuan kredit
+     *
+     * Method ini mengambil semua data kredit dengan informasi anggota terkait
+     * menggunakan sistem filtering berdasarkan akses pengguna (data scope)
+     *
+     * @return string View daftar kredit
+     */
     public function index()
     {
         // Use filtered method with user-based access control
@@ -27,6 +35,14 @@ class KreditController extends Controller
         return view('kredit/index', $data);
     }
 
+    /**
+     * Menampilkan form pengajuan kredit baru
+     *
+     * Untuk role Anggota, form akan otomatis terisi dengan ID anggota dari session.
+     * Untuk role lain, dapat memilih anggota yang akan mengajukan kredit.
+     *
+     * @return string View form kredit baru
+     */
     public function new()
     {
         $session = session();
@@ -40,6 +56,18 @@ class KreditController extends Controller
         return view('kredit/form', $data);
     }
 
+    /**
+     * Memproses pengajuan kredit baru
+     *
+     * Workflow yang dilakukan:
+     * 1. Validasi data input termasuk upload dokumen agunan
+     * 2. Cek syarat keanggotaan minimal 6 bulan (business rule koperasi)
+     * 3. Cek status keanggotaan harus aktif
+     * 4. Simpan data kredit dengan status awal "Diajukan"
+     * 5. Upload dokumen agunan ke storage
+     *
+     * @return RedirectResponse Redirect ke daftar kredit dengan pesan sukses/error
+     */
     public function create()
     {
         $rules = [
@@ -124,6 +152,16 @@ class KreditController extends Controller
         return redirect()->to('/kredit')->with('success', 'Pengajuan kredit berhasil disubmit. Menunggu verifikasi Bendahara.');
     }
 
+    /**
+     * Menampilkan form edit data kredit
+     *
+     * Method ini menggunakan sistem akses kontrol untuk memastikan pengguna
+     * hanya dapat mengakses data kredit sesuai dengan hak aksesnya
+     *
+     * @param int $id ID kredit yang akan diedit
+     * @return string View form edit kredit
+     * @throws PageNotFoundException Jika kredit tidak ditemukan atau tidak ada akses
+     */
     public function edit($id = null)
     {
         // Use access-controlled method
@@ -134,6 +172,19 @@ class KreditController extends Controller
         return view('kredit/form', $data);
     }
 
+    /**
+     * Memproses update data kredit
+     *
+     * Method ini memperbarui data kredit yang sudah ada, termasuk:
+     * - Data umum kredit (jumlah, jangka waktu, dll)
+     * - Catatan dari berbagai role (bendahara, appraiser, ketua)
+     * - Dokumen agunan (jika ada file baru)
+     * - Status kredit
+     *
+     * @param int $id ID kredit yang akan diupdate
+     * @return RedirectResponse Redirect dengan pesan sukses/error
+     * @throws PageNotFoundException Jika kredit tidak ditemukan atau tidak ada akses
+     */
     public function update($id = null)
     {
         // Use access-controlled method
@@ -204,6 +255,20 @@ class KreditController extends Controller
         return redirect()->to('/kredit')->with('success', 'Data kredit berhasil diperbarui.');
     }
 
+    /**
+     * Menghapus data kredit beserta data terkait
+     *
+     * Method ini menghapus secara cascade:
+     * 1. Data pembayaran angsuran (jika ada)
+     * 2. Data angsuran (jika ada)
+     * 3. Data pencairan (jika ada)
+     * 4. File dokumen agunan
+     * 5. Data kredit utama
+     *
+     * @param int $id ID kredit yang akan dihapus
+     * @return RedirectResponse Redirect dengan pesan sukses/error
+     * @throws PageNotFoundException Jika kredit tidak ditemukan atau tidak ada akses
+     */
     public function delete($id = null)
     {
         // Use access-controlled method
@@ -261,6 +326,16 @@ class KreditController extends Controller
         }
     }
 
+    /**
+     * Menampilkan detail data kredit
+     *
+     * Method ini menampilkan semua informasi lengkap tentang pengajuan kredit
+     * termasuk data anggota, status workflow, dan dokumen terkait
+     *
+     * @param int $id ID kredit yang akan ditampilkan
+     * @return string View detail kredit
+     * @throws PageNotFoundException Jika kredit tidak ditemukan atau tidak ada akses
+     */
     public function show($id = null)
     {
         $data['kredit'] = $this->kreditModel->findWithAccess($id);
@@ -270,6 +345,15 @@ class KreditController extends Controller
         return view('kredit/show', $data);
     }
 
+    /**
+     * Mengubah status aktif/non-aktif kredit via AJAX
+     *
+     * Method ini memungkinkan admin untuk mengaktifkan atau menonaktifkan
+     * kredit secara cepat melalui interface dashboard
+     *
+     * @param int $id ID kredit yang akan diubah statusnya
+     * @return ResponseInterface JSON response dengan status operasi
+     */
     public function toggleStatus($id = null)
     {
         $kredit = $this->kreditModel->find($id);
@@ -292,6 +376,14 @@ class KreditController extends Controller
         ]);
     }
 
+    /**
+     * Verifikasi agunan oleh Appraiser via AJAX
+     *
+     * Method ini memungkinkan Appraiser untuk menyimpan catatan penilaian agunan
+     * secara langsung tanpa harus melalui form terpisah
+     *
+     * @return ResponseInterface JSON response dengan status operasi
+     */
     public function verifyAgunan()
     {
         // Only allow Appraiser role to access this method
@@ -399,6 +491,20 @@ class KreditController extends Controller
      * ALUR KOPERASI MITRA SEJAHTRA: Method khusus untuk Bendahara verifikasi dokumen
      * Workflow: Anggota → Bendahara → Appraiser → Anggota
      */
+    /**
+     * Verifikasi dokumen kredit oleh Bendahara (Step 1 Workflow)
+     *
+     * Workflow Koperasi Mitra Sejahtera:
+     * Anggota → BENDAHARA → Appraiser → Ketua → Bendahara (pencairan)
+     *
+     * Fungsi ini memproses:
+     * 1. Verifikasi kelengkapan dokumen pengajuan
+     * 2. Input catatan bendahara
+     * 3. Keputusan: Diterima (lanjut ke Appraiser) atau Ditolak
+     *
+     * @param int $id ID kredit yang akan diverifikasi
+     * @return string|RedirectResponse View verifikasi atau redirect setelah submit
+     */
     public function verifikasiBendahara($id = null)
     {
         // Cek akses role Bendahara
@@ -419,37 +525,36 @@ class KreditController extends Controller
         if ($this->request->getMethod() === 'POST') {
             $rules = [
                 'catatan_bendahara' => 'required|max_length[255]',
-                'status_verifikasi' => 'required|in_list[verified,rejected]'
+                'keputusan_bendahara' => 'required|in_list[Diterima,Ditolak]'
             ];
 
             if (!$this->validate($rules)) {
                 return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
             }
 
-            $statusVerifikasi = trim($this->request->getPost('status_verifikasi'));
+            $keputusanBendahara = trim($this->request->getPost('keputusan_bendahara'));
             $catatanBendahara = $this->request->getPost('catatan_bendahara');
 
             // Debug logging
-            log_message('debug', 'VERIFIKASI BENDAHARA - ID: ' . $id . ', Status: [' . $statusVerifikasi . '], Catatan: ' . $catatanBendahara);
+            log_message('debug', 'VERIFIKASI BENDAHARA - ID: ' . $id . ', Keputusan: [' . $keputusanBendahara . '], Catatan: ' . $catatanBendahara);
 
             $data = [
                 'catatan_bendahara' => $catatanBendahara,
-                'tanggal_verifikasi_bendahara' => date('Y-m-d H:i:s'),
-                'status_verifikasi' => $statusVerifikasi // 🔧 FIX: Simpan status verifikasi ke database
+                'tanggal_verifikasi_bendahara' => date('Y-m-d H:i:s')
             ];
 
             // Fix logic dengan debugging yang lebih jelas
-            if ($statusVerifikasi === 'verified') {
+            if ($keputusanBendahara === 'Diterima') {
                 $data['status_kredit'] = 'Verifikasi Bendahara';
                 log_message('info', 'ALUR KREDIT: Bendahara MENERIMA pengajuan ID ' . $id . ', diteruskan ke Appraiser. Status akan menjadi: Verifikasi Bendahara');
                 $successMsg = 'Pengajuan kredit berhasil diverifikasi dan DITERIMA. Diteruskan ke Appraiser untuk penilaian agunan.';
-            } elseif ($statusVerifikasi === 'rejected') {
+            } elseif ($keputusanBendahara === 'Ditolak') {
                 $data['status_kredit'] = 'Ditolak Bendahara';
                 log_message('info', 'ALUR KREDIT: Bendahara MENOLAK pengajuan ID ' . $id . '. Status akan menjadi: Ditolak Bendahara');
                 $successMsg = 'Pengajuan kredit ditolak. Anggota akan mendapat notifikasi.';
             } else {
-                log_message('error', 'VERIFIKASI BENDAHARA ERROR - Status tidak dikenali: [' . $statusVerifikasi . ']');
-                return redirect()->back()->withInput()->with('errors', ['status_verifikasi' => 'Status verifikasi tidak valid.']);
+                log_message('error', 'VERIFIKASI BENDAHARA ERROR - Keputusan tidak dikenali: [' . $keputusanBendahara . ']');
+                return redirect()->back()->withInput()->with('errors', ['keputusan_bendahara' => 'Keputusan bendahara tidak valid.']);
             }
 
             log_message('debug', 'VERIFIKASI BENDAHARA - Data yang akan disimpan: ' . json_encode($data));
@@ -480,6 +585,20 @@ class KreditController extends Controller
      * ALUR KOPERASI MITRA SEJAHTRA: Method khusus untuk Appraiser penilaian agunan
      * Workflow: Anggota → Bendahara → Appraiser → Anggota
      */
+    /**
+     * Penilaian agunan oleh Appraiser (Step 2 Workflow)
+     *
+     * Workflow Koperasi Mitra Sejahtera:
+     * Anggota → Bendahara → APPRAISER → Ketua → Bendahara (pencairan)
+     *
+     * Fungsi ini memproses:
+     * 1. Penilaian nilai taksiran agunan
+     * 2. Input catatan appraiser tentang kondisi agunan
+     * 3. Rekomendasi: Disetujui (lanjut ke Ketua) atau Ditolak
+     *
+     * @param int $id ID kredit yang akan dinilai
+     * @return string|RedirectResponse View penilaian atau redirect setelah submit
+     */
     public function penilaianAppraiser($id = null)
     {
         // Cek akses role Appraiser
@@ -501,7 +620,7 @@ class KreditController extends Controller
             $rules = [
                 'nilai_taksiran_agunan' => 'required|numeric|greater_than[0]',
                 'catatan_appraiser' => 'required|max_length[255]',
-                'rekomendasi_appraiser' => 'required|in_list[verified,rejected]'
+                'rekomendasi_appraiser' => 'required|in_list[Disetujui,Ditolak]'
             ];
 
             if (!$this->validate($rules)) {
@@ -515,11 +634,10 @@ class KreditController extends Controller
             $data = [
                 'nilai_taksiran_agunan' => $nilaiTaksiranAgunan,
                 'catatan_appraiser' => $catatanAppraiser,
-                'tanggal_penilaian_appraiser' => date('Y-m-d H:i:s'),
-                'status_verifikasi' => $rekomendasiAppraiser // 🔧 FIX: Simpan rekomendasi appraiser sebagai status verifikasi
+                'tanggal_penilaian_appraiser' => date('Y-m-d H:i:s')
             ];
 
-            if ($rekomendasiAppraiser === 'verified') {
+            if ($rekomendasiAppraiser === 'Disetujui') {
                 // ALUR FIX: Langsung teruskan ke Ketua setelah Appraiser setuju
                 $data['status_kredit'] = 'Siap Persetujuan';
                 log_message('info', 'ALUR KREDIT: Appraiser menyetujui pengajuan ID ' . $id . ', langsung diteruskan ke Ketua untuk persetujuan final');
@@ -552,6 +670,17 @@ class KreditController extends Controller
 
     /**
      * ALUR KOPERASI MITRA SEJAHTRA: Method untuk mendapat list pengajuan sesuai role
+     */
+    /**
+     * Menampilkan daftar pengajuan sesuai role pengguna
+     *
+     * Method ini menyaring pengajuan kredit berdasarkan workflow dan role:
+     * - Bendahara: Pengajuan baru ("Diajukan") dan siap dicairkan ("Disetujui Ketua")
+     * - Appraiser: Pengajuan yang sudah diverifikasi Bendahara ("Verifikasi Bendahara")
+     * - Ketua: Pengajuan siap persetujuan final ("Siap Persetujuan")
+     * - Anggota: Pengajuan milik sendiri (semua status)
+     *
+     * @return string View daftar pengajuan per role
      */
     public function pengajuanUntukRole()
     {
@@ -603,6 +732,20 @@ class KreditController extends Controller
     /**
      * ALUR KOPERASI MITRA SEJAHTRA: Method untuk persetujuan final oleh Ketua
      */
+    /**
+     * Persetujuan final oleh Ketua Koperasi (Step 3 Workflow)
+     *
+     * Workflow Koperasi Mitra Sejahtera:
+     * Anggota → Bendahara → Appraiser → KETUA → Bendahara (pencairan)
+     *
+     * Fungsi ini memproses:
+     * 1. Review hasil verifikasi Bendahara dan penilaian Appraiser
+     * 2. Input catatan ketua sebagai pertimbangan keputusan
+     * 3. Keputusan final: Disetujui (lanjut pencairan) atau Ditolak
+     *
+     * @param int $id ID kredit yang akan diputuskan
+     * @return string|RedirectResponse View persetujuan atau redirect setelah submit
+     */
     public function persetujuanFinal($id = null)
     {
         // Cek akses role Ketua
@@ -623,7 +766,7 @@ class KreditController extends Controller
         if ($this->request->getMethod() === 'POST') {
             $rules = [
                 'catatan_ketua' => 'required|max_length[255]',
-                'keputusan_final' => 'required|in_list[verified,rejected]'
+                'keputusan_final' => 'required|in_list[Disetujui,Ditolak]'
             ];
 
             if (!$this->validate($rules)) {
@@ -635,11 +778,10 @@ class KreditController extends Controller
 
             $data = [
                 'catatan_ketua' => $catatanKetua,
-                'tanggal_keputusan_ketua' => date('Y-m-d H:i:s'),
-                'status_verifikasi' => $keputusanFinal // 🔧 FIX: Simpan keputusan final sebagai status verifikasi
+                'tanggal_keputusan_ketua' => date('Y-m-d H:i:s')
             ];
 
-            if ($keputusanFinal === 'verified') {
+            if ($keputusanFinal === 'Disetujui') {
                 $data['status_kredit'] = 'Disetujui Ketua';
                 $data['status_pencairan'] = 'Menunggu';
                 $data['tanggal_persetujuan_ketua'] = date('Y-m-d H:i:s');
@@ -744,6 +886,21 @@ class KreditController extends Controller
      * ALUR KOPERASI MITRA SEJAHTRA: Method untuk Bendahara proses pencairan setelah persetujuan Ketua
      * Step: Ketua setuju → Bendahara → Pencairan
      */
+    /**
+     * Proses pencairan dana oleh Bendahara (Step 4 Final Workflow)
+     *
+     * Workflow Koperasi Mitra Sejahtera:
+     * Anggota → Bendahara → Appraiser → Ketua → BENDAHARA (pencairan)
+     *
+     * Fungsi ini memproses:
+     * 1. Review persetujuan final dari Ketua
+     * 2. Input catatan pencairan bendahara
+     * 3. Keputusan pencairan: Siap Dicairkan atau Perlu Review
+     * 4. Auto-create record pencairan dan generate angsuran pertama
+     *
+     * @param int $id ID kredit yang akan dicairkan
+     * @return string|RedirectResponse View pencairan atau redirect setelah submit
+     */
     public function prosesPencairan($id = null)
     {
         // Cek akses role Bendahara
@@ -782,6 +939,7 @@ class KreditController extends Controller
             if ($keputusanPencairan === 'Siap Dicairkan') {
                 $data['status_kredit'] = 'Dicairkan';
                 $data['status_pencairan'] = 'Dicairkan';
+                $data['status_verifikasi'] = 'verified'; // 🔧 FIX: Update status_verifikasi hanya saat sudah dicairkan
                 
                 // 🚀 AUTO-CREATE PENCAIRAN RECORD DAN GENERATE SEMUA ANGSURAN
                 try {
@@ -857,6 +1015,17 @@ class KreditController extends Controller
 
     /**
      * View document with access control
+     */
+    /**
+     * Menampilkan dokumen agunan dengan kontrol akses
+     *
+     * Method ini memvalidasi akses pengguna terhadap dokumen sebelum menampilkan.
+     * Hanya pengguna yang memiliki akses ke data kredit terkait yang dapat
+     * melihat dokumen agunannya.
+     *
+     * @param string $filename Nama file dokumen yang akan ditampilkan
+     * @return ResponseInterface File content dengan header yang sesuai
+     * @throws PageNotFoundException Jika dokumen tidak ditemukan atau tidak ada akses
      */
     public function viewDocument($filename)
     {

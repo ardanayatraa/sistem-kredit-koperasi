@@ -201,6 +201,7 @@ class UserController extends Controller
             'alamat' => 'required',
             'pekerjaan' => 'required',
             'tanggal_pendaftaran' => 'required|valid_date',
+            'tanggal_masuk_anggota' => 'required|valid_date',
             'dokumen_ktp' => 'uploaded[dokumen_ktp]|max_size[dokumen_ktp,2048]|ext_in[dokumen_ktp,pdf,jpg,jpeg,png]',
             'dokumen_kk' => 'uploaded[dokumen_kk]|max_size[dokumen_kk,2048]|ext_in[dokumen_kk,pdf,jpg,jpeg,png]',
             'dokumen_slip_gaji' => 'uploaded[dokumen_slip_gaji]|max_size[dokumen_slip_gaji,2048]|ext_in[dokumen_slip_gaji,pdf,jpg,jpeg,png]',
@@ -237,6 +238,7 @@ class UserController extends Controller
             'alamat' => $this->request->getPost('alamat'),
             'pekerjaan' => $this->request->getPost('pekerjaan'),
             'tanggal_pendaftaran' => $this->request->getPost('tanggal_pendaftaran'),
+            'tanggal_masuk_anggota' => $this->request->getPost('tanggal_masuk_anggota'),
             'status_keanggotaan' => 'Aktif',
             'dokumen_ktp' => $ktpName,
             'dokumen_kk' => $kkName,
@@ -284,6 +286,7 @@ class UserController extends Controller
             'tanggal_lahir' => 'required|valid_date',
             'alamat' => 'required',
             'pekerjaan' => 'required',
+            'tanggal_masuk_anggota' => 'required|valid_date',
             'dokumen_ktp' => 'max_size[dokumen_ktp,2048]|ext_in[dokumen_ktp,pdf,jpg,jpeg,png]',
             'dokumen_kk' => 'max_size[dokumen_kk,2048]|ext_in[dokumen_kk,pdf,jpg,jpeg,png]',
             'dokumen_slip_gaji' => 'max_size[dokumen_slip_gaji,2048]|ext_in[dokumen_slip_gaji,pdf,jpg,jpeg,png]',
@@ -315,6 +318,7 @@ class UserController extends Controller
             'tanggal_lahir' => $this->request->getPost('tanggal_lahir'),
             'alamat' => $this->request->getPost('alamat'),
             'pekerjaan' => $this->request->getPost('pekerjaan'),
+            'tanggal_masuk_anggota' => $this->request->getPost('tanggal_masuk_anggota'),
         ];
 
         // Handle file uploads if provided

@@ -239,6 +239,24 @@
                             <?php endif; ?>
                         </div>
 
+                        <div class="w-full">
+                            <label for="tanggal_masuk_anggota" class="block text-sm font-medium text-gray-700 mb-2">
+                                Tanggal Masuk Anggota <span class="text-red-500">*</span>
+                            </label>
+                            <input type="date"
+                                   name="tanggal_masuk_anggota"
+                                   id="tanggal_masuk_anggota"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                   value="<?= old('tanggal_masuk_anggota', $anggota['tanggal_masuk_anggota'] ?? '') ?>"
+                                   required>
+                            <?php if (session('errors.tanggal_masuk_anggota')): ?>
+                                <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
+                                    <i class="bx bx-exclamation-circle text-red-600 h-4 w-4"></i>
+                                    <?= session('errors.tanggal_masuk_anggota') ?>
+                                </p>
+                            <?php endif; ?>
+                        </div>
+
                         <div class="w-full md:col-span-2">
                             <label for="alamat" class="block text-sm font-medium text-gray-700 mb-2">
                                 Alamat Lengkap <span class="text-red-500">*</span>

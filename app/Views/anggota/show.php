@@ -102,7 +102,7 @@
                     <i class="bx bx-user-check text-green-600 h-5 w-5"></i>
                     Data Keanggotaan
                 </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="bg-gray-50 rounded-lg p-4">
                         <div class="flex items-center gap-3">
                             <div class="p-2 bg-green-100 rounded-lg">
@@ -115,6 +115,21 @@
                             </div>
                         </div>
                     </div>
+
+                    <?php if (!empty($anggota['tanggal_masuk_anggota'])): ?>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-teal-100 rounded-lg">
+                                <i class="bx bx-calendar-plus text-teal-600 h-5 w-5"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Tanggal Masuk Anggota</p>
+                                <p class="text-lg font-semibold text-gray-900"><?= date('d F Y', strtotime($anggota['tanggal_masuk_anggota'])) ?></p>
+                                <p class="text-sm text-gray-500"><?= floor((time() - strtotime($anggota['tanggal_masuk_anggota'])) / (365*24*3600)) ?> tahun sebagai anggota</p>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
 
                     <div class="bg-gray-50 rounded-lg p-4">
                         <div class="flex items-center gap-3">

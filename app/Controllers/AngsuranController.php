@@ -21,6 +21,14 @@ class AngsuranController extends BaseController
         helper(['form', 'url', 'data_filter']);
     }
 
+    /**
+     * Menampilkan halaman daftar angsuran dengan kontrol akses
+     *
+     * Method ini menampilkan daftar semua angsuran yang dapat diakses
+     * pengguna berdasarkan role mereka. Anggota hanya melihat angsuran sendiri.
+     *
+     * @return \CodeIgniter\HTTP\ResponseInterface Halaman daftar angsuran
+     */
     public function index()
     {
         // Use filtered method with user-based access control
@@ -29,7 +37,13 @@ class AngsuranController extends BaseController
     }
 
     /**
-     * Generate jadwal angsuran otomatis setelah pencairan
+     * Generate jadwal angsuran otomatis setelah pencairan (API endpoint)
+     *
+     * Method ini membuat angsuran pertama setelah kredit dicairkan.
+     * Menggunakan sistem kalkulasi bunga yang tepat dan mengembalikan JSON response.
+     *
+     * @param int $id_kredit ID kredit yang akan dibuatkan angsurannya
+     * @return \CodeIgniter\HTTP\ResponseInterface JSON response dengan status dan data
      */
     public function generateJadwalAngsuran($id_kredit)
     {
@@ -107,8 +121,14 @@ class AngsuranController extends BaseController
     }
 
     /**
-     * Generate angsuran pertama untuk internal call (dari PencairanController)
-     * Returns array instead of JSON response
+     * Generate angsuran pertama untuk internal call (dipanggil dari PencairanController)
+     *
+     * Method ini dipanggil secara internal setelah pencairan berhasil.
+     * Membuat hanya angsuran ke-1 dengan kalkulasi bunga yang akurat.
+     * Mengembalikan array untuk internal processing, bukan JSON response.
+     *
+     * @param int $id_kredit ID kredit yang akan dibuatkan angsuran pertamanya
+     * @return array Status result dengan message dan data
      */
     public function generateAngsuranPertamaInternal($id_kredit)
     {
@@ -197,9 +217,14 @@ class AngsuranController extends BaseController
     }
 
     /**
-     * 🚀 GENERATE SEMUA ANGSURAN SEKALIGUS untuk internal call (dari KreditController)
-     * Returns array instead of JSON response
-     * USER REQUEST: "ketika bendahra mencairkan kan harusnya otomatis create pencairan dan kalau duah buat angsuran ke 1 nya k dan sterusnya"
+     * Generate semua angsuran sekaligus untuk internal call (dipanggil dari workflow)
+     *
+     * Method ini membuat seluruh jadwal angsuran (dari ke-1 sampai terakhir) sekaligus
+     * setelah pencairan berhasil. Digunakan ketika user request generate semua angsuran
+     * langsung saat pencairan, bukan step-by-step.
+     *
+     * @param int $id_kredit ID kredit yang akan dibuatkan seluruh jadwal angsurannya
+     * @return array Status result dengan total angsuran yang dibuat
      */
     public function generateAllAngsuranSekaligusInternal($id_kredit)
     {
@@ -289,7 +314,14 @@ class AngsuranController extends BaseController
     }
 
     /**
-     * Generate angsuran berikutnya setelah pembayaran lunas
+     * Generate angsuran berikutnya setelah angsuran sebelumnya lunas
+     *
+     * Method ini digunakan untuk sistem step-by-step angsuran, dimana angsuran
+     * berikutnya baru dibuat setelah angsuran sebelumnya lunas. Mengvalidasi
+     * status pembayaran dan jangka waktu kredit.
+     *
+     * @param int $id_kredit ID kredit yang akan dibuatkan angsuran berikutnya
+     * @return \CodeIgniter\HTTP\RedirectResponse Redirect dengan flash message
      */
     public function generateAngsuranBerikutnya($id_kredit)
     {
@@ -400,7 +432,14 @@ class AngsuranController extends BaseController
     }
 
     /**
-     * Lihat jadwal angsuran per kredit
+     * Menampilkan jadwal angsuran lengkap untuk kredit tertentu
+     *
+     * Method ini menampilkan seluruh jadwal angsuran beserta status pembayaran
+     * real-time (Lunas, Belum Bayar, Terlambat). Dilengkapi dengan kontrol akses
+     * berdasarkan role pengguna.
+     *
+     * @param int $id_kredit ID kredit yang akan ditampilkan jadwal angsurannya
+     * @return \CodeIgniter\HTTP\ResponseInterface Halaman jadwal angsuran
      */
     public function lihatJadwal($id_kredit)
     {
@@ -438,7 +477,14 @@ class AngsuranController extends BaseController
     }
 
     /**
-     * Dashboard pembayaran untuk anggota
+     * Dashboard pembayaran khusus untuk anggota
+     *
+     * Method ini menampilkan ringkasan kredit aktif anggota beserta angsuran
+     * yang belum dibayar. Jika dipanggil tanpa parameter, otomatis menggunakan
+     * ID anggota dari session (untuk role Anggota).
+     *
+     * @param int $id_anggota ID anggota (opsional, auto-detect dari session)
+     * @return \CodeIgniter\HTTP\ResponseInterface Dashboard pembayaran anggota
      */
     public function dashboardPembayaran($id_anggota = null)
     {
@@ -479,9 +525,13 @@ class AngsuranController extends BaseController
 
     /**
      * Form pembayaran angsuran untuk anggota
-     */
-    /**
-     * Form pembayaran untuk anggota - tanpa parameter (auto-detect anggota)
+     *
+     * Method ini menampilkan form pembayaran untuk angsuran tertentu.
+     * Jika tidak ada ID angsuran, akan menampilkan daftar angsuran yang bisa dibayar.
+     * Dilengkapi dengan validasi akses dan perhitungan sisa pembayaran.
+     *
+     * @param int $id_angsuran ID angsuran yang akan dibayar (opsional)
+     * @return \CodeIgniter\HTTP\ResponseInterface Form pembayaran atau daftar angsuran
      */
     public function bayarAngsuran($id_angsuran = null)
     {
@@ -514,7 +564,13 @@ class AngsuranController extends BaseController
     }
 
     /**
-     * Daftar angsuran yang bisa dibayar untuk anggota login
+     * Menampilkan daftar angsuran yang bisa dibayar untuk anggota login
+     *
+     * Method ini menampilkan semua angsuran dengan status "Belum Bayar" milik
+     * anggota yang sedang login, dilengkapi dengan informasi total yang sudah
+     * dibayar dan status keterlambatan.
+     *
+     * @return \CodeIgniter\HTTP\ResponseInterface Halaman daftar angsuran yang bisa dibayar
      */
     public function daftarAngsuranBayar()
     {
@@ -559,7 +615,14 @@ class AngsuranController extends BaseController
     }
 
     /**
-     * Proses pembayaran untuk anggota
+     * Memproses pembayaran angsuran dari anggota
+     *
+     * Method ini memvalidasi data pembayaran, mengupload bukti pembayaran,
+     * dan menyimpan data pembayaran dengan status "pending" untuk verifikasi
+     * bendahara. Dilengkapi dengan validasi file dan error handling.
+     *
+     * @param int $id_angsuran ID angsuran yang dibayar
+     * @return \CodeIgniter\HTTP\RedirectResponse Redirect dengan status pembayaran
      */
     public function prosesBayar($id_angsuran)
     {
