@@ -105,7 +105,7 @@ $currentUserLevel = session()->get('level') ?? null;
             <table class="min-w-full divide-y divide-gray-200">
     <thead class="bg-gray-50">
         <tr>
-            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Lengkap</th>
             <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NIK</th>
             <th class="hidden md:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tempat, Tgl Lahir</th>
             <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alamat</th>
@@ -124,8 +124,13 @@ $currentUserLevel = session()->get('level') ?? null;
         ?>
         <?php foreach ($anggota as $row): ?>
             <tr class="hover:bg-gray-50 transition-colors anggota-row"
-                data-search="<?= strtolower(esc($row['nik'] . ' ' . $row['tempat_lahir'] . ' ' . $row['alamat'] . ' ' . $row['pekerjaan'])) ?>">
-                <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?= esc($row['id_anggota']) ?></td>
+                data-search="<?= strtolower(esc(($row['nama_lengkap'] ?? '') . ' ' . $row['nik'] . ' ' . $row['tempat_lahir'] . ' ' . $row['alamat'] . ' ' . $row['pekerjaan'])) ?>">
+                <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <div>
+                        <div class="font-semibold text-gray-900"><?= esc($row['nama_lengkap'] ?? 'Belum ada nama') ?></div>
+                        <div class="text-xs text-gray-500">ID: <?= esc($row['id_anggota']) ?></div>
+                    </div>
+                </td>
                 <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-mono text-gray-900"><?= esc($row['nik']) ?></div>
                     <div class="md:hidden text-xs text-gray-500"><?= esc($row['tempat_lahir']) ?>, <?= date('d/m/Y', strtotime($row['tanggal_lahir'])) ?></div>

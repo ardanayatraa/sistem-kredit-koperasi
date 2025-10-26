@@ -18,7 +18,11 @@ class AnggotaController extends Controller
 
     public function index()
     {
-        $anggota = $this->anggotaModel->findAll();
+        // Join dengan tabel users untuk mendapatkan nama lengkap
+        $anggota = $this->anggotaModel
+            ->select('tbl_anggota.*, tbl_users.nama_lengkap')
+            ->join('tbl_users', 'tbl_users.id_anggota_ref = tbl_anggota.id_anggota', 'left')
+            ->findAll();
 
         // Sort by created_at DESC (data terbaru di atas)
         usort($anggota, function($a, $b) {
