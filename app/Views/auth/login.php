@@ -66,13 +66,14 @@
                     <label for="username" class="block text-sm font-medium text-gray-700 mb-1">
                         Username atau Email
                     </label>
-                    <input type="text" 
-                           id="username" 
-                           name="username" 
-                           value="<?= old('username') ?>" 
+                    <input type="text"
+                           id="username"
+                           name="username"
+                           value="<?= old('username') ?>"
                            required
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 text-sm"
                            placeholder="Masukkan username atau email">
+                    <p class="text-xs text-gray-500 mt-1">Anda dapat login menggunakan username atau email</p>
                 </div>
 
                 <!-- Password Field -->
@@ -134,7 +135,7 @@
         function togglePassword() {
             const passwordInput = document.getElementById('password');
             const eyeIcon = document.getElementById('eye-icon');
-            
+
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 eyeIcon.classList.remove('fa-eye');
@@ -145,6 +146,34 @@
                 eyeIcon.classList.add('fa-eye');
             }
         }
+
+        // Prevent spaces in username/email field
+        document.addEventListener('DOMContentLoaded', function() {
+            const usernameInput = document.getElementById('username');
+
+            usernameInput.addEventListener('input', function(e) {
+                // Remove any spaces as they are typed
+                if (e.target.value.includes(' ')) {
+                    e.target.value = e.target.value.replace(/\s/g, '');
+                }
+            });
+
+            usernameInput.addEventListener('paste', function(e) {
+                // Prevent paste with spaces
+                setTimeout(() => {
+                    if (e.target.value.includes(' ')) {
+                        e.target.value = e.target.value.replace(/\s/g, '');
+                    }
+                }, 0);
+            });
+
+            usernameInput.addEventListener('keydown', function(e) {
+                // Prevent space key
+                if (e.key === ' ') {
+                    e.preventDefault();
+                }
+            });
+        });
 
         // Auto-hide flash messages
         setTimeout(() => {

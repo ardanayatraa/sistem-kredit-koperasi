@@ -20,7 +20,12 @@ class PembayaranAngsuranController extends Controller
     {
         // Use filtered method with user-based access control
         $pembayaranAngsuran = $this->pembayaranAngsuranModel->getFilteredPembayaranWithData();
-        
+
+        // Sort by created_at DESC (data terbaru di atas)
+        usort($pembayaranAngsuran, function($a, $b) {
+            return strtotime($b['created_at']) - strtotime($a['created_at']);
+        });
+
         // Calculate statistics
         $totalPembayaran = count($pembayaranAngsuran);
         $pembayaranHariIni = count(array_filter($pembayaranAngsuran, function($item) {
@@ -28,7 +33,7 @@ class PembayaranAngsuranController extends Controller
         }));
         $totalNominal = array_sum(array_column($pembayaranAngsuran, 'jumlah_bayar'));
         $rataRata = $totalPembayaran > 0 ? $totalNominal / $totalPembayaran : 0;
-        
+
         $data = [
             'pembayaran_angsuran' => $pembayaranAngsuran,
             'stats' => [
@@ -38,7 +43,7 @@ class PembayaranAngsuranController extends Controller
                 'rata_rata' => $rataRata
             ]
         ];
-        
+
         return view('pembayaran_angsuran/index', $data);
     }
 

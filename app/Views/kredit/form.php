@@ -269,13 +269,38 @@ $canEditAllFields = $currentUserLevel === 'Admin';
                                    accept=".pdf,.jpg,.jpeg,.png"
                                    <?= !isset($kredit) ? 'required' : '' ?>>
                             <?php if (isset($kredit) && !empty($kredit['dokumen_agunan'])): ?>
-                                <div class="mt-2 flex items-center gap-2">
-                                    <i class="bx bx-file text-green-600"></i>
-                                    <a href="<?= base_url('writable/' . $kredit['dokumen_agunan']) ?>"
-                                       target="_blank"
-                                       class="text-green-600 hover:text-green-800 text-sm">
-                                        <?= basename($kredit['dokumen_agunan']) ?>
-                                    </a>
+                                <div class="mt-2 p-3 bg-gray-50 rounded-lg border">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <?php
+                                            $fileName = basename($kredit['dokumen_agunan']);
+                                            $isImage = in_array(strtolower(pathinfo($fileName, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png']);
+                                            ?>
+                                            <?php if ($isImage): ?>
+                                                <div class="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
+                                                    <img src="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>" alt="Preview" class="w-full h-full object-cover">
+                                                </div>
+                                            <?php else: ?>
+                                                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                                    <i class="bx bx-file text-blue-600 h-5 w-5"></i>
+                                                </div>
+                                            <?php endif; ?>
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-900">Dokumen Agunan</p>
+                                                <p class="text-xs text-gray-500">File saat ini: <?= $fileName ?></p>
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <button type="button" onclick="previewFile('<?= esc($kredit['dokumen_agunan']) ?>', 'agunan')" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                                <i class="bx bx-show h-3 w-3"></i>
+                                                Preview
+                                            </button>
+                                            <a href="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                                                <i class="bx bx-download h-3 w-3"></i>
+                                                Download
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -577,45 +602,45 @@ $canEditAllFields = $currentUserLevel === 'Admin';
 // Enhanced currency input formatting
 document.addEventListener('DOMContentLoaded', function() {
     const currencyInputs = document.querySelectorAll('#jumlah_pengajuan, #nilai_taksiran_agunan');
-    
+
     currencyInputs.forEach(input => {
         // Format function
         const formatNumber = (value) => {
             // Only allow numbers
             let cleanValue = value.replace(/[^\d]/g, '');
-            
+
             // Add thousand separators
             if (cleanValue.length > 0) {
                 return cleanValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
             }
             return '';
         };
-        
+
         // Format existing value on load
         if (input.value) {
             let cleanValue = input.value.replace(/[^\d]/g, '');
             input.value = formatNumber(cleanValue);
         }
-        
+
         // Handle typing
         input.addEventListener('input', function(e) {
             let cursorPosition = this.selectionStart;
             let oldValue = this.value;
             let cleanValue = this.value.replace(/[^\d]/g, '');
-            
+
             // Prevent if too long (max 15 digits for safety)
             if (cleanValue.length > 15) {
                 cleanValue = cleanValue.substring(0, 15);
             }
-            
+
             let newValue = formatNumber(cleanValue);
             this.value = newValue;
-            
+
             // Adjust cursor position
             let diff = newValue.length - oldValue.length;
             this.setSelectionRange(cursorPosition + diff, cursorPosition + diff);
         });
-        
+
         // Prevent non-numeric input
         input.addEventListener('keypress', function(e) {
             // Allow: backspace, delete, tab, escape, enter
@@ -632,14 +657,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.preventDefault();
             }
         });
-        
+
         // Show raw value in console for debugging
         input.addEventListener('blur', function() {
             let rawValue = this.value.replace(/[^\d]/g, '');
             console.log('Raw value:', rawValue);
         });
     });
-    
+
     // Clean format before form submission
     const form = document.querySelector('form');
     if (form) {
@@ -653,6 +678,63 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// File preview function
+function previewFile(filename, type) {
+    // Create modal for preview
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-hidden">
+            <div class="flex items-center justify-between p-4 border-b">
+                <h3 class="text-lg font-semibold text-gray-900">Preview ${type.toUpperCase()}</h3>
+                <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
+                    <i class="bx bx-x h-6 w-6"></i>
+                </button>
+            </div>
+            <div class="p-4">
+                <div class="w-full h-[70vh] flex items-center justify-center bg-gray-100 rounded">
+                    <div id="preview-content" class="text-center">
+                        <i class="bx bx-loader-alt bx-spin h-12 w-12 text-gray-400 mb-4"></i>
+                        <p class="text-gray-600">Loading preview...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    // Load file content
+    const previewContent = modal.querySelector('#preview-content');
+    const fileUrl = `/kredit/view-document/${filename}`;
+
+    // Check if it's an image
+    if (filename.toLowerCase().match(/\.(jpg|jpeg|png)$/)) {
+        previewContent.innerHTML = `<img src="${fileUrl}" alt="${type}" class="max-w-full max-h-full object-contain" onload="this.previousElementSibling?.remove()" onerror="this.parentElement.innerHTML='<div class=\'text-center\'><i class=\'bx bx-error h-12 w-12 text-red-400 mb-4\'></i><p class=\'text-red-600\'>Gagal memuat preview gambar</p></div>'">`;
+    } else if (filename.toLowerCase().endsWith('.pdf')) {
+        previewContent.innerHTML = `
+            <div class="text-center">
+                <i class="bx bx-file-pdf h-12 w-12 text-red-400 mb-4"></i>
+                <p class="text-gray-600 mb-4">File PDF - Klik tombol download untuk melihat</p>
+                <a href="${fileUrl}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                    <i class="bx bx-download h-4 w-4"></i>
+                    Download PDF
+                </a>
+            </div>
+        `;
+    } else {
+        previewContent.innerHTML = `
+            <div class="text-center">
+                <i class="bx bx-file h-12 w-12 text-gray-400 mb-4"></i>
+                <p class="text-gray-600 mb-4">File tidak dapat dipreview</p>
+                <a href="${fileUrl}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                    <i class="bx bx-download h-4 w-4"></i>
+                    Download File
+                </a>
+            </div>
+        `;
+    }
+}
 </script>
 
 <?= $this->endSection() ?>

@@ -88,11 +88,18 @@ $routes->group('riwayat-kredit', ['filter' => 'role:view_riwayat_kredit'], funct
     $routes->get('(:num)', 'RiwayatKreditController::show/$1'); // Direct access with ID
     $routes->get('show/(:num)', 'RiwayatKreditController::show/$1');
     $routes->get('print/(:num)', 'RiwayatKreditController::print/$1');
-    
+
     // Routes untuk Surat Persetujuan
     $routes->get('surat-persetujuan/(:num)', 'RiwayatKreditController::suratPersetujuan/$1');
     $routes->get('download-surat/(:num)', 'RiwayatKreditController::downloadSuratPersetujuan/$1');
     $routes->get('cek-status/(:num)', 'RiwayatKreditController::cekStatusPersetujuan/$1');
+});
+
+// Riwayat Kredit untuk Bendahara (Kelola Riwayat Kredit)
+$routes->group('bendahara/riwayat-kredit', ['filter' => 'role:manage_kredit'], function($routes) {
+    $routes->get('/', 'RiwayatKreditController::indexBendahara');
+    $routes->get('show/(:num)', 'RiwayatKreditController::showBendahara/$1');
+    $routes->get('print/(:num)', 'RiwayatKreditController::printBendahara/$1');
 });
 
 // Riwayat Pembayaran untuk Anggota
@@ -298,6 +305,7 @@ $routes->get('dokumen_kredit/(:any)', 'KreditController::viewDocument/$1', ['fil
 $routes->get('uploads/pencairan/(:any)', 'PencairanController::viewDocument/$1', ['filter' => 'auth']);
 
 // Route untuk akses dokumen anggota dengan access control
+$routes->get('anggota/view-document/(:any)', 'AnggotaController::viewDocument/$1', ['filter' => 'auth']);
 $routes->get('uploads/anggota/(:any)', 'AnggotaController::viewDocument/$1', ['filter' => 'auth']);
 
 // Rute untuk melayani file yang diunggah dari writable/uploads (tetap sama)

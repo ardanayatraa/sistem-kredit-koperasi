@@ -30,8 +30,15 @@ class KreditController extends Controller
     public function index()
     {
         // Use filtered method with user-based access control
-        $data['kredit'] = $this->kreditModel->getFilteredKreditsWithData();
-        
+        $kredit = $this->kreditModel->getFilteredKreditsWithData();
+
+        // Sort by created_at DESC (data terbaru di atas)
+        usort($kredit, function($a, $b) {
+            return strtotime($b['created_at']) - strtotime($a['created_at']);
+        });
+
+        $data['kredit'] = $kredit;
+
         return view('kredit/index', $data);
     }
 

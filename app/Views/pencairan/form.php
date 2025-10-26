@@ -176,16 +176,52 @@
                         Bukti Transfer <?= !isset($pencairan) ? '<span class="text-red-500">*</span>' : '' ?>
                     </label>
                     <div class="relative">
-                        <input type="file" 
-                               name="bukti_transfer" 
-                               id="bukti_transfer" 
-                               accept=".pdf,.jpg,.jpeg,.png"
+                        <input type="file"
+                               name="bukti_transfer"
+                               id="bukti_transfer"
+                               accept=".jpg,.jpeg,.png"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors file:mr-4 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                               onchange="previewImage(this)"
                                <?= !isset($pencairan) ? 'required' : '' ?>>
                     </div>
+                    <p class="text-xs text-gray-500 mt-1">Format: JPG, JPEG, PNG (Maksimal 2MB)</p>
+
+                    <!-- Image Preview -->
+                    <div id="image-preview" class="mt-3 hidden">
+                        <div class="relative inline-block">
+                            <img id="preview-img" src="" alt="Preview" class="max-w-xs max-h-48 border border-gray-300 rounded-lg shadow-sm">
+                            <button type="button" onclick="removePreview()" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600">
+                                <i class="bx bx-x"></i>
+                            </button>
+                        </div>
+                    </div>
+
                     <?php if (isset($pencairan) && !empty($pencairan['bukti_transfer'])): ?>
-                        <p class="text-sm text-green-600 mt-1">File saat ini: <?= esc($pencairan['bukti_transfer']) ?></p>
+                        <div class="mt-2 p-3 bg-gray-50 rounded-lg border">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                        <i class="bx bx-file text-blue-600 h-5 w-5"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">Bukti Transfer</p>
+                                        <p class="text-xs text-gray-500">File saat ini: <?= esc($pencairan['bukti_transfer']) ?></p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button type="button" onclick="previewExistingImage('<?= esc($pencairan['bukti_transfer']) ?>', 'pencairan')" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                        <i class="bx bx-show h-3 w-3"></i>
+                                        Preview
+                                    </button>
+                                    <a href="/pencairan/view-document/<?= esc($pencairan['bukti_transfer']) ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                                        <i class="bx bx-download h-3 w-3"></i>
+                                        Download
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     <?php endif; ?>
+
                     <?php if (session('errors.bukti_transfer')): ?>
                         <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
                             <i class="bx bx-exclamation-circle text-red-500 h-4 w-4"></i>
@@ -211,31 +247,79 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Simple file upload validation
-    const fileInput = document.getElementById('bukti_transfer');
-    if (fileInput) {
-        fileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                // Validate file size (2MB)
-                if (file.size > 2 * 1024 * 1024) {
-                    alert('Ukuran file terlalu besar. Maksimal 2MB.');
-                    e.target.value = '';
-                    return;
-                }
-                
-                // Validate file type
-                const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
-                if (!allowedTypes.includes(file.type)) {
-                    alert('Format file tidak didukung. Gunakan PDF, JPG, JPEG, atau PNG.');
-                    e.target.value = '';
-                    return;
-                }
-            }
-        });
-    }
+// Image preview function
+function previewImage(input) {
+    const file = input.files[0];
+    const preview = document.getElementById('image-preview');
+    const previewImg = document.getElementById('preview-img');
 
+    if (file) {
+        // Validate file size (2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Ukuran file terlalu besar. Maksimal 2MB.');
+            input.value = '';
+            preview.classList.add('hidden');
+            return;
+        }
+
+        // Validate file type (only images)
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('Format file tidak didukung. Gunakan JPG, JPEG, atau PNG.');
+            input.value = '';
+            preview.classList.add('hidden');
+            return;
+        }
+
+        // Show preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            preview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    } else {
+        preview.classList.add('hidden');
+    }
+}
+
+function removePreview() {
+    document.getElementById('bukti_transfer').value = '';
+    document.getElementById('image-preview').classList.add('hidden');
+}
+
+function previewExistingImage(filename, type) {
+    // Create modal for preview
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-hidden">
+            <div class="flex items-center justify-between p-4 border-b">
+                <h3 class="text-lg font-semibold text-gray-900">Preview ${type.toUpperCase()}</h3>
+                <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
+                    <i class="bx bx-x h-6 w-6"></i>
+                </button>
+            </div>
+            <div class="p-4">
+                <div class="w-full h-[70vh] flex items-center justify-center bg-gray-100 rounded">
+                    <div id="preview-content" class="text-center">
+                        <i class="bx bx-loader-alt bx-spin h-12 w-12 text-gray-400 mb-4"></i>
+                        <p class="text-gray-600">Loading preview...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    // Load image
+    const previewContent = modal.querySelector('#preview-content');
+    const fileUrl = `/pencairan/view-document/${filename}`;
+
+    previewContent.innerHTML = `<img src="${fileUrl}" alt="${type}" class="max-w-full max-h-full object-contain" onload="this.previousElementSibling?.remove()" onerror="this.parentElement.innerHTML='<div class=\'text-center\'><i class=\'bx bx-error h-12 w-12 text-red-400 mb-4\'></i><p class=\'text-red-600\'>Gagal memuat preview gambar</p></div>'">`;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
     // Simple amount validation
     const amountInput = document.getElementById('jumlah_dicairkan');
     if (amountInput) {

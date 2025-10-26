@@ -34,8 +34,8 @@ class RiwayatKreditController extends BaseController
         // Use filtered method - will automatically filter based on user scope
         $select = 'tbl_kredit.*, tbl_users.nama_lengkap, tbl_anggota.no_anggota';
         $riwayat = $this->kreditModel->getFilteredKreditsWithData([], $select);
-        
-        // Sort by created_at DESC
+
+        // Sort by created_at DESC (data terbaru di atas)
         usort($riwayat, function($a, $b) {
             return strtotime($b['created_at']) - strtotime($a['created_at']);
         });
@@ -217,5 +217,79 @@ class RiwayatKreditController extends BaseController
             'updated_at' => $kredit['updated_at'],
             'surat_tersedia' => ($kredit['status_kredit'] === 'Disetujui')
         ]);
+    }
+
+    /**
+     * Index untuk Bendahara - Kelola Riwayat Kredit
+     */
+    public function indexBendahara()
+    {
+        $data = [
+            'title' => 'Kelola Riwayat Kredit',
+            'headerTitle' => 'Kelola Riwayat Kredit'
+        ];
+
+        // Get all kredit data for bendahara (no filtering by user)
+        $select = 'tbl_kredit.*, tbl_users.nama_lengkap, tbl_anggota.no_anggota';
+        $riwayat = $this->kreditModel->getFilteredKreditsWithData([], $select);
+
+        // Sort by created_at DESC (data terbaru di atas)
+        usort($riwayat, function($a, $b) {
+            return strtotime($b['created_at']) - strtotime($a['created_at']);
+        });
+
+        $data['riwayat'] = $riwayat;
+        $data['pager'] = $this->kreditModel->pager;
+
+        return view('riwayat_kredit/index_bendahara', $data);
+    }
+
+    /**
+     * Show detail kredit untuk Bendahara
+     */
+    public function showBendahara($id)
+    {
+        $kredit = $this->kreditModel
+            ->select('tbl_kredit.*, tbl_users.nama_lengkap, tbl_users.no_hp, tbl_anggota.no_anggota, tbl_anggota.nik')
+            ->join('tbl_anggota', 'tbl_kredit.id_anggota = tbl_anggota.id_anggota')
+            ->join('tbl_users', 'tbl_users.id_anggota_ref = tbl_anggota.id_anggota')
+            ->find($id);
+
+        if (!$kredit) {
+            session()->setFlashdata('error', 'Data kredit tidak ditemukan');
+            return redirect()->to('/bendahara/riwayat-kredit');
+        }
+
+        $data = [
+            'title' => 'Detail Riwayat Kredit',
+            'headerTitle' => 'Detail Riwayat Kredit',
+            'kredit' => $kredit
+        ];
+
+        return view('riwayat_kredit/show_bendahara', $data);
+    }
+
+    /**
+     * Print detail kredit untuk Bendahara
+     */
+    public function printBendahara($id)
+    {
+        $kredit = $this->kreditModel
+            ->select('tbl_kredit.*, tbl_users.nama_lengkap, tbl_users.no_hp, tbl_anggota.no_anggota, tbl_anggota.nik')
+            ->join('tbl_anggota', 'tbl_kredit.id_anggota = tbl_anggota.id_anggota')
+            ->join('tbl_users', 'tbl_users.id_anggota_ref = tbl_anggota.id_anggota')
+            ->find($id);
+
+        if (!$kredit) {
+            session()->setFlashdata('error', 'Data kredit tidak ditemukan');
+            return redirect()->to('/bendahara/riwayat-kredit');
+        }
+
+        $data = [
+            'title' => 'Print Riwayat Kredit',
+            'kredit' => $kredit
+        ];
+
+        return view('riwayat_kredit/print_bendahara', $data);
     }
 }

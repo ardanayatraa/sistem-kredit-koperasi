@@ -34,7 +34,7 @@ class AuthController extends Controller
     {
         $rules = [
             'nama_lengkap' => 'required|max_length[255]',
-            'username' => 'required|min_length[3]|max_length[50]|is_unique[tbl_users.username]',
+            'username' => 'required|min_length[3]|max_length[50]|is_unique[tbl_users.username]|regex_match[/^[a-zA-Z0-9_]+$/]',
             'email' => 'required|valid_email|is_unique[tbl_users.email]',
             'password' => 'required|min_length[6]',
             'confirm_password' => 'required_with[password]|matches[password]',
@@ -93,7 +93,13 @@ class AuthController extends Controller
         $username = $this->request->getPost('username');
         $password = $this->request->getPost('password');
 
+        // Try to find user by username first, then by email
         $user = $this->userModel->getByUsername($username);
+
+        // If not found by username, try by email
+        if (!$user) {
+            $user = $this->userModel->where('email', $username)->first();
+        }
 
         // Handle non-existent user
         if (!$user) {

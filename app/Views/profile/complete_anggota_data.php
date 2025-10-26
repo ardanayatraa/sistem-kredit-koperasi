@@ -189,12 +189,20 @@
                         <label for="dokumen_ktp" class="block text-sm font-medium text-gray-700 mb-2">
                             Dokumen KTP <span class="text-red-500">*</span>
                         </label>
-                        <input type="file" 
-                               name="dokumen_ktp" 
-                               id="dokumen_ktp" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
+                        <input type="file"
+                               name="dokumen_ktp"
+                               id="dokumen_ktp"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                accept=".pdf,.jpg,.jpeg,.png"
-                               required>
+                               onchange="previewImage(this, 'ktp')">
+                        <div id="image-preview-ktp" class="mt-3 hidden">
+                            <div class="relative inline-block">
+                                <img id="preview-img-ktp" src="" alt="Preview KTP" class="max-w-xs max-h-48 border border-gray-300 rounded-lg shadow-sm">
+                                <button type="button" onclick="removePreview('ktp')" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors">
+                                    <i class="bx bx-x"></i>
+                                </button>
+                            </div>
+                        </div>
                         <p class="text-xs text-gray-500 mt-1">Format: PDF, JPG, JPEG, PNG (Max: 2MB)</p>
                         <?php if (session('errors.dokumen_ktp')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
@@ -202,18 +210,46 @@
                                 <?= session('errors.dokumen_ktp') ?>
                             </p>
                         <?php endif; ?>
+                        <?php if (!empty($anggota['dokumen_ktp'])): ?>
+                            <div class="mt-2 p-3 bg-gray-50 rounded-lg border">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">KTP</p>
+                                        <p class="text-xs text-gray-500">File saat ini: <?= esc($anggota['dokumen_ktp']) ?></p>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button type="button" onclick="previewFile('<?= esc($anggota['dokumen_ktp']) ?>', 'ktp')" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                            <i class="bx bx-show h-3 w-3"></i>
+                                            Lihat
+                                        </button>
+                                        <a href="/anggota/view-document/<?= esc($anggota['dokumen_ktp']) ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                                            <i class="bx bx-download h-3 w-3"></i>
+                                            Download
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
                     </div>
 
                     <div class="w-full">
                         <label for="dokumen_kk" class="block text-sm font-medium text-gray-700 mb-2">
                             Dokumen KK <span class="text-red-500">*</span>
                         </label>
-                        <input type="file" 
-                               name="dokumen_kk" 
-                               id="dokumen_kk" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
+                        <input type="file"
+                               name="dokumen_kk"
+                               id="dokumen_kk"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                accept=".pdf,.jpg,.jpeg,.png"
-                               required>
+                               onchange="previewImage(this, 'kk')">
+                        <div id="image-preview-kk" class="mt-3 hidden">
+                            <div class="relative inline-block">
+                                <img id="preview-img-kk" src="" alt="Preview KK" class="max-w-xs max-h-48 border border-gray-300 rounded-lg shadow-sm">
+                                <button type="button" onclick="removePreview('kk')" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors">
+                                    <i class="bx bx-x"></i>
+                                </button>
+                            </div>
+                        </div>
                         <p class="text-xs text-gray-500 mt-1">Format: PDF, JPG, JPEG, PNG (Max: 2MB)</p>
                         <?php if (session('errors.dokumen_kk')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
@@ -221,24 +257,207 @@
                                 <?= session('errors.dokumen_kk') ?>
                             </p>
                         <?php endif; ?>
+                        <?php if (!empty($anggota['dokumen_kk'])): ?>
+                            <div class="mt-2 p-3 bg-gray-50 rounded-lg border">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">Kartu Keluarga</p>
+                                        <p class="text-xs text-gray-500">File saat ini: <?= esc($anggota['dokumen_kk']) ?></p>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button type="button" onclick="previewFile('<?= esc($anggota['dokumen_kk']) ?>', 'kk')" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                            <i class="bx bx-show h-3 w-3"></i>
+                                            Lihat
+                                        </button>
+                                        <a href="/anggota/view-document/<?= esc($anggota['dokumen_kk']) ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                                            <i class="bx bx-download h-3 w-3"></i>
+                                            Download
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
                     </div>
 
                     <div class="w-full">
                         <label for="dokumen_slip_gaji" class="block text-sm font-medium text-gray-700 mb-2">
                             Dokumen Slip Gaji <span class="text-red-500">*</span>
                         </label>
-                        <input type="file" 
-                               name="dokumen_slip_gaji" 
-                               id="dokumen_slip_gaji" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
+                        <input type="file"
+                               name="dokumen_slip_gaji"
+                               id="dokumen_slip_gaji"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                accept=".pdf,.jpg,.jpeg,.png"
-                               required>
+                               onchange="previewImage(this, 'slip_gaji')">
+                        <div id="image-preview-slip_gaji" class="mt-3 hidden">
+                            <div class="relative inline-block">
+                                <img id="preview-img-slip_gaji" src="" alt="Preview Slip Gaji" class="max-w-xs max-h-48 border border-gray-300 rounded-lg shadow-sm">
+                                <button type="button" onclick="removePreview('slip_gaji')" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors">
+                                    <i class="bx bx-x"></i>
+<script>
+function previewImage(input, type) {
+    const previewDiv = document.getElementById(`image-preview-${type}`);
+    const previewImg = document.getElementById(`preview-img-${type}`);
+
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const fileType = file.type.toLowerCase();
+
+        // Check if file is an image
+        if (fileType === 'image/jpeg' || fileType === 'image/jpg' || fileType === 'image/png') {
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                previewDiv.classList.remove('hidden');
+            };
+
+            reader.readAsDataURL(file);
+        } else {
+            // For non-image files (like PDF), hide preview
+            previewDiv.classList.add('hidden');
+        }
+    } else {
+        // No file selected, hide preview
+        previewDiv.classList.add('hidden');
+    }
+}
+
+function removePreview(type) {
+    const previewDiv = document.getElementById(`image-preview-${type}`);
+    const fileInput = document.getElementById(`dokumen_${type}`);
+
+    // Hide preview
+    previewDiv.classList.add('hidden');
+
+    // Clear file input
+    fileInput.value = '';
+
+    // Reset preview image src
+    const previewImg = document.getElementById(`preview-img-${type}`);
+    previewImg.src = '';
+}
+
+function previewFile(filename, type) {
+    const modal = document.getElementById('document-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalContent = document.getElementById('modal-content');
+
+    // Set modal title
+    const titles = {
+        'ktp': 'Preview Dokumen KTP',
+        'kk': 'Preview Dokumen Kartu Keluarga',
+        'slip_gaji': 'Preview Dokumen Slip Gaji'
+    };
+    modalTitle.textContent = titles[type] || 'Preview Dokumen';
+
+    // Clear previous content
+    modalContent.innerHTML = '<div class="flex justify-center"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>';
+
+    // Show modal
+    modal.classList.remove('hidden');
+
+    // Load content based on file type
+    const fileExtension = filename.split('.').pop().toLowerCase();
+
+    if (fileExtension === 'pdf') {
+        // For PDF files, show download link
+        modalContent.innerHTML = `
+            <div class="text-center">
+                <i class="bx bx-file text-6xl text-red-500 mb-4"></i>
+                <p class="text-lg font-medium text-gray-900 mb-2">File PDF</p>
+                <p class="text-gray-600 mb-4">${filename}</p>
+                <a href="/anggota/view-document/${filename}" target="_blank"
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                    <i class="bx bx-download"></i>
+                    Download PDF
+                </a>
+            </div>
+        `;
+    } else if (['jpg', 'jpeg', 'png'].includes(fileExtension)) {
+        // For image files, show zoomable image
+        modalContent.innerHTML = `
+            <div class="relative">
+                <img id="modal-image" src="/anggota/view-document/${filename}"
+                     alt="Preview ${filename}"
+                     class="max-w-full max-h-96 mx-auto cursor-zoom-in"
+                     onclick="toggleZoom(this)">
+                <div class="text-center mt-2 text-sm text-gray-500">
+                    Klik gambar untuk zoom in/out
+                </div>
+            </div>
+        `;
+    } else {
+        // For other file types
+        modalContent.innerHTML = `
+            <div class="text-center">
+                <i class="bx bx-file text-6xl text-gray-500 mb-4"></i>
+                <p class="text-lg font-medium text-gray-900 mb-2">File Tidak Dapat Dipreview</p>
+                <p class="text-gray-600 mb-4">${filename}</p>
+                <a href="/anggota/view-document/${filename}" target="_blank"
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                    <i class="bx bx-download"></i>
+                    Download File
+                </a>
+            </div>
+        `;
+    }
+}
+
+function toggleZoom(img) {
+    if (img.classList.contains('zoomed')) {
+        img.classList.remove('zoomed');
+        img.style.transform = 'scale(1)';
+        img.style.cursor = 'zoom-in';
+    } else {
+        img.classList.add('zoomed');
+        img.style.transform = 'scale(1.5)';
+        img.style.cursor = 'zoom-out';
+    }
+}
+
+function closeModal() {
+    const modal = document.getElementById('document-modal');
+    const modalImage = document.getElementById('modal-image');
+
+    // Reset zoom if image was zoomed
+    if (modalImage) {
+        modalImage.classList.remove('zoomed');
+        modalImage.style.transform = 'scale(1)';
+    }
+
+    modal.classList.add('hidden');
+}
+</script>
+                                </button>
+                            </div>
+                        </div>
                         <p class="text-xs text-gray-500 mt-1">Format: PDF, JPG, JPEG, PNG (Max: 2MB)</p>
                         <?php if (session('errors.dokumen_slip_gaji')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
                                 <i class="bx bx-exclamation-circle text-red-600 h-4 w-4"></i>
                                 <?= session('errors.dokumen_slip_gaji') ?>
                             </p>
+                        <?php endif; ?>
+                        <?php if (!empty($anggota['dokumen_slip_gaji'])): ?>
+                            <div class="mt-2 p-3 bg-gray-50 rounded-lg border">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">Slip Gaji</p>
+                                        <p class="text-xs text-gray-500">File saat ini: <?= esc($anggota['dokumen_slip_gaji']) ?></p>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button type="button" onclick="previewFile('<?= esc($anggota['dokumen_slip_gaji']) ?>', 'slip_gaji')" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                            <i class="bx bx-show h-3 w-3"></i>
+                                            Lihat
+                                        </button>
+                                        <a href="/anggota/view-document/<?= esc($anggota['dokumen_slip_gaji']) ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                                            <i class="bx bx-download h-3 w-3"></i>
+                                            Download
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -258,4 +477,27 @@
         </form>
     </div>
 </div>
+
+<!-- Modal for document preview -->
+<div id="document-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+        <div class="flex items-center justify-between p-4 border-b">
+            <h3 class="text-lg font-medium text-gray-900" id="modal-title">Preview Dokumen</h3>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="bx bx-x text-2xl"></i>
+            </button>
+        </div>
+        <div class="p-4">
+            <div id="modal-content" class="flex justify-center items-center min-h-96">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+        <div class="flex justify-end gap-3 p-4 border-t">
+            <button onclick="closeModal()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition-colors">
+                Tutup
+            </button>
+        </div>
+    </div>
+</div>
+
 <?= $this->endSection() ?>

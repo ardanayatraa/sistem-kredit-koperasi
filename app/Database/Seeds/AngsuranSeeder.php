@@ -71,14 +71,19 @@ class AngsuranSeeder extends Seeder
         ];
 
         foreach ($angsuranData as $data) {
-            // Check if angsuran already exists
+            // Check if angsuran already exists - menggunakan kolom yang benar
             $existingAngsuran = $angsuranModel->where([
-                'id_kredit' => $data['id_kredit'],
+                'id_kredit_ref' => $data['id_kredit'],
                 'angsuran_ke' => $data['angsuran_ke']
             ])->first();
-            
+
             if (!$existingAngsuran) {
-                $angsuranModel->save($data);
+                // Map id_kredit ke id_kredit_ref sesuai dengan struktur tabel
+                $insertData = $data;
+                $insertData['id_kredit_ref'] = $data['id_kredit'];
+                unset($insertData['id_kredit']);
+
+                $angsuranModel->save($insertData);
                 echo "Angsuran ke-{$data['angsuran_ke']} untuk kredit ID {$data['id_kredit']} berhasil dibuat.\n";
             } else {
                 echo "Angsuran ke-{$data['angsuran_ke']} untuk kredit ID {$data['id_kredit']} sudah ada.\n";

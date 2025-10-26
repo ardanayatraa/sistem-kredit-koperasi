@@ -116,8 +116,14 @@ $currentUserLevel = session()->get('level') ?? null;
         </tr>
     </thead>
     <tbody class="bg-white divide-y divide-gray-200" id="anggota-table-body">
+        <?php
+        // Sort anggota by created_at DESC (newest first) - this is already done in controller, but ensure it's maintained
+        usort($anggota, function($a, $b) {
+            return strtotime($b['created_at'] ?? $b['tanggal_pendaftaran']) - strtotime($a['created_at'] ?? $a['tanggal_pendaftaran']);
+        });
+        ?>
         <?php foreach ($anggota as $row): ?>
-            <tr class="hover:bg-gray-50 transition-colors anggota-row" 
+            <tr class="hover:bg-gray-50 transition-colors anggota-row"
                 data-search="<?= strtolower(esc($row['nik'] . ' ' . $row['tempat_lahir'] . ' ' . $row['alamat'] . ' ' . $row['pekerjaan'])) ?>">
                 <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?= esc($row['id_anggota']) ?></td>
                 <td class="px-4 sm:px-6 py-4 whitespace-nowrap">

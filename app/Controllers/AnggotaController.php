@@ -18,7 +18,14 @@ class AnggotaController extends Controller
 
     public function index()
     {
-        $data['anggota'] = $this->anggotaModel->findAll();
+        $anggota = $this->anggotaModel->findAll();
+
+        // Sort by created_at DESC (data terbaru di atas)
+        usort($anggota, function($a, $b) {
+            return strtotime($b['created_at']) - strtotime($a['created_at']);
+        });
+
+        $data['anggota'] = $anggota;
         return view('anggota/index', $data);
     }
 
