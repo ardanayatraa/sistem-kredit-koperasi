@@ -732,6 +732,75 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// File preview function (updated to use static modal like profile)
+function previewFile(filename, type) {
+    const modal = document.getElementById('document-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalContent = document.getElementById('modal-content');
+
+    // Set modal title
+    const titles = {
+        'agunan': 'Preview Dokumen Agunan',
+        'ktp': 'Preview Dokumen KTP',
+        'kk': 'Preview Dokumen Kartu Keluarga',
+        'slip_gaji': 'Preview Dokumen Slip Gaji'
+    };
+    modalTitle.textContent = titles[type] || 'Preview Dokumen';
+
+    // Clear previous content
+    modalContent.innerHTML = '<div class="flex justify-center"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>';
+
+    // Show modal
+    modal.classList.remove('hidden');
+
+    // Load content based on file type
+    const fileUrl = `/kredit/view-document/${filename}`;
+    const fileExtension = filename.split('.').pop().toLowerCase();
+
+    if (fileExtension === 'pdf') {
+        // For PDF files, show download link
+        modalContent.innerHTML = `
+            <div class="text-center">
+                <i class="bx bx-file text-6xl text-red-500 mb-4"></i>
+                <p class="text-lg font-medium text-gray-900 mb-2">File PDF</p>
+                <p class="text-gray-600 mb-4">${filename}</p>
+                <a href="${fileUrl}" target="_blank"
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                    <i class="bx bx-download"></i>
+                    Download PDF
+                </a>
+            </div>
+        `;
+    } else if (['jpg', 'jpeg', 'png'].includes(fileExtension)) {
+        // For image files, show zoomable image
+        modalContent.innerHTML = `
+            <div class="relative">
+                <img id="modal-image" src="${fileUrl}"
+                     alt="Preview ${filename}"
+                     class="max-w-full max-h-96 mx-auto cursor-zoom-in"
+                     onclick="toggleZoom(this)">
+                <div class="text-center mt-2 text-sm text-gray-500">
+                    Klik gambar untuk zoom in/out
+                </div>
+            </div>
+        `;
+    } else {
+        // For other file types
+        modalContent.innerHTML = `
+            <div class="text-center">
+                <i class="bx bx-file text-6xl text-gray-500 mb-4"></i>
+                <p class="text-lg font-medium text-gray-900 mb-2">File Tidak Dapat Dipreview</p>
+                <p class="text-gray-600 mb-4">${filename}</p>
+                <a href="${fileUrl}" target="_blank"
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                    <i class="bx bx-download"></i>
+                    Download File
+                </a>
+            </div>
+        `;
+    }
+}
+
 // Preview anggota document function (same as profile)
 function previewAnggotaDocument(type, idAnggota) {
     if (!idAnggota) {
