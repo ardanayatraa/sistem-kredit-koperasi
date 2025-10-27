@@ -356,10 +356,10 @@ $anggotaData = isset($anggota) ? $anggota : null;
                                    <p class="text-sm text-gray-500">Tersedia dari profil anggota</p>
                                </div>
                                <div class="ml-auto flex gap-2">
-                                   <button type="button" onclick="previewAnggotaDocument('ktp', '<?= esc($userAnggotaId ?? session()->get('id_anggota_ref') ?? '') ?>')" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                   <a href="/anggota/view-document/<?= esc($userAnggotaId ?? session()->get('id_anggota_ref') ?? '') ?>/ktp" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
                                        <i class="bx bx-show h-3 w-3"></i>
-                                       Preview
-                                   </button>
+                                       Lihat
+                                   </a>
                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                        ✓ Tersedia
                                    </span>
@@ -380,10 +380,10 @@ $anggotaData = isset($anggota) ? $anggota : null;
                                    <p class="text-sm text-gray-500">Tersedia dari profil anggota</p>
                                </div>
                                <div class="ml-auto flex gap-2">
-                                   <button type="button" onclick="previewAnggotaDocument('slip_gaji', '<?= esc($userAnggotaId ?? session()->get('id_anggota_ref') ?? '') ?>')" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                   <a href="/anggota/view-document/<?= esc($userAnggotaId ?? session()->get('id_anggota_ref') ?? '') ?>/slip_gaji" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
                                        <i class="bx bx-show h-3 w-3"></i>
-                                       Preview
-                                   </button>
+                                       Lihat
+                                   </a>
                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                        ✓ Tersedia
                                    </span>
