@@ -128,27 +128,46 @@ if (!function_exists('applyRoleSpecificFilter')) {
 if (!function_exists('canAccessData')) {
     /**
      * Check if current user can access specific data record
-     * 
+     *
      * @param array $data The data record to check
      * @param string $ownerField Field name that contains owner ID (default: 'id_anggota')
      * @return bool
      */
     function canAccessData($data, $ownerField = 'id_anggota')
     {
-        $scope = getUserDataScope();
-        
-        // Users with full access can see everything
-        if ($scope['can_see_all']) {
-            return true;
-        }
+        try {
+            log_message('debug', 'canAccessData called for ownerField: ' . $ownerField);
 
-        // Check ownership for limited access users
-        if (isset($scope['filter_conditions'][$ownerField])) {
-            return isset($data[$ownerField]) && 
-                   $data[$ownerField] == $scope['filter_conditions'][$ownerField];
-        }
+            $scope = getUserDataScope();
+            log_message('debug', 'canAccessData - User scope: ' . json_encode($scope));
 
-        return false;
+            // Users with full access can see everything
+            if ($scope['can_see_all']) {
+                log_message('debug', 'canAccessData - User has full access, granting permission');
+                return true;
+            }
+
+            // Check ownership for limited access users
+            if (isset($scope['filter_conditions'][$ownerField])) {
+                $userOwnerId = $scope['filter_conditions'][$ownerField];
+                $dataOwnerId = $data[$ownerField] ?? null;
+
+                log_message('debug', 'canAccessData - Checking ownership: user owns ' . $userOwnerId . ', data owned by ' . $dataOwnerId);
+
+                $hasAccess = isset($data[$ownerField]) &&
+                           $data[$ownerField] == $scope['filter_conditions'][$ownerField];
+
+                log_message('debug', 'canAccessData - Access result: ' . ($hasAccess ? 'GRANTED' : 'DENIED'));
+                return $hasAccess;
+            }
+
+            log_message('debug', 'canAccessData - No ownership filter found, denying access');
+            return false;
+
+        } catch (\Exception $e) {
+            log_message('error', 'canAccessData - Error: ' . $e->getMessage());
+            return false;
+        }
     }
 }
 

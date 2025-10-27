@@ -119,13 +119,34 @@ class KreditModel extends Model
      */
     public function findWithAccess($id)
     {
-        $data = $this->find($id);
-        
-        if ($data && !canAccessData($data)) {
-            return null; // Return null if user doesn't have access
+        try {
+            log_message('debug', 'KreditModel::findWithAccess called with ID: ' . $id);
+
+            // First check if the record exists at all
+            $data = $this->find($id);
+            log_message('debug', 'KreditModel::findWithAccess - Raw find result: ' . ($data ? 'FOUND' : 'NOT FOUND'));
+
+            if (!$data) {
+                log_message('debug', 'KreditModel::findWithAccess - Kredit ID ' . $id . ' does not exist in database');
+                return null;
+            }
+
+            // Check access permissions
+            $hasAccess = canAccessData($data);
+            log_message('debug', 'KreditModel::findWithAccess - Access check result: ' . ($hasAccess ? 'GRANTED' : 'DENIED'));
+
+            if (!$hasAccess) {
+                log_message('debug', 'KreditModel::findWithAccess - Access denied for kredit ID ' . $id);
+                return null;
+            }
+
+            log_message('debug', 'KreditModel::findWithAccess - Successfully returned kredit ID ' . $id);
+            return $data;
+
+        } catch (\Exception $e) {
+            log_message('error', 'KreditModel::findWithAccess - Error: ' . $e->getMessage());
+            return null;
         }
-        
-        return $data;
     }
 
     /**

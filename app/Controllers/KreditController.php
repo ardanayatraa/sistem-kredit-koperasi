@@ -171,19 +171,58 @@ class KreditController extends Controller
      */
     public function edit($id = null)
     {
-        // Use access-controlled method
-        $data['kredit'] = $this->kreditModel->findWithAccess($id);
-        if (empty($data['kredit'])) {
-            throw new \CodeIgniter\Exceptions\PageNotFoundException('Kredit dengan ID ' . $id . ' tidak ditemukan atau Anda tidak memiliki akses.');
+        try {
+            // Log the request
+            log_message('debug', 'KreditController::edit called with ID: ' . $id);
+
+            // Validate ID parameter
+            if (!$id || !is_numeric($id)) {
+                log_message('error', 'KreditController::edit - Invalid ID parameter: ' . $id);
+                throw new \CodeIgniter\Exceptions\PageNotFoundException('ID kredit tidak valid.');
+            }
+
+            // Use access-controlled method
+            $data['kredit'] = $this->kreditModel->findWithAccess($id);
+            log_message('debug', 'KreditController::edit - findWithAccess result: ' . ($data['kredit'] ? 'FOUND' : 'NOT FOUND'));
+
+            if (empty($data['kredit'])) {
+                log_message('error', 'KreditController::edit - Kredit not found or no access for ID: ' . $id);
+                throw new \CodeIgniter\Exceptions\PageNotFoundException('Kredit dengan ID ' . $id . ' tidak ditemukan atau Anda tidak memiliki akses.');
+            }
+
+            // Load anggota data untuk ditampilkan di form
+            log_message('debug', 'KreditController::edit - Loading anggota data for kredit ID: ' . $data['kredit']['id_anggota']);
+            $data['anggota'] = $this->anggotaModel
+                ->select('tbl_anggota.*, tbl_users.nama_lengkap')
+                ->join('tbl_users', 'tbl_users.id_anggota_ref = tbl_anggota.id_anggota', 'left')
+                ->find($data['kredit']['id_anggota']);
+
+            if (empty($data['anggota'])) {
+                log_message('error', 'KreditController::edit - Anggota data not found for kredit ID: ' . $id . ', anggota ID: ' . $data['kredit']['id_anggota']);
+                throw new \CodeIgniter\Exceptions\PageNotFoundException('Data anggota terkait tidak ditemukan.');
+            }
+
+            log_message('debug', 'KreditController::edit - Successfully loaded data for kredit ID: ' . $id);
+            return view('kredit/form', $data);
+
+        } catch (\CodeIgniter\Exceptions\PageNotFoundException $e) {
+            // Re-throw PageNotFoundException to be handled by CI
+            throw $e;
+        } catch (\Exception $e) {
+            // Log any other exceptions
+            log_message('error', 'KreditController::edit - Unexpected error: ' . $e->getMessage() . ' at line ' . $e->getLine());
+            log_message('error', 'KreditController::edit - Stack trace: ' . $e->getTraceAsString());
+
+            // Return a generic error page instead of throwing
+            return $this->response->setStatusCode(500)->setBody('
+                <div style="text-align: center; padding: 50px;">
+                    <h1>Terjadi Kesalahan</h1>
+                    <p>Maaf, terjadi kesalahan saat memproses permintaan Anda.</p>
+                    <p>Silakan coba lagi atau hubungi administrator.</p>
+                    <a href="/kredit" style="color: blue;">Kembali ke Daftar Kredit</a>
+                </div>
+            ');
         }
-
-        // Load anggota data untuk ditampilkan di form
-        $data['anggota'] = $this->anggotaModel
-            ->select('tbl_anggota.*, tbl_users.nama_lengkap')
-            ->join('tbl_users', 'tbl_users.id_anggota_ref = tbl_anggota.id_anggota', 'left')
-            ->find($data['kredit']['id_anggota']);
-
-        return view('kredit/form', $data);
     }
 
     /**

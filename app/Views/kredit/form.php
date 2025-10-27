@@ -7,6 +7,17 @@ $canEditAllFields = $currentUserLevel === 'Admin';
 
 // Jika sedang edit, ambil data anggota dari $anggota yang dikirim controller
 $anggotaData = isset($anggota) ? $anggota : null;
+
+// Auto-populate preview for existing image files (moved to top)
+$showExistingPreview = false;
+$existingImageUrl = '';
+if (isset($kredit) && !empty($kredit['dokumen_agunan'])) {
+    $fileExtension = strtolower(pathinfo($kredit['dokumen_agunan'], PATHINFO_EXTENSION));
+    if (in_array($fileExtension, ['jpg', 'jpeg', 'png'])) {
+        $showExistingPreview = true;
+        $existingImageUrl = '/kredit/view-document/' . esc($kredit['dokumen_agunan']);
+    }
+}
 ?>
 
 <?= $this->extend('layouts/dashboard_template') ?>
@@ -641,18 +652,6 @@ $anggotaData = isset($anggota) ? $anggota : null;
     </div>
 </div>
 
-<?php
-// Auto-populate preview for existing image files (PHP approach)
-$showExistingPreview = false;
-$existingImageUrl = '';
-if (isset($kredit) && !empty($kredit['dokumen_agunan'])) {
-    $fileExtension = strtolower(pathinfo($kredit['dokumen_agunan'], PATHINFO_EXTENSION));
-    if (in_array($fileExtension, ['jpg', 'jpeg', 'png'])) {
-        $showExistingPreview = true;
-        $existingImageUrl = '/kredit/view-document/' . esc($kredit['dokumen_agunan']);
-    }
-}
-?>
 
 // Enhanced currency input formatting
 document.addEventListener('DOMContentLoaded', function() {
