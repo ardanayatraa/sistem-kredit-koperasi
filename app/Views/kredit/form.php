@@ -353,13 +353,20 @@ $anggotaData = isset($anggota) ? $anggota : null;
                                </div>
                                <div class="ml-3 flex-1">
                                    <p class="text-sm font-medium text-gray-900">📄 KTP</p>
-                                   <p class="text-sm text-gray-500">Tersedia dari profil anggota</p>
+                                   <p class="text-sm text-gray-500">Dokumen pengaju kredit</p>
                                </div>
                                <div class="ml-auto flex gap-2">
-                                   <a href="/anggota/view-document/<?= esc($userAnggotaId ?? session()->get('id_anggota_ref') ?? '') ?>/ktp" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
-                                       <i class="bx bx-show h-3 w-3"></i>
-                                       Lihat
-                                   </a>
+                                   <?php if (isset($kredit) && $kredit): ?>
+                                       <a href="/anggota/view-document/<?= esc($kredit['id_anggota']) ?>/ktp" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                           <i class="bx bx-show h-3 w-3"></i>
+                                           Lihat
+                                       </a>
+                                   <?php elseif ($userAnggotaId ?? session()->get('id_anggota_ref')): ?>
+                                       <a href="/anggota/view-document/<?= esc($userAnggotaId ?? session()->get('id_anggota_ref')) ?>/ktp" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                           <i class="bx bx-show h-3 w-3"></i>
+                                           Lihat
+                                       </a>
+                                   <?php endif; ?>
                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                        ✓ Tersedia
                                    </span>
@@ -377,13 +384,20 @@ $anggotaData = isset($anggota) ? $anggota : null;
                                </div>
                                <div class="ml-3 flex-1">
                                    <p class="text-sm font-medium text-gray-900">💰 Slip Gaji</p>
-                                   <p class="text-sm text-gray-500">Tersedia dari profil anggota</p>
+                                   <p class="text-sm text-gray-500">Dokumen pengaju kredit</p>
                                </div>
                                <div class="ml-auto flex gap-2">
-                                   <a href="/anggota/view-document/<?= esc($userAnggotaId ?? session()->get('id_anggota_ref') ?? '') ?>/slip_gaji" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
-                                       <i class="bx bx-show h-3 w-3"></i>
-                                       Lihat
-                                   </a>
+                                   <?php if (isset($kredit) && $kredit): ?>
+                                       <a href="/anggota/view-document/<?= esc($kredit['id_anggota']) ?>/slip_gaji" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                           <i class="bx bx-show h-3 w-3"></i>
+                                           Lihat
+                                       </a>
+                                   <?php elseif ($userAnggotaId ?? session()->get('id_anggota_ref')): ?>
+                                       <a href="/anggota/view-document/<?= esc($userAnggotaId ?? session()->get('id_anggota_ref')) ?>/slip_gaji" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                           <i class="bx bx-show h-3 w-3"></i>
+                                           Lihat
+                                       </a>
+                                   <?php endif; ?>
                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                        ✓ Tersedia
                                    </span>
@@ -391,7 +405,7 @@ $anggotaData = isset($anggota) ? $anggota : null;
                            </div>
                        </div>
                    </div>
-                   
+
                    <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
                        <div class="flex">
                            <div class="flex-shrink-0">
@@ -401,7 +415,7 @@ $anggotaData = isset($anggota) ? $anggota : null;
                            </div>
                            <div class="ml-3">
                                <p class="text-sm text-blue-700">
-                                   <strong>Informasi:</strong> Dokumen KTP dan slip gaji akan digunakan dari data anggota yang sudah tersimpan di sistem.
+                                   <strong>Informasi:</strong> Dokumen KTP dan slip gaji diambil dari data anggota yang mengajukan kredit.
                                    Pastikan data profil anggota sudah lengkap dan terkini.
                                </p>
                            </div>
@@ -609,6 +623,7 @@ $anggotaData = isset($anggota) ? $anggota : null;
 
 
 
+<script>
 // Enhanced currency input formatting
 document.addEventListener('DOMContentLoaded', function() {
     const currencyInputs = document.querySelectorAll('#jumlah_pengajuan, #nilai_taksiran_agunan');
@@ -688,6 +703,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+</script>
 
 
 
