@@ -8,16 +8,6 @@ $canEditAllFields = $currentUserLevel === 'Admin';
 // Jika sedang edit, ambil data anggota dari $anggota yang dikirim controller
 $anggotaData = isset($anggota) ? $anggota : null;
 
-// Auto-populate preview for existing image files (moved to top)
-$showExistingPreview = false;
-$existingImageUrl = '';
-if (isset($kredit) && !empty($kredit['dokumen_agunan'])) {
-    $fileExtension = strtolower(pathinfo($kredit['dokumen_agunan'], PATHINFO_EXTENSION));
-    if (in_array($fileExtension, ['jpg', 'jpeg', 'png'])) {
-        $showExistingPreview = true;
-        $existingImageUrl = '/kredit/view-document/' . esc($kredit['dokumen_agunan']);
-    }
-}
 ?>
 
 <?= $this->extend('layouts/dashboard_template') ?>
@@ -297,16 +287,7 @@ if (isset($kredit) && !empty($kredit['dokumen_agunan'])) {
                                     id="dokumen_agunan"
                                     class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
                                     accept=".pdf,.jpg,.jpeg,.png"
-                                    onchange="previewImage(this, 'agunan')"
                                     <?= !isset($kredit) ? 'required' : '' ?>>
-                            <div id="image-preview-agunan" class="mt-3 <?= $showExistingPreview ? '' : 'hidden' ?>">
-                                <div class="relative inline-block">
-                                    <img id="preview-img-agunan" src="<?= $existingImageUrl ?>" alt="Preview Agunan" class="max-w-xs max-h-48 border border-gray-300 rounded-lg shadow-sm">
-                                    <button type="button" onclick="removePreview('agunan')" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors">
-                                        <i class="bx bx-x"></i>
-                                    </button>
-                                </div>
-                            </div>
                             <?php if (isset($kredit) && !empty($kredit['dokumen_agunan'])): ?>
                                 <div class="mt-2 p-3 bg-gray-50 rounded-lg border">
                                     <div class="flex items-center justify-between">
@@ -890,50 +871,7 @@ function closeModal() {
     modal.classList.add('hidden');
 }
 
-// Preview image function (from profile)
-function previewImage(input, type) {
-    const previewDiv = document.getElementById(`image-preview-${type}`);
-    const previewImg = document.getElementById(`preview-img-${type}`);
 
-    if (input.files && input.files[0]) {
-        const file = input.files[0];
-        const fileType = file.type.toLowerCase();
-
-        // Check if file is an image
-        if (fileType === 'image/jpeg' || fileType === 'image/jpg' || fileType === 'image/png') {
-            const reader = new FileReader();
-
-            reader.onload = function(e) {
-                previewImg.src = e.target.result;
-                previewDiv.classList.remove('hidden');
-            };
-
-            reader.readAsDataURL(file);
-        } else {
-            // For non-image files (like PDF), hide preview
-            previewDiv.classList.add('hidden');
-        }
-    } else {
-        // No file selected, hide preview
-        previewDiv.classList.add('hidden');
-    }
-}
-
-// Remove preview function (from profile)
-function removePreview(type) {
-    const previewDiv = document.getElementById(`image-preview-${type}`);
-    const fileInput = document.getElementById(`dokumen_${type}`);
-
-    // Hide preview
-    previewDiv.classList.add('hidden');
-
-    // Clear file input
-    fileInput.value = '';
-
-    // Reset preview image src
-    const previewImg = document.getElementById(`preview-img-${type}`);
-    previewImg.src = '';
-}
 
 // Preview new uploaded file function (updated to use static modal)
 function previewNewFile(input) {
