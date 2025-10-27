@@ -356,7 +356,7 @@ $canEditAllFields = $currentUserLevel === 'Admin';
                                    <p class="text-sm text-gray-500">Tersedia dari profil anggota</p>
                                </div>
                                <div class="ml-auto flex gap-2">
-                                   <button type="button" onclick="previewAnggotaDocument('ktp', '<?= esc($userAnggotaId ?? '') ?>')" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                   <button type="button" onclick="previewAnggotaDocument('ktp', '<?= esc($userAnggotaId ?? session()->get('id_anggota_ref') ?? '') ?>')" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
                                        <i class="bx bx-show h-3 w-3"></i>
                                        Preview
                                    </button>
@@ -380,7 +380,7 @@ $canEditAllFields = $currentUserLevel === 'Admin';
                                    <p class="text-sm text-gray-500">Tersedia dari profil anggota</p>
                                </div>
                                <div class="ml-auto flex gap-2">
-                                   <button type="button" onclick="previewAnggotaDocument('slip_gaji', '<?= esc($userAnggotaId ?? '') ?>')" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                   <button type="button" onclick="previewAnggotaDocument('slip_gaji', '<?= esc($userAnggotaId ?? session()->get('id_anggota_ref') ?? '') ?>')" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
                                        <i class="bx bx-show h-3 w-3"></i>
                                        Preview
                                    </button>
