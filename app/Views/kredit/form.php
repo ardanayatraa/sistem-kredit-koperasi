@@ -263,11 +263,12 @@ $canEditAllFields = $currentUserLevel === 'Admin';
                         </label>
                         <div class="border-2 border-dashed border-gray-300 rounded-lg p-4">
                             <input type="file"
-                                   name="dokumen_agunan"
-                                   id="dokumen_agunan"
-                                   class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
-                                   accept=".pdf,.jpg,.jpeg,.png"
-                                   <?= !isset($kredit) ? 'required' : '' ?>>
+                                    name="dokumen_agunan"
+                                    id="dokumen_agunan"
+                                    class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
+                                    accept=".pdf,.jpg,.jpeg,.png"
+                                    onchange="previewNewFile(this)"
+                                    <?= !isset($kredit) ? 'required' : '' ?>>
                             <?php if (isset($kredit) && !empty($kredit['dokumen_agunan'])): ?>
                                 <div class="mt-2 p-3 bg-gray-50 rounded-lg border">
                                     <div class="flex items-center justify-between">
@@ -354,14 +355,18 @@ $canEditAllFields = $currentUserLevel === 'Admin';
                                    <p class="text-sm font-medium text-gray-900">📄 KTP</p>
                                    <p class="text-sm text-gray-500">Tersedia dari profil anggota</p>
                                </div>
-                               <div class="ml-auto">
+                               <div class="ml-auto flex gap-2">
+                                   <button type="button" onclick="previewAnggotaDocument('ktp', '<?= esc($userAnggotaId ?? '') ?>')" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                       <i class="bx bx-show h-3 w-3"></i>
+                                       Preview
+                                   </button>
                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                        ✓ Tersedia
                                    </span>
                                </div>
                            </div>
                        </div>
-                       
+
                        <!-- Slip Gaji Info -->
                        <div class="bg-white border border-green-200 rounded-lg p-4">
                            <div class="flex items-center">
@@ -374,7 +379,11 @@ $canEditAllFields = $currentUserLevel === 'Admin';
                                    <p class="text-sm font-medium text-gray-900">💰 Slip Gaji</p>
                                    <p class="text-sm text-gray-500">Tersedia dari profil anggota</p>
                                </div>
-                               <div class="ml-auto">
+                               <div class="ml-auto flex gap-2">
+                                   <button type="button" onclick="previewAnggotaDocument('slip_gaji', '<?= esc($userAnggotaId ?? '') ?>')" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                       <i class="bx bx-show h-3 w-3"></i>
+                                       Preview
+                                   </button>
                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                        ✓ Tersedia
                                    </span>
@@ -731,6 +740,101 @@ function previewFile(filename, type) {
                     <i class="bx bx-download h-4 w-4"></i>
                     Download File
                 </a>
+            </div>
+        `;
+    }
+}
+
+// Preview anggota document function
+function previewAnggotaDocument(type, idAnggota) {
+    if (!idAnggota) {
+        alert('ID Anggota tidak ditemukan. Pastikan Anda sudah login sebagai anggota.');
+        return;
+    }
+
+    // Create modal for preview
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-hidden">
+            <div class="flex items-center justify-between p-4 border-b">
+                <h3 class="text-lg font-semibold text-gray-900">Preview ${type.toUpperCase().replace('_', ' ')}</h3>
+                <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
+                    <i class="bx bx-x h-6 w-6"></i>
+                </button>
+            </div>
+            <div class="p-4">
+                <div class="w-full h-[70vh] flex items-center justify-center bg-gray-100 rounded">
+                    <div id="preview-content" class="text-center">
+                        <i class="bx bx-loader-alt bx-spin h-12 w-12 text-gray-400 mb-4"></i>
+                        <p class="text-gray-600">Loading preview...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    // Load file content
+    const previewContent = modal.querySelector('#preview-content');
+    const fileUrl = `/anggota/view-document/${idAnggota}/${type}`;
+
+    // For now, assume it's an image (KTP and Slip Gaji are typically images)
+    previewContent.innerHTML = `<img src="${fileUrl}" alt="${type}" class="max-w-full max-h-full object-contain" onload="this.previousElementSibling?.remove()" onerror="this.parentElement.innerHTML='<div class=\'text-center\'><i class=\'bx bx-error h-12 w-12 text-red-400 mb-4\'></i><p class=\'text-red-600\'>Dokumen belum diupload atau tidak dapat diakses</p><p class=\'text-sm text-gray-500 mt-2\'>Hubungi administrator untuk mengupload dokumen</p></div>'">`;
+}
+
+// Preview new uploaded file function
+function previewNewFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    // Create modal for preview
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-hidden">
+            <div class="flex items-center justify-between p-4 border-b">
+                <h3 class="text-lg font-semibold text-gray-900">Preview Dokumen Baru</h3>
+                <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
+                    <i class="bx bx-x h-6 w-6"></i>
+                </button>
+            </div>
+            <div class="p-4">
+                <div class="w-full h-[70vh] flex items-center justify-center bg-gray-100 rounded">
+                    <div id="preview-content" class="text-center">
+                        <i class="bx bx-loader-alt bx-spin h-12 w-12 text-gray-400 mb-4"></i>
+                        <p class="text-gray-600">Loading preview...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    const previewContent = modal.querySelector('#preview-content');
+
+    // Check file type
+    if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewContent.innerHTML = `<img src="${e.target.result}" alt="Preview" class="max-w-full max-h-full object-contain">`;
+        };
+        reader.readAsDataURL(file);
+    } else if (file.type === 'application/pdf') {
+        previewContent.innerHTML = `
+            <div class="text-center">
+                <i class="bx bx-file-pdf h-12 w-12 text-red-400 mb-4"></i>
+                <p class="text-gray-600 mb-4">File PDF - ${file.name}</p>
+                <p class="text-sm text-gray-500">Preview tidak tersedia untuk file PDF yang baru diupload</p>
+                <p class="text-sm text-gray-500">File akan dapat dipreview setelah disimpan</p>
+            </div>
+        `;
+    } else {
+        previewContent.innerHTML = `
+            <div class="text-center">
+                <i class="bx bx-file h-12 w-12 text-gray-400 mb-4"></i>
+                <p class="text-gray-600 mb-4">File: ${file.name}</p>
+                <p class="text-sm text-gray-500">Tipe file tidak didukung untuk preview</p>
             </div>
         `;
     }
