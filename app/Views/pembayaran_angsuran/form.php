@@ -207,34 +207,79 @@ function removePreview() {
 }
 
 function previewExistingImage(filename, type) {
-    // Create modal for preview
+    // Create modal for preview (same as profile page)
     const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.id = 'document-modal';
+    modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50';
     modal.innerHTML = `
-        <div class="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-hidden">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
             <div class="flex items-center justify-between p-4 border-b">
-                <h3 class="text-lg font-semibold text-gray-900">Preview ${type.toUpperCase()}</h3>
-                <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
-                    <i class="bx bx-x h-6 w-6"></i>
+                <h3 class="text-lg font-medium text-gray-900" id="modal-title">Preview Bukti Pembayaran</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="bx bx-x text-2xl"></i>
                 </button>
             </div>
             <div class="p-4">
-                <div class="w-full h-[70vh] flex items-center justify-center bg-gray-100 rounded">
-                    <div id="preview-content" class="text-center">
-                        <i class="bx bx-loader-alt bx-spin h-12 w-12 text-gray-400 mb-4"></i>
-                        <p class="text-gray-600">Loading preview...</p>
-                    </div>
+                <div id="modal-content" class="flex justify-center items-center min-h-96">
+                    <!-- Content will be loaded here -->
                 </div>
+            </div>
+            <div class="flex justify-end gap-3 p-4 border-t">
+                <button onclick="closeModal()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition-colors">
+                    Tutup
+                </button>
             </div>
         </div>
     `;
     document.body.appendChild(modal);
 
-    // Load image
-    const previewContent = modal.querySelector('#preview-content');
+    // Clear previous content and show loading
+    const modalContent = modal.querySelector('#modal-content');
+    modalContent.innerHTML = '<div class="flex justify-center"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>';
+
+    // Show modal
+    modal.classList.remove('hidden');
+
+    // Load image with zoom functionality
     const fileUrl = `/pembayaran_angsuran/view-document/${filename}`;
 
-    previewContent.innerHTML = `<img src="${fileUrl}" alt="${type}" class="max-w-full max-h-full object-contain" onload="this.previousElementSibling?.remove()" onerror="this.parentElement.innerHTML='<div class=\'text-center\'><i class=\'bx bx-error h-12 w-12 text-red-400 mb-4\'></i><p class=\'text-red-600\'>Gagal memuat preview gambar</p></div>'">`;
+    modalContent.innerHTML = `
+        <div class="relative">
+            <img id="modal-image" src="${fileUrl}"
+                 alt="Preview ${filename}"
+                 class="max-w-full max-h-96 mx-auto cursor-zoom-in"
+                 onclick="toggleZoom(this)"
+                 onerror="this.parentElement.innerHTML='<div class=\'text-center\'><i class=\'bx bx-error h-12 w-12 text-red-400 mb-4\'></i><p class=\'text-red-600\'>Gagal memuat preview gambar</p></div>'">
+            <div class="text-center mt-2 text-sm text-gray-500">
+                Klik gambar untuk zoom in/out
+            </div>
+        </div>
+    `;
+}
+
+// Helper functions for modal
+function toggleZoom(img) {
+    if (img.classList.contains('zoomed')) {
+        img.classList.remove('zoomed');
+        img.style.transform = 'scale(1)';
+        img.style.cursor = 'zoom-in';
+    } else {
+        img.classList.add('zoomed');
+        img.style.transform = 'scale(1.5)';
+        img.style.cursor = 'zoom-out';
+    }
+}
+
+function closeModal() {
+    const modal = document.getElementById('document-modal');
+    if (modal) {
+        const modalImage = modal.querySelector('img');
+        if (modalImage) {
+            modalImage.classList.remove('zoomed');
+            modalImage.style.transform = 'scale(1)';
+        }
+        modal.remove();
+    }
 }
 
 // Format currency input
