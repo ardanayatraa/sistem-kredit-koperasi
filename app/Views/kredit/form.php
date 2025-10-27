@@ -359,9 +359,13 @@ $anggotaData = isset($anggota) ? $anggota : null;
                                    <?php
                                    $anggotaId = isset($kredit) && $kredit ? $kredit['id_anggota'] : ($userAnggotaId ?? session()->get('id_anggota_ref'));
                                    if ($anggotaId): ?>
-                                       <a href="/profile" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                       <button type="button" onclick="previewAnggotaDocument('ktp', '<?= esc($anggotaId) ?>')" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
                                            <i class="bx bx-show h-3 w-3"></i>
-                                           Lihat di Profile
+                                           Lihat
+                                       </button>
+                                       <a href="/anggota/view-document/<?= esc($anggotaId) ?>/ktp" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                                           <i class="bx bx-download h-3 w-3"></i>
+                                           Download
                                        </a>
                                    <?php endif; ?>
                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -387,9 +391,13 @@ $anggotaData = isset($anggota) ? $anggota : null;
                                    <?php
                                    $anggotaId = isset($kredit) && $kredit ? $kredit['id_anggota'] : ($userAnggotaId ?? session()->get('id_anggota_ref'));
                                    if ($anggotaId): ?>
-                                       <a href="/profile" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                       <button type="button" onclick="previewAnggotaDocument('slip_gaji', '<?= esc($anggotaId) ?>')" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
                                            <i class="bx bx-show h-3 w-3"></i>
-                                           Lihat di Profile
+                                           Lihat
+                                       </button>
+                                       <a href="/anggota/view-document/<?= esc($anggotaId) ?>/slip_gaji" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                                           <i class="bx bx-download h-3 w-3"></i>
+                                           Download
                                        </a>
                                    <?php endif; ?>
                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -410,7 +418,7 @@ $anggotaData = isset($anggota) ? $anggota : null;
                            <div class="ml-3">
                                <p class="text-sm text-blue-700">
                                    <strong>Informasi:</strong> Dokumen KTP dan slip gaji diambil dari data anggota yang mengajukan kredit.
-                                   Dokumen dapat dilihat dan dikelola di halaman <a href="/profile" target="_blank" class="text-blue-600 underline hover:text-blue-800">Profile</a>.
+                                   Pastikan data profil anggota sudah lengkap dan terkini.
                                </p>
                            </div>
                        </div>
@@ -617,6 +625,28 @@ $anggotaData = isset($anggota) ? $anggota : null;
 
 
 
+<!-- Modal for document preview -->
+<div id="document-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+        <div class="flex items-center justify-between p-4 border-b">
+            <h3 class="text-lg font-medium text-gray-900" id="modal-title">Preview Dokumen</h3>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="bx bx-x text-2xl"></i>
+            </button>
+        </div>
+        <div class="p-4">
+            <div id="modal-content" class="flex justify-center items-center min-h-96">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+        <div class="flex justify-end gap-3 p-4 border-t">
+            <button onclick="closeModal()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition-colors">
+                Tutup
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
 // Enhanced currency input formatting
 document.addEventListener('DOMContentLoaded', function() {
@@ -697,6 +727,94 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Preview anggota document function (same as profile)
+function previewAnggotaDocument(type, idAnggota) {
+    if (!idAnggota) {
+        alert('ID Anggota tidak ditemukan. Pastikan Anda sudah login sebagai anggota.');
+        return;
+    }
+
+    const modal = document.getElementById('document-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalContent = document.getElementById('modal-content');
+
+    // Set modal title
+    const titles = {
+        'ktp': 'Preview Dokumen KTP',
+        'kk': 'Preview Dokumen Kartu Keluarga',
+        'slip_gaji': 'Preview Dokumen Slip Gaji'
+    };
+    modalTitle.textContent = titles[type] || 'Preview Dokumen';
+
+    // Clear previous content and show loading
+    modalContent.innerHTML = '<div class="flex justify-center"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>';
+
+    // Show modal
+    modal.classList.remove('hidden');
+
+    // Load content based on file type (simulate getting filename from server)
+    // For now, we'll try to load the document directly
+    const fileUrl = `/anggota/view-document/${idAnggota}/${type}`;
+
+    // Try to load as image first
+    const img = new Image();
+    img.onload = function() {
+        modalContent.innerHTML = `
+            <div class="relative">
+                <img id="modal-image" src="${fileUrl}"
+                     alt="Preview ${type}"
+                     class="max-w-full max-h-96 mx-auto cursor-zoom-in"
+                     onclick="toggleZoom(this)">
+                <div class="text-center mt-2 text-sm text-gray-500">
+                    Klik gambar untuk zoom in/out
+                </div>
+            </div>
+        `;
+    };
+    img.onerror = function() {
+        // If not an image, try as PDF or show download link
+        modalContent.innerHTML = `
+            <div class="text-center">
+                <i class="bx bx-file text-6xl text-gray-500 mb-4"></i>
+                <p class="text-lg font-medium text-gray-900 mb-2">File Tidak Dapat Dipreview</p>
+                <p class="text-gray-600 mb-4">Dokumen ${type.toUpperCase().replace('_', ' ')}</p>
+                <a href="${fileUrl}" target="_blank"
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                    <i class="bx bx-download"></i>
+                    Download File
+                </a>
+            </div>
+        `;
+    };
+    img.src = fileUrl;
+}
+
+// Helper functions for modal
+function toggleZoom(img) {
+    if (img.classList.contains('zoomed')) {
+        img.classList.remove('zoomed');
+        img.style.transform = 'scale(1)';
+        img.style.cursor = 'zoom-in';
+    } else {
+        img.classList.add('zoomed');
+        img.style.transform = 'scale(1.5)';
+        img.style.cursor = 'zoom-out';
+    }
+}
+
+function closeModal() {
+    const modal = document.getElementById('document-modal');
+    const modalImage = document.querySelector('#modal-image');
+
+    // Reset zoom if image was zoomed
+    if (modalImage) {
+        modalImage.classList.remove('zoomed');
+        modalImage.style.transform = 'scale(1)';
+    }
+
+    modal.classList.add('hidden');
+}
 </script>
 
 
