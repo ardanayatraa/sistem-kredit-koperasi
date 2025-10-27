@@ -61,19 +61,27 @@
                                    onchange="previewImage(this)"
                                    required>
                             <p class="text-xs text-gray-500 mt-1">Upload foto struk/bukti transfer (JPG/PNG, max 2MB)</p>
+
+                            <!-- Live Preview Container -->
+                            <div id="live-preview-container" class="mt-3 hidden">
+                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
+                                    <div class="text-center">
+                                        <div class="relative inline-block">
+                                            <img id="live-preview-img" src="" alt="Live Preview" class="max-w-full max-h-64 mx-auto rounded-lg shadow-sm border border-gray-200">
+                                            <button type="button" onclick="removeLivePreview()" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors">
+                                                <i class="bx bx-x"></i>
+                                            </button>
+                                        </div>
+                                        <p class="text-xs text-gray-600 mt-2">Live Preview - Gambar akan diupload</p>
+                                        <div class="mt-2 text-xs text-gray-500">
+                                            <span id="file-info"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <p class="text-xs text-gray-500 mt-1">Format: JPG, JPEG, PNG (Maksimal 2MB)</p>
 
-                        <!-- Image Preview -->
-                        <div id="image-preview" class="mt-3 hidden">
-                            <div class="relative inline-block">
-                                <img id="preview-img" src="" alt="Preview" class="max-w-xs max-h-48 border border-gray-300 rounded-lg shadow-sm">
-                                <button type="button" onclick="removePreview()" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors">
-                                    <i class="bx bx-x"></i>
-                                </button>
-                            </div>
-                            <p class="text-xs text-gray-500 mt-2">Preview gambar yang akan diupload</p>
-                        </div>
 
                         <?php if (isset($pembayaran_angsuran) && !empty($pembayaran_angsuran['bukti_pembayaran'])): ?>
                             <div class="mt-2 p-3 bg-gray-50 rounded-lg border">
@@ -167,18 +175,19 @@
 </div>
 
 <script>
-// Image preview function
+// Enhanced live preview function with better UX
 function previewImage(input) {
     const file = input.files[0];
-    const preview = document.getElementById('image-preview');
-    const previewImg = document.getElementById('preview-img');
+    const livePreviewContainer = document.getElementById('live-preview-container');
+    const livePreviewImg = document.getElementById('live-preview-img');
+    const fileInfo = document.getElementById('file-info');
 
     if (file) {
         // Validate file size (2MB)
         if (file.size > 2 * 1024 * 1024) {
             alert('Ukuran file terlalu besar. Maksimal 2MB.');
             input.value = '';
-            preview.classList.add('hidden');
+            livePreviewContainer.classList.add('hidden');
             return;
         }
 
@@ -187,25 +196,41 @@ function previewImage(input) {
         if (!allowedTypes.includes(file.type)) {
             alert('Format file tidak didukung. Gunakan JPG, JPEG, atau PNG.');
             input.value = '';
-            preview.classList.add('hidden');
+            livePreviewContainer.classList.add('hidden');
             return;
         }
 
-        // Show preview
+        // Show live preview with enhanced UI
         const reader = new FileReader();
         reader.onload = function(e) {
-            previewImg.src = e.target.result;
-            preview.classList.remove('hidden');
+            livePreviewImg.src = e.target.result;
+
+            // Show file information
+            const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            fileInfo.innerHTML = `
+                <strong>${file.name}</strong> |
+                ${(file.type).toUpperCase()} |
+                ${fileSizeMB} MB |
+                ${file.lastModifiedDate ? file.lastModifiedDate.toLocaleDateString('id-ID') : 'N/A'}
+            `;
+
+            livePreviewContainer.classList.remove('hidden');
+
+            // Smooth scroll to preview
+            livePreviewContainer.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest'
+            });
         };
         reader.readAsDataURL(file);
     } else {
-        preview.classList.add('hidden');
+        livePreviewContainer.classList.add('hidden');
     }
 }
 
-function removePreview() {
+function removeLivePreview() {
     document.getElementById('bukti_pembayaran').value = '';
-    document.getElementById('image-preview').classList.add('hidden');
+    document.getElementById('live-preview-container').classList.add('hidden');
 }
 
 function previewExistingImage(filename, type) {
