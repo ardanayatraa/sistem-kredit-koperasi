@@ -72,7 +72,6 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Live Preview
-                                    <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full ml-2">Real-time</span>
                                 </label>
                                 <div id="live-preview-container" class="hidden">
                                     <div class="border-2 border-dashed border-green-300 rounded-lg p-4 bg-green-50">
@@ -102,48 +101,6 @@
                             </div>
                         </div>
                     </div>
-                        <label for="bukti_pembayaran" class="block text-sm font-medium text-gray-700 mb-2">
-                            Bukti Pembayaran <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <input type="file"
-                                   name="bukti_pembayaran"
-                                   id="bukti_pembayaran"
-                                   accept=".jpg,.jpeg,.png"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm file:mr-4 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                                   onchange="previewImage(this)"
-                                   required>
-                            <p class="text-xs text-gray-500 mt-1">Upload foto struk/bukti transfer (JPG/PNG, max 2MB)</p>
-
-                            <!-- Live Preview Container -->
-                            <div id="live-preview-container" class="mt-3 hidden">
-                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
-                                    <div class="text-center">
-                                        <div class="relative inline-block">
-                                            <img id="live-preview-img" src="" alt="Live Preview" class="max-w-full max-h-64 mx-auto rounded-lg shadow-sm border border-gray-200">
-                                            <button type="button" onclick="removeLivePreview()" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors">
-                                                <i class="bx bx-x"></i>
-                                            </button>
-                                        </div>
-                                        <p class="text-xs text-gray-600 mt-2">Live Preview - Gambar akan diupload</p>
-                                        <div class="mt-2 text-xs text-gray-500">
-                                            <span id="file-info"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Trigger preview for existing file selection -->
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function() {
-                                    const fileInput = document.getElementById('bukti_pembayaran');
-                                    if (fileInput && fileInput.files.length > 0) {
-                                        previewImage(fileInput);
-                                    }
-                                });
-                            </script>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-1">Format: JPG, JPEG, PNG (Maksimal 2MB)</p>
 
 
                         <?php if (isset($pembayaran_angsuran) && !empty($pembayaran_angsuran['bukti_pembayaran'])): ?>
@@ -278,9 +235,7 @@ function previewImage(input) {
             fileInfo.innerHTML = `
                 <div class="space-y-1">
                     <div><strong>Nama:</strong> ${file.name}</div>
-                    <div><strong>Tipe:</strong> ${file.type.toUpperCase()}</div>
                     <div><strong>Ukuran:</strong> ${fileSizeMB} MB</div>
-                    <div><strong>Tanggal:</strong> ${fileDate}</div>
                 </div>
             `;
 

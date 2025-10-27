@@ -147,24 +147,62 @@
                         <?php endif; ?>
                     </div>
 
-                    <!-- Bukti Pembayaran -->
-                    <div>
-                        <label for="bukti_pembayaran" class="block text-sm font-medium text-gray-700 mb-2">
-                            Bukti Pembayaran <span class="text-red-500">*</span>
-                        </label>
-                        <input type="file" 
-                               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 <?= isset($validation) && $validation->hasError('bukti_pembayaran') ? 'border-red-300' : '' ?>"
-                               id="bukti_pembayaran" 
-                               name="bukti_pembayaran" 
-                               accept="image/*"
-                               required>
-                        <?php if (isset($validation) && $validation->hasError('bukti_pembayaran')): ?>
-                            <p class="mt-1 text-sm text-red-600"><?= $validation->getError('bukti_pembayaran') ?></p>
-                        <?php endif; ?>
-                        <p class="mt-1 text-xs text-gray-500">
-                            <i class="bx bx-info-circle mr-1"></i>
-                            Upload foto struk/bukti transfer (JPG/PNG, max 2MB)
-                        </p>
+                    <!-- Bukti Pembayaran & Live Preview -->
+                    <div class="md:col-span-2">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- File Upload Section -->
+                            <div>
+                                <label for="bukti_pembayaran" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Bukti Pembayaran <span class="text-red-500">*</span>
+                                </label>
+                                <input type="file"
+                                       class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 file:mr-4 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 <?= isset($validation) && $validation->hasError('bukti_pembayaran') ? 'border-red-300' : '' ?>"
+                                       id="bukti_pembayaran"
+                                       name="bukti_pembayaran"
+                                       accept=".jpg,.jpeg,.png"
+                                       onchange="previewImage(this)"
+                                       required>
+                                <?php if (isset($validation) && $validation->hasError('bukti_pembayaran')): ?>
+                                    <p class="mt-1 text-sm text-red-600"><?= $validation->getError('bukti_pembayaran') ?></p>
+                                <?php endif; ?>
+                                <p class="mt-1 text-xs text-gray-500">
+                                    <i class="bx bx-info-circle mr-1"></i>
+                                    Upload foto struk/bukti transfer (JPG/PNG, max 2MB)
+                                </p>
+                            </div>
+
+                            <!-- Live Preview Section -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Live Preview
+                                </label>
+                                <div id="live-preview-container" class="hidden">
+                                    <div class="border-2 border-dashed border-green-300 rounded-lg p-4 bg-green-50">
+                                        <div class="text-center">
+                                            <div class="relative inline-block">
+                                                <img id="live-preview-img" src="" alt="Live Preview" class="max-w-full max-h-48 mx-auto rounded-lg shadow-sm border border-green-200">
+                                                <button type="button" onclick="removeLivePreview()" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors">
+                                                    <i class="bx bx-x"></i>
+                                                </button>
+                                            </div>
+                                            <p class="text-xs text-green-600 mt-2 font-medium">✓ Live Preview - Gambar akan diupload</p>
+                                            <div class="mt-2 text-xs text-gray-600 bg-white p-2 rounded border">
+                                                <div id="file-info" class="font-mono text-xs"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Placeholder when no file selected -->
+                                <div id="preview-placeholder" class="border-2 border-dashed border-gray-300 rounded-lg p-8 bg-gray-50">
+                                    <div class="text-center">
+                                        <i class="bx bx-image text-4xl text-gray-400 mb-2"></i>
+                                        <p class="text-sm text-gray-500">Pilih file untuk melihat preview</p>
+                                        <p class="text-xs text-gray-400 mt-1">Live preview akan muncul di sini</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                 </div>
@@ -206,6 +244,74 @@
 </div>
 
 <script>
+// Enhanced live preview function with better UX
+function previewImage(input) {
+    const file = input.files[0];
+    const livePreviewContainer = document.getElementById('live-preview-container');
+    const previewPlaceholder = document.getElementById('preview-placeholder');
+    const livePreviewImg = document.getElementById('live-preview-img');
+    const fileInfo = document.getElementById('file-info');
+
+    if (file) {
+        // Validate file size (2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Ukuran file terlalu besar. Maksimal 2MB.');
+            input.value = '';
+            livePreviewContainer.classList.add('hidden');
+            previewPlaceholder.classList.remove('hidden');
+            return;
+        }
+
+        // Validate file type (only images)
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('Format file tidak didukung. Gunakan JPG, JPEG, atau PNG.');
+            input.value = '';
+            livePreviewContainer.classList.add('hidden');
+            previewPlaceholder.classList.remove('hidden');
+            return;
+        }
+
+        // Show live preview with enhanced UI
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            livePreviewImg.src = e.target.result;
+
+            // Show file information with better formatting
+            const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            const fileDate = file.lastModifiedDate ? file.lastModifiedDate.toLocaleDateString('id-ID') : 'N/A';
+
+            fileInfo.innerHTML = `
+                <div class="space-y-1">
+                    <div><strong>Nama:</strong> ${file.name}</div>
+                    <div><strong>Ukuran:</strong> ${fileSizeMB} MB</div>
+                </div>
+            `;
+
+            // Hide placeholder and show preview
+            previewPlaceholder.classList.add('hidden');
+            livePreviewContainer.classList.remove('hidden');
+
+            // Smooth scroll to preview area
+            livePreviewContainer.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest'
+            });
+        };
+        reader.readAsDataURL(file);
+    } else {
+        // Reset to placeholder state
+        livePreviewContainer.classList.add('hidden');
+        previewPlaceholder.classList.remove('hidden');
+    }
+}
+
+function removeLivePreview() {
+    document.getElementById('bukti_pembayaran').value = '';
+    document.getElementById('live-preview-container').classList.add('hidden');
+    document.getElementById('preview-placeholder').classList.remove('hidden');
+}
+
 // Format currency input
 document.getElementById('jumlah_bayar').addEventListener('input', function(e) {
     let value = e.target.value.replace(/[^\d]/g, '');
