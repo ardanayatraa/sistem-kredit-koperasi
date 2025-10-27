@@ -60,6 +60,7 @@
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm file:mr-4 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                    onchange="previewImage(this)"
                                    required>
+                            <p class="text-xs text-gray-500 mt-1">Upload foto struk/bukti transfer (JPG/PNG, max 2MB)</p>
                         </div>
                         <p class="text-xs text-gray-500 mt-1">Format: JPG, JPEG, PNG (Maksimal 2MB)</p>
 
