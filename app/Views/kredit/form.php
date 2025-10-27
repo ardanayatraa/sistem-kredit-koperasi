@@ -300,7 +300,7 @@ $anggotaData = isset($anggota) ? $anggota : null;
                                                 <i class="bx bx-show h-3 w-3"></i>
                                                 Lihat
                                             </button>
-                                            <a href="https://mitrakredit.my.id/<?= esc($kredit['dokumen_agunan']) ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                                            <a href="<?= base_url(esc($kredit['dokumen_agunan'])) ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
                                                 <i class="bx bx-download h-3 w-3"></i>
                                                 Download
                                             </a>
@@ -754,7 +754,7 @@ function previewFile(filename, type) {
     modal.classList.remove('hidden');
 
     // Load content based on file type
-    const fileUrl = `https://mitrakredit.my.id/${filename}`;
+    const fileUrl = `<?= base_url() ?>${filename}`;
     const fileExtension = filename.split('.').pop().toLowerCase();
 
     console.log('Previewing file:', filename, 'URL:', fileUrl, 'Extension:', fileExtension);

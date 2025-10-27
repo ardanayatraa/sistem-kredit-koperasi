@@ -90,7 +90,7 @@
                                             <i class="bx bx-show h-3 w-3"></i>
                                             Preview
                                         </button>
-                                        <a href="/pembayaran_angsuran/view-document/<?= esc($pembayaran_angsuran['bukti_pembayaran']) ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                                        <a href="<?= base_url(esc($pembayaran_angsuran['bukti_pembayaran'])) ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
                                             <i class="bx bx-download h-3 w-3"></i>
                                             Download
                                         </a>
@@ -241,7 +241,7 @@ function previewExistingImage(filename, type) {
     modal.classList.remove('hidden');
 
     // Load image with zoom functionality
-    const fileUrl = `/pembayaran_angsuran/view-document/${filename}`;
+    const fileUrl = `<?= base_url() ?>${filename}`;
 
     modalContent.innerHTML = `
         <div class="relative">
