@@ -356,15 +356,12 @@ $anggotaData = isset($anggota) ? $anggota : null;
                                    <p class="text-sm text-gray-500">Dokumen pengaju kredit</p>
                                </div>
                                <div class="ml-auto flex gap-2">
-                                   <?php if (isset($kredit) && $kredit): ?>
-                                       <a href="/anggota/view-document/<?= esc($kredit['id_anggota']) ?>/ktp" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                   <?php
+                                   $anggotaId = isset($kredit) && $kredit ? $kredit['id_anggota'] : ($userAnggotaId ?? session()->get('id_anggota_ref'));
+                                   if ($anggotaId): ?>
+                                       <a href="/profile" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
                                            <i class="bx bx-show h-3 w-3"></i>
-                                           Lihat
-                                       </a>
-                                   <?php elseif ($userAnggotaId ?? session()->get('id_anggota_ref')): ?>
-                                       <a href="/anggota/view-document/<?= esc($userAnggotaId ?? session()->get('id_anggota_ref')) ?>/ktp" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
-                                           <i class="bx bx-show h-3 w-3"></i>
-                                           Lihat
+                                           Lihat di Profile
                                        </a>
                                    <?php endif; ?>
                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -387,15 +384,12 @@ $anggotaData = isset($anggota) ? $anggota : null;
                                    <p class="text-sm text-gray-500">Dokumen pengaju kredit</p>
                                </div>
                                <div class="ml-auto flex gap-2">
-                                   <?php if (isset($kredit) && $kredit): ?>
-                                       <a href="/anggota/view-document/<?= esc($kredit['id_anggota']) ?>/slip_gaji" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                   <?php
+                                   $anggotaId = isset($kredit) && $kredit ? $kredit['id_anggota'] : ($userAnggotaId ?? session()->get('id_anggota_ref'));
+                                   if ($anggotaId): ?>
+                                       <a href="/profile" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
                                            <i class="bx bx-show h-3 w-3"></i>
-                                           Lihat
-                                       </a>
-                                   <?php elseif ($userAnggotaId ?? session()->get('id_anggota_ref')): ?>
-                                       <a href="/anggota/view-document/<?= esc($userAnggotaId ?? session()->get('id_anggota_ref')) ?>/slip_gaji" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
-                                           <i class="bx bx-show h-3 w-3"></i>
-                                           Lihat
+                                           Lihat di Profile
                                        </a>
                                    <?php endif; ?>
                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -416,7 +410,7 @@ $anggotaData = isset($anggota) ? $anggota : null;
                            <div class="ml-3">
                                <p class="text-sm text-blue-700">
                                    <strong>Informasi:</strong> Dokumen KTP dan slip gaji diambil dari data anggota yang mengajukan kredit.
-                                   Pastikan data profil anggota sudah lengkap dan terkini.
+                                   Dokumen dapat dilihat dan dikelola di halaman <a href="/profile" target="_blank" class="text-blue-600 underline hover:text-blue-800">Profile</a>.
                                </p>
                            </div>
                        </div>
