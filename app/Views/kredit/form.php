@@ -288,9 +288,9 @@ $anggotaData = isset($anggota) ? $anggota : null;
                                     accept=".pdf,.jpg,.jpeg,.png"
                                     onchange="previewImage(this, 'agunan')"
                                     <?= !isset($kredit) ? 'required' : '' ?>>
-                            <div id="image-preview-agunan" class="mt-3 hidden">
+                            <div id="image-preview-agunan" class="mt-3 <?= $showExistingPreview ? '' : 'hidden' ?>">
                                 <div class="relative inline-block">
-                                    <img id="preview-img-agunan" src="" alt="Preview Agunan" class="max-w-xs max-h-48 border border-gray-300 rounded-lg shadow-sm">
+                                    <img id="preview-img-agunan" src="<?= $existingImageUrl ?>" alt="Preview Agunan" class="max-w-xs max-h-48 border border-gray-300 rounded-lg shadow-sm">
                                     <button type="button" onclick="removePreview('agunan')" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors">
                                         <i class="bx bx-x"></i>
                                     </button>
@@ -641,25 +641,18 @@ $anggotaData = isset($anggota) ? $anggota : null;
     </div>
 </div>
 
-// Auto-populate preview for existing image files
-document.addEventListener('DOMContentLoaded', function() {
-    // Check for existing dokumen_agunan file
-    <?php if (isset($kredit) && !empty($kredit['dokumen_agunan'])): ?>
-        const existingFile = '<?= esc($kredit['dokumen_agunan']) ?>';
-        const fileExtension = existingFile.split('.').pop().toLowerCase();
-
-        // If it's an image file, show preview
-        if (['jpg', 'jpeg', 'png'].includes(fileExtension)) {
-            const previewDiv = document.getElementById('image-preview-agunan');
-            const previewImg = document.getElementById('preview-img-agunan');
-
-            if (previewDiv && previewImg) {
-                previewImg.src = '/kredit/view-document/' + existingFile;
-                previewDiv.classList.remove('hidden');
-            }
-        }
-    <?php endif; ?>
-});
+<?php
+// Auto-populate preview for existing image files (PHP approach)
+$showExistingPreview = false;
+$existingImageUrl = '';
+if (isset($kredit) && !empty($kredit['dokumen_agunan'])) {
+    $fileExtension = strtolower(pathinfo($kredit['dokumen_agunan'], PATHINFO_EXTENSION));
+    if (in_array($fileExtension, ['jpg', 'jpeg', 'png'])) {
+        $showExistingPreview = true;
+        $existingImageUrl = '/kredit/view-document/' . esc($kredit['dokumen_agunan']);
+    }
+}
+?>
 
 // Enhanced currency input formatting
 document.addEventListener('DOMContentLoaded', function() {
