@@ -300,7 +300,7 @@ $anggotaData = isset($anggota) ? $anggota : null;
                                                 <i class="bx bx-show h-3 w-3"></i>
                                                 Lihat
                                             </button>
-                                            <a href="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                                            <a href="https://mitrakredit.my.id/<?= esc($kredit['dokumen_agunan']) ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
                                                 <i class="bx bx-download h-3 w-3"></i>
                                                 Download
                                             </a>
