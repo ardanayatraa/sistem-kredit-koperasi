@@ -754,22 +754,10 @@ function previewFile(filename, type) {
     modal.classList.remove('hidden');
 
     // Load content based on file type
-    const fileUrl = `/kredit/view-document/${filename}`;
+    const fileUrl = `https://mitrakredit.my.id/${filename}`;
     const fileExtension = filename.split('.').pop().toLowerCase();
 
     console.log('Previewing file:', filename, 'URL:', fileUrl, 'Extension:', fileExtension);
-
-    // Check if file exists first
-    fetch(fileUrl, { method: 'HEAD' })
-        .then(response => {
-            console.log('File exists check:', response.status, response.ok);
-            if (!response.ok) {
-                throw new Error('File not found');
-            }
-        })
-        .catch(error => {
-            console.error('File check failed:', error);
-        });
 
     if (fileExtension === 'pdf') {
         // For PDF files, show download link
