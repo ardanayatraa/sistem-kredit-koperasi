@@ -280,29 +280,14 @@ $canEditAllFields = $currentUserLevel === 'Admin';
                             <?php if (isset($kredit) && !empty($kredit['dokumen_agunan'])): ?>
                                 <div class="mt-2 p-3 bg-gray-50 rounded-lg border">
                                     <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-3">
-                                            <?php
-                                            $fileName = basename($kredit['dokumen_agunan']);
-                                            $isImage = in_array(strtolower(pathinfo($fileName, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png']);
-                                            ?>
-                                            <?php if ($isImage): ?>
-                                                <div class="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
-                                                    <img src="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>" alt="Preview" class="w-full h-full object-cover">
-                                                </div>
-                                            <?php else: ?>
-                                                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                                    <i class="bx bx-file text-blue-600 h-5 w-5"></i>
-                                                </div>
-                                            <?php endif; ?>
-                                            <div>
-                                                <p class="text-sm font-medium text-gray-900">Dokumen Agunan</p>
-                                                <p class="text-xs text-gray-500">File saat ini: <?= $fileName ?></p>
-                                            </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900">Dokumen Agunan</p>
+                                            <p class="text-xs text-gray-500">File saat ini: <?= basename($kredit['dokumen_agunan']) ?></p>
                                         </div>
                                         <div class="flex gap-2">
                                             <button type="button" onclick="previewFile('<?= esc($kredit['dokumen_agunan']) ?>', 'agunan')" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
                                                 <i class="bx bx-show h-3 w-3"></i>
-                                                Preview
+                                                Lihat
                                             </button>
                                             <a href="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
                                                 <i class="bx bx-download h-3 w-3"></i>
