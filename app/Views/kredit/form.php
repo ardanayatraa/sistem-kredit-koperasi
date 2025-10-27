@@ -282,33 +282,49 @@ $anggotaData = isset($anggota) ? $anggota : null;
                             <span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full ml-2">Wajib Upload</span>
                         </label>
                         <div class="border-2 border-dashed border-gray-300 rounded-lg p-4">
-                            <input type="file"
-                                    name="dokumen_agunan"
-                                    id="dokumen_agunan"
-                                    class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
-                                    accept=".pdf,.jpg,.jpeg,.png"
-                                    <?= !isset($kredit) ? 'required' : '' ?>>
-                            <?php if (isset($kredit) && !empty($kredit['dokumen_agunan'])): ?>
-                                <div class="mt-2 p-3 bg-gray-50 rounded-lg border">
-                                    <div class="flex items-center justify-between">
-                                        <div>
-                                            <p class="text-sm font-medium text-gray-900">Dokumen Agunan</p>
-                                            <p class="text-xs text-gray-500">File saat ini: <?= basename($kredit['dokumen_agunan']) ?></p>
-                                        </div>
-                                        <div class="flex gap-2">
-                                            <button type="button" onclick="previewFile('<?= esc($kredit['dokumen_agunan']) ?>', 'agunan')" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
-                                                <i class="bx bx-show h-3 w-3"></i>
-                                                Lihat
-                                            </button>
-                                            <a href="<?= base_url(esc($kredit['dokumen_agunan'])) ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
-                                                <i class="bx bx-download h-3 w-3"></i>
-                                                Download
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            <?php endif; ?>
-                        </div>
+                             <input type="file"
+                                     name="dokumen_agunan"
+                                     id="dokumen_agunan"
+                                     class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
+                                     accept=".pdf,.jpg,.jpeg,.png"
+                                     onchange="previewImage(this, 'agunan')"
+                                     <?= !isset($kredit) ? 'required' : '' ?>>
+
+                             <!-- Live Preview Container -->
+                             <div id="live-preview-agunan" class="mt-3 hidden">
+                                 <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
+                                     <div class="text-center">
+                                         <div class="relative inline-block">
+                                             <img id="live-preview-img-agunan" src="" alt="Live Preview" class="max-w-full max-h-64 mx-auto rounded-lg shadow-sm border border-gray-200">
+                                             <button type="button" onclick="removeLivePreview('agunan')" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors">
+                                                 <i class="bx bx-x"></i>
+                                             </button>
+                                         </div>
+                                         <p class="text-xs text-gray-600 mt-2">Live Preview - Dokumen Agunan akan diupload</p>
+                                         <div class="mt-2 text-xs text-gray-500">
+                                             <span id="file-info-agunan"></span>
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
+
+                             <!-- Existing file preview (only for edit mode) -->
+                             <?php if (isset($kredit) && !empty($kredit['dokumen_agunan'])): ?>
+                             <div id="existing-preview-agunan" class="mt-3">
+                                 <div class="border-2 border-dashed border-blue-300 rounded-lg p-4 bg-blue-50">
+                                     <div class="text-center">
+                                         <div class="relative inline-block">
+                                             <img src="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>" alt="Existing Preview" class="max-w-full max-h-64 mx-auto rounded-lg shadow-sm border border-blue-200">
+                                             <div class="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
+                                                 File Lama
+                                             </div>
+                                         </div>
+                                         <p class="text-xs text-blue-600 mt-2">File saat ini: <?= esc($kredit['dokumen_agunan']) ?></p>
+                                     </div>
+                                 </div>
+                             </div>
+                             <?php endif; ?>
+                         </div>
                         <div class="mt-2 text-xs text-gray-500">
                             <p><strong>Jenis dokumen sesuai agunan:</strong></p>
                             <ul class="ml-4 mt-1 space-y-1">
@@ -889,6 +905,56 @@ function closeModal() {
     }
 
     modal.classList.add('hidden');
+}
+
+// Live preview function for new uploads
+function previewImage(input, type) {
+    const previewDiv = document.getElementById(`live-preview-${type}`);
+    const previewImg = document.getElementById(`live-preview-img-${type}`);
+    const fileInfo = document.getElementById(`file-info-${type}`);
+
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const fileType = file.type.toLowerCase();
+
+        // Check if file is an image
+        if (fileType === 'image/jpeg' || fileType === 'image/jpg' || fileType === 'image/png') {
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                previewDiv.classList.remove('hidden');
+
+                // Show file info
+                const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                fileInfo.innerHTML = `<strong>${file.name}</strong> (${fileSizeMB} MB) - ${file.type}`;
+            };
+
+            reader.readAsDataURL(file);
+        } else {
+            // For non-image files, hide preview
+            previewDiv.classList.add('hidden');
+        }
+    } else {
+        // No file selected, hide preview
+        previewDiv.classList.add('hidden');
+    }
+}
+
+// Remove live preview function
+function removeLivePreview(type) {
+    const previewDiv = document.getElementById(`live-preview-${type}`);
+    const fileInput = document.getElementById(`dokumen_${type}`);
+
+    // Hide preview
+    previewDiv.classList.add('hidden');
+
+    // Clear file input
+    fileInput.value = '';
+
+    // Reset preview image src
+    const previewImg = document.getElementById(`live-preview-img-${type}`);
+    previewImg.src = '';
 }
 </script>
 
