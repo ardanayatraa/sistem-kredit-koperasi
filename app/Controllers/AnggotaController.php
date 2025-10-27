@@ -200,24 +200,56 @@ class AnggotaController extends Controller
 
     /**
      * View member document with access control
+     * Supports both old filename-based access and new ID/type-based access
      */
-    public function viewDocument($filename)
+    public function viewDocument($param1, $param2 = null)
     {
-        // Cari anggota yang memiliki dokumen ini
-        $anggota = $this->anggotaModel
-            ->where('dokumen_ktp', $filename)
-            ->orWhere('dokumen_kk', $filename)
-            ->orWhere('dokumen_slip_gaji', $filename)
-            ->first();
-        
-        if (!$anggota) {
-            throw new \CodeIgniter\Exceptions\PageNotFoundException('Dokumen tidak ditemukan.');
+        $filename = null;
+        $anggota = null;
+
+        // Check if this is ID/type format (new format)
+        if (is_numeric($param1) && $param2) {
+            $idAnggota = $param1;
+            $docType = $param2;
+
+            // Validate document type
+            if (!in_array($docType, ['ktp', 'kk', 'slip_gaji'])) {
+                throw new \CodeIgniter\Exceptions\PageNotFoundException('Tipe dokumen tidak valid.');
+            }
+
+            // Get anggota data
+            $anggota = $this->anggotaModel->find($idAnggota);
+            if (!$anggota) {
+                throw new \CodeIgniter\Exceptions\PageNotFoundException('Anggota tidak ditemukan.');
+            }
+
+            // Get filename based on type
+            $filenameField = 'dokumen_' . $docType;
+            $filename = $anggota[$filenameField] ?? null;
+
+            if (!$filename) {
+                throw new \CodeIgniter\Exceptions\PageNotFoundException('Dokumen tidak ditemukan.');
+            }
+        } else {
+            // Old format: just filename
+            $filename = $param1;
+
+            // Cari anggota yang memiliki dokumen ini
+            $anggota = $this->anggotaModel
+                ->where('dokumen_ktp', $filename)
+                ->orWhere('dokumen_kk', $filename)
+                ->orWhere('dokumen_slip_gaji', $filename)
+                ->first();
+
+            if (!$anggota) {
+                throw new \CodeIgniter\Exceptions\PageNotFoundException('Dokumen tidak ditemukan.');
+            }
         }
 
         // Basic access control - you can enhance this based on your needs
         $currentUserLevel = session()->get('level');
         $currentUserId = session()->get('id_user');
-        
+
         // Allow access for admin roles or if it's the member's own document
         if (!in_array($currentUserLevel, ['Bendahara', 'Ketua', 'Appraiser']) &&
             session()->get('id_anggota_ref') != $anggota['id_anggota']) {
@@ -226,14 +258,14 @@ class AnggotaController extends Controller
 
         // Path ke file
         $filePath = WRITEPATH . 'uploads/anggota/' . $filename;
-        
+
         if (!file_exists($filePath)) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException('File tidak ditemukan.');
         }
 
         // Serve file dengan content type yang tepat
         $mime = mime_content_type($filePath);
-        
+
         return $this->response
             ->setHeader('Content-Type', $mime)
             ->setHeader('Content-Disposition', 'inline; filename="' . $filename . '"')
