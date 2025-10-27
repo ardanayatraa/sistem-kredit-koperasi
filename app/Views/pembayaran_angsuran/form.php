@@ -79,6 +79,16 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Trigger preview for existing file selection -->
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const fileInput = document.getElementById('bukti_pembayaran');
+                                    if (fileInput && fileInput.files.length > 0) {
+                                        previewImage(fileInput);
+                                    }
+                                });
+                            </script>
                         </div>
                         <p class="text-xs text-gray-500 mt-1">Format: JPG, JPEG, PNG (Maksimal 2MB)</p>
 
