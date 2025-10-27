@@ -267,8 +267,16 @@ $canEditAllFields = $currentUserLevel === 'Admin';
                                     id="dokumen_agunan"
                                     class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
                                     accept=".pdf,.jpg,.jpeg,.png"
-                                    onchange="previewNewFile(this)"
+                                    onchange="previewImage(this, 'agunan')"
                                     <?= !isset($kredit) ? 'required' : '' ?>>
+                            <div id="image-preview-agunan" class="mt-3 hidden">
+                                <div class="relative inline-block">
+                                    <img id="preview-img-agunan" src="" alt="Preview Agunan" class="max-w-xs max-h-48 border border-gray-300 rounded-lg shadow-sm">
+                                    <button type="button" onclick="removePreview('agunan')" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors">
+                                        <i class="bx bx-x"></i>
+                                    </button>
+                                </div>
+                            </div>
                             <?php if (isset($kredit) && !empty($kredit['dokumen_agunan'])): ?>
                                 <div class="mt-2 p-3 bg-gray-50 rounded-lg border">
                                     <div class="flex items-center justify-between">
@@ -607,6 +615,28 @@ $canEditAllFields = $currentUserLevel === 'Admin';
     </div>
 </div>
 
+<!-- Modal for document preview (from profile) -->
+<div id="document-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+        <div class="flex items-center justify-between p-4 border-b">
+            <h3 class="text-lg font-medium text-gray-900" id="modal-title">Preview Dokumen</h3>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="bx bx-x text-2xl"></i>
+            </button>
+        </div>
+        <div class="p-4">
+            <div id="modal-content" class="flex justify-center items-center min-h-96">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+        <div class="flex justify-end gap-3 p-4 border-t">
+            <button onclick="closeModal()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition-colors">
+                Tutup
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
 // Enhanced currency input formatting
 document.addEventListener('DOMContentLoaded', function() {
@@ -688,56 +718,68 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// File preview function
+// File preview function (updated to use static modal like profile)
 function previewFile(filename, type) {
-    // Create modal for preview
-    const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-    modal.innerHTML = `
-        <div class="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-hidden">
-            <div class="flex items-center justify-between p-4 border-b">
-                <h3 class="text-lg font-semibold text-gray-900">Preview ${type.toUpperCase()}</h3>
-                <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
-                    <i class="bx bx-x h-6 w-6"></i>
-                </button>
-            </div>
-            <div class="p-4">
-                <div class="w-full h-[70vh] flex items-center justify-center bg-gray-100 rounded">
-                    <div id="preview-content" class="text-center">
-                        <i class="bx bx-loader-alt bx-spin h-12 w-12 text-gray-400 mb-4"></i>
-                        <p class="text-gray-600">Loading preview...</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(modal);
+    const modal = document.getElementById('document-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalContent = document.getElementById('modal-content');
 
-    // Load file content
-    const previewContent = modal.querySelector('#preview-content');
+    // Set modal title
+    const titles = {
+        'agunan': 'Preview Dokumen Agunan',
+        'ktp': 'Preview Dokumen KTP',
+        'kk': 'Preview Dokumen Kartu Keluarga',
+        'slip_gaji': 'Preview Dokumen Slip Gaji'
+    };
+    modalTitle.textContent = titles[type] || 'Preview Dokumen';
+
+    // Clear previous content
+    modalContent.innerHTML = '<div class="flex justify-center"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>';
+
+    // Show modal
+    modal.classList.remove('hidden');
+
+    // Load content based on file type
     const fileUrl = `/kredit/view-document/${filename}`;
+    const fileExtension = filename.split('.').pop().toLowerCase();
 
-    // Check if it's an image
-    if (filename.toLowerCase().match(/\.(jpg|jpeg|png)$/)) {
-        previewContent.innerHTML = `<img src="${fileUrl}" alt="${type}" class="max-w-full max-h-full object-contain" onload="this.previousElementSibling?.remove()" onerror="this.parentElement.innerHTML='<div class=\'text-center\'><i class=\'bx bx-error h-12 w-12 text-red-400 mb-4\'></i><p class=\'text-red-600\'>Gagal memuat preview gambar</p></div>'">`;
-    } else if (filename.toLowerCase().endsWith('.pdf')) {
-        previewContent.innerHTML = `
+    if (fileExtension === 'pdf') {
+        // For PDF files, show download link
+        modalContent.innerHTML = `
             <div class="text-center">
-                <i class="bx bx-file-pdf h-12 w-12 text-red-400 mb-4"></i>
-                <p class="text-gray-600 mb-4">File PDF - Klik tombol download untuk melihat</p>
-                <a href="${fileUrl}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
-                    <i class="bx bx-download h-4 w-4"></i>
+                <i class="bx bx-file text-6xl text-red-500 mb-4"></i>
+                <p class="text-lg font-medium text-gray-900 mb-2">File PDF</p>
+                <p class="text-gray-600 mb-4">${filename}</p>
+                <a href="${fileUrl}" target="_blank"
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                    <i class="bx bx-download"></i>
                     Download PDF
                 </a>
             </div>
         `;
+    } else if (['jpg', 'jpeg', 'png'].includes(fileExtension)) {
+        // For image files, show zoomable image
+        modalContent.innerHTML = `
+            <div class="relative">
+                <img id="modal-image" src="${fileUrl}"
+                     alt="Preview ${filename}"
+                     class="max-w-full max-h-96 mx-auto cursor-zoom-in"
+                     onclick="toggleZoom(this)">
+                <div class="text-center mt-2 text-sm text-gray-500">
+                    Klik gambar untuk zoom in/out
+                </div>
+            </div>
+        `;
     } else {
-        previewContent.innerHTML = `
+        // For other file types
+        modalContent.innerHTML = `
             <div class="text-center">
-                <i class="bx bx-file h-12 w-12 text-gray-400 mb-4"></i>
-                <p class="text-gray-600 mb-4">File tidak dapat dipreview</p>
-                <a href="${fileUrl}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
-                    <i class="bx bx-download h-4 w-4"></i>
+                <i class="bx bx-file text-6xl text-gray-500 mb-4"></i>
+                <p class="text-lg font-medium text-gray-900 mb-2">File Tidak Dapat Dipreview</p>
+                <p class="text-gray-600 mb-4">${filename}</p>
+                <a href="${fileUrl}" target="_blank"
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                    <i class="bx bx-download"></i>
                     Download File
                 </a>
             </div>
@@ -745,41 +787,18 @@ function previewFile(filename, type) {
     }
 }
 
-// Preview anggota document function
+// Preview anggota document function (updated to use static modal)
 function previewAnggotaDocument(type, idAnggota) {
     if (!idAnggota) {
         alert('ID Anggota tidak ditemukan. Pastikan Anda sudah login sebagai anggota.');
         return;
     }
 
-    // Create modal for preview (same as profile page)
-    const modal = document.createElement('div');
-    modal.id = 'document-modal';
-    modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50';
-    modal.innerHTML = `
-        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
-            <div class="flex items-center justify-between p-4 border-b">
-                <h3 class="text-lg font-medium text-gray-900" id="modal-title">Preview Dokumen</h3>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
-                    <i class="bx bx-x text-2xl"></i>
-                </button>
-            </div>
-            <div class="p-4">
-                <div id="modal-content" class="flex justify-center items-center min-h-96">
-                    <!-- Content will be loaded here -->
-                </div>
-            </div>
-            <div class="flex justify-end gap-3 p-4 border-t">
-                <button onclick="closeModal()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition-colors">
-                    Tutup
-                </button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(modal);
+    const modal = document.getElementById('document-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalContent = document.getElementById('modal-content');
 
     // Set modal title
-    const modalTitle = modal.querySelector('#modal-title');
     const titles = {
         'ktp': 'Preview Dokumen KTP',
         'kk': 'Preview Dokumen Kartu Keluarga',
@@ -788,7 +807,6 @@ function previewAnggotaDocument(type, idAnggota) {
     modalTitle.textContent = titles[type] || 'Preview Dokumen';
 
     // Clear previous content and show loading
-    const modalContent = modal.querySelector('#modal-content');
     modalContent.innerHTML = '<div class="flex justify-center"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>';
 
     // Show modal
@@ -803,7 +821,7 @@ function previewAnggotaDocument(type, idAnggota) {
     img.onload = function() {
         modalContent.innerHTML = `
             <div class="relative">
-                <img src="${fileUrl}"
+                <img id="modal-image" src="${fileUrl}"
                      alt="Preview ${type}"
                      class="max-w-full max-h-96 mx-auto cursor-zoom-in"
                      onclick="toggleZoom(this)">
@@ -846,49 +864,75 @@ function toggleZoom(img) {
 
 function closeModal() {
     const modal = document.getElementById('document-modal');
-    if (modal) {
-        const modalImage = modal.querySelector('img');
-        if (modalImage) {
-            modalImage.classList.remove('zoomed');
-            modalImage.style.transform = 'scale(1)';
+    const modalImage = document.querySelector('#modal-image');
+
+    // Reset zoom if image was zoomed
+    if (modalImage) {
+        modalImage.classList.remove('zoomed');
+        modalImage.style.transform = 'scale(1)';
+    }
+
+    modal.classList.add('hidden');
+}
+
+// Preview image function (from profile)
+function previewImage(input, type) {
+    const previewDiv = document.getElementById(`image-preview-${type}`);
+    const previewImg = document.getElementById(`preview-img-${type}`);
+
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const fileType = file.type.toLowerCase();
+
+        // Check if file is an image
+        if (fileType === 'image/jpeg' || fileType === 'image/jpg' || fileType === 'image/png') {
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                previewDiv.classList.remove('hidden');
+            };
+
+            reader.readAsDataURL(file);
+        } else {
+            // For non-image files (like PDF), hide preview
+            previewDiv.classList.add('hidden');
         }
-        modal.remove();
+    } else {
+        // No file selected, hide preview
+        previewDiv.classList.add('hidden');
     }
 }
 
-// Preview new uploaded file function
+// Remove preview function (from profile)
+function removePreview(type) {
+    const previewDiv = document.getElementById(`image-preview-${type}`);
+    const fileInput = document.getElementById(`dokumen_${type}`);
+
+    // Hide preview
+    previewDiv.classList.add('hidden');
+
+    // Clear file input
+    fileInput.value = '';
+
+    // Reset preview image src
+    const previewImg = document.getElementById(`preview-img-${type}`);
+    previewImg.src = '';
+}
+
+// Preview new uploaded file function (updated to use static modal)
 function previewNewFile(input) {
     const file = input.files[0];
     if (!file) return;
 
-    // Create modal for preview (same as profile page)
-    const modal = document.createElement('div');
-    modal.id = 'document-modal';
-    modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50';
-    modal.innerHTML = `
-        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
-            <div class="flex items-center justify-between p-4 border-b">
-                <h3 class="text-lg font-medium text-gray-900" id="modal-title">Preview Dokumen Baru</h3>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
-                    <i class="bx bx-x text-2xl"></i>
-                </button>
-            </div>
-            <div class="p-4">
-                <div id="modal-content" class="flex justify-center items-center min-h-96">
-                    <!-- Content will be loaded here -->
-                </div>
-            </div>
-            <div class="flex justify-end gap-3 p-4 border-t">
-                <button onclick="closeModal()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition-colors">
-                    Tutup
-                </button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(modal);
+    const modal = document.getElementById('document-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalContent = document.getElementById('modal-content');
+
+    // Set modal title
+    modalTitle.textContent = 'Preview Dokumen Baru';
 
     // Clear previous content and show loading
-    const modalContent = modal.querySelector('#modal-content');
     modalContent.innerHTML = '<div class="flex justify-center"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>';
 
     // Show modal
