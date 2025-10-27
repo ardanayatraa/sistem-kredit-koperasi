@@ -4,6 +4,9 @@ $canEditBendaharaFields = $currentUserLevel === 'Bendahara';
 $canEditAppraiserFields = $currentUserLevel === 'Appraiser';
 $canEditKetuaFields = $currentUserLevel === 'Ketua Koperasi';
 $canEditAllFields = $currentUserLevel === 'Admin';
+
+// Jika sedang edit, ambil data anggota dari $anggota yang dikirim controller
+$anggotaData = isset($anggota) ? $anggota : null;
 ?>
 
 <?= $this->extend('layouts/dashboard_template') ?>
@@ -69,6 +72,22 @@ $canEditAllFields = $currentUserLevel === 'Admin';
                                 ID Anggota terisi otomatis dari profil Anda
                             </p>
                         <?php endif; ?>
+
+                        <!-- Tampilkan info anggota jika sedang edit -->
+                        <?php if (isset($kredit) && $anggotaData): ?>
+                            <div class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                <div class="flex items-center gap-2">
+                                    <i class="bx bx-user text-blue-600 h-4 w-4"></i>
+                                    <span class="text-sm font-medium text-blue-900">Data Anggota:</span>
+                                </div>
+                                <div class="mt-1 text-sm text-blue-800">
+                                    <p><strong>Nama:</strong> <?= esc($anggotaData['nama_lengkap'] ?? 'N/A') ?></p>
+                                    <p><strong>No. Anggota:</strong> <?= esc($anggotaData['no_anggota'] ?? 'N/A') ?></p>
+                                    <p><strong>Alamat:</strong> <?= esc($anggotaData['alamat'] ?? 'N/A') ?></p>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
                         <?php if (session('errors.id_anggota')): ?>
                             <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
                                 <i class="bx bx-exclamation-circle h-4 w-4"></i>
