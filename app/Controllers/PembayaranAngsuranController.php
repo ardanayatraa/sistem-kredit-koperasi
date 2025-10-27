@@ -487,7 +487,7 @@ class PembayaranAngsuranController extends Controller
         if ($id_anggota) {
             $additionalWhere['tbl_kredit.id_anggota'] = $id_anggota;
         }
-        
+
         $pembayaranList = $this->pembayaranAngsuranModel->getFilteredPembayaranWithData(
             $additionalWhere,
             'tbl_pembayaran_angsuran.*, tbl_angsuran.angsuran_ke, tbl_angsuran.jumlah_angsuran, tbl_kredit.id_kredit'
@@ -505,6 +505,59 @@ class PembayaranAngsuranController extends Controller
         ];
 
         return view('pembayaran_angsuran/riwayat_anggota', $data);
+    }
+
+    /**
+     * View document with access control
+     */
+    public function viewDocument($filename)
+    {
+        try {
+            log_message('debug', 'PembayaranAngsuranController::viewDocument called with filename: ' . $filename);
+
+            // Cari pembayaran yang memiliki dokumen ini
+            $pembayaran = $this->pembayaranAngsuranModel->where('bukti_pembayaran', $filename)->first();
+            log_message('debug', 'PembayaranAngsuranController::viewDocument - pembayaran result: ' . ($pembayaran ? 'FOUND (ID: ' . $pembayaran['id_pembayaran'] . ')' : 'NOT FOUND'));
+
+            if (!$pembayaran) {
+                log_message('error', 'PembayaranAngsuranController::viewDocument - Dokumen tidak ditemukan di database: ' . $filename);
+                throw new \CodeIgniter\Exceptions\PageNotFoundException('Dokumen tidak ditemukan.');
+            }
+
+            log_message('debug', 'PembayaranAngsuranController::viewDocument - Pembayaran ditemukan: ' . json_encode($pembayaran));
+
+            // Cek akses menggunakan sistem filtering yang sudah ada
+            if (!canAccessData($pembayaran, 'id_angsuran')) {
+                log_message('error', 'PembayaranAngsuranController::viewDocument - Akses ditolak untuk user ID: ' . session()->get('id_user') . ', Level: ' . session()->get('level'));
+                throw new \CodeIgniter\Exceptions\PageNotFoundException('Anda tidak memiliki akses ke dokumen ini.');
+            }
+
+            log_message('debug', 'PembayaranAngsuranController::viewDocument - Akses disetujui');
+
+            // Path ke file
+            $filePath = WRITEPATH . 'uploads/pembayaran_angsuran/' . $filename;
+            log_message('debug', 'PembayaranAngsuranController::viewDocument - File path: ' . $filePath);
+
+            if (!file_exists($filePath)) {
+                log_message('error', 'PembayaranAngsuranController::viewDocument - File tidak ditemukan di path: ' . $filePath);
+                throw new \CodeIgniter\Exceptions\PageNotFoundException('File tidak ditemukan.');
+            }
+
+            // Serve file dengan content type yang tepat
+            $mime = mime_content_type($filePath);
+            log_message('debug', 'PembayaranAngsuranController::viewDocument - Serving file with MIME: ' . $mime . ', Size: ' . filesize($filePath) . ' bytes');
+
+            return $this->response
+                ->setHeader('Content-Type', $mime)
+                ->setHeader('Content-Disposition', 'inline; filename="' . $filename . '"')
+                ->setBody(file_get_contents($filePath));
+
+        } catch (\CodeIgniter\Exceptions\PageNotFoundException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            log_message('error', 'PembayaranAngsuranController::viewDocument - Unexpected error: ' . $e->getMessage());
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Terjadi kesalahan saat mengakses dokumen.');
+        }
     }
 
     /**

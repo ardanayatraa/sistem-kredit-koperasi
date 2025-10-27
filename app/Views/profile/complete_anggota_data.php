@@ -202,6 +202,7 @@
                                     <i class="bx bx-x"></i>
                                 </button>
                             </div>
+                            <p class="text-xs text-gray-500 mt-2">Preview gambar KTP yang akan diupload</p>
                         </div>
                         <p class="text-xs text-gray-500 mt-1">Format: PDF, JPG, JPEG, PNG (Max: 2MB)</p>
                         <?php if (session('errors.dokumen_ktp')): ?>
@@ -249,6 +250,7 @@
                                     <i class="bx bx-x"></i>
                                 </button>
                             </div>
+                            <p class="text-xs text-gray-500 mt-2">Preview gambar Kartu Keluarga yang akan diupload</p>
                         </div>
                         <p class="text-xs text-gray-500 mt-1">Format: PDF, JPG, JPEG, PNG (Max: 2MB)</p>
                         <?php if (session('errors.dokumen_kk')): ?>
@@ -294,6 +296,10 @@
                                 <img id="preview-img-slip_gaji" src="" alt="Preview Slip Gaji" class="max-w-xs max-h-48 border border-gray-300 rounded-lg shadow-sm">
                                 <button type="button" onclick="removePreview('slip_gaji')" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors">
                                     <i class="bx bx-x"></i>
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">Preview gambar Slip Gaji yang akan diupload</p>
+                        </div>
 <script>
 function previewImage(input, type) {
     const previewDiv = document.getElementById(`image-preview-${type}`);
