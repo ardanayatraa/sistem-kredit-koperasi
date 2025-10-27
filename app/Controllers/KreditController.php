@@ -1043,9 +1043,14 @@ class KreditController extends Controller
      */
     public function viewDocument($filename)
     {
-        // Cari kredit yang memiliki dokumen ini
-        $kredit = $this->kreditModel->where('dokumen_agunan LIKE', '%' . $filename)->first();
-        
+        // Cari kredit yang memiliki dokumen ini dengan query yang lebih tepat
+        $kredit = $this->kreditModel->where('dokumen_agunan', $filename)->first();
+
+        if (!$kredit) {
+            // Jika tidak ditemukan dengan exact match, coba dengan LIKE untuk backward compatibility
+            $kredit = $this->kreditModel->like('dokumen_agunan', $filename)->first();
+        }
+
         if (!$kredit) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException('Dokumen tidak ditemukan.');
         }
@@ -1055,16 +1060,28 @@ class KreditController extends Controller
             throw new \CodeIgniter\Exceptions\PageNotFoundException('Anda tidak memiliki akses ke dokumen ini.');
         }
 
-        // Path ke file
-        $filePath = WRITEPATH . 'uploads/dokumen_kredit/' . $filename;
-        
-        if (!file_exists($filePath)) {
+        // Path ke file - coba beberapa kemungkinan path
+        $possiblePaths = [
+            WRITEPATH . 'uploads/dokumen_kredit/' . $filename,
+            WRITEPATH . 'uploads/' . $filename,
+            WRITEPATH . 'uploads/dokumen_kredit/' . basename($filename)
+        ];
+
+        $filePath = null;
+        foreach ($possiblePaths as $path) {
+            if (file_exists($path)) {
+                $filePath = $path;
+                break;
+            }
+        }
+
+        if (!$filePath) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException('File tidak ditemukan.');
         }
 
         // Serve file dengan content type yang tepat
         $mime = mime_content_type($filePath);
-        
+
         return $this->response
             ->setHeader('Content-Type', $mime)
             ->setHeader('Content-Disposition', 'inline; filename="' . $filename . '"')
