@@ -1086,14 +1086,17 @@ class KreditController extends Controller
         log_message('debug', 'KREDIT VIEW DOCUMENT - Filename: ' . $filename);
         log_message('debug', 'KREDIT VIEW DOCUMENT - WRITEPATH: ' . WRITEPATH);
 
-        // Cari kredit yang memiliki dokumen ini dengan query yang lebih tepat
+        // Cari kredit yang memiliki dokumen ini
+        // Coba exact match terlebih dahulu
         $kredit = $this->kreditModel->where('dokumen_agunan', $filename)->first();
         log_message('debug', 'KREDIT VIEW DOCUMENT - Exact match result: ' . ($kredit ? 'FOUND (ID: ' . $kredit['id_kredit'] . ')' : 'NOT FOUND'));
 
         if (!$kredit) {
-            // Jika tidak ditemukan dengan exact match, coba dengan LIKE untuk backward compatibility
-            $kredit = $this->kreditModel->like('dokumen_agunan', $filename)->first();
-            log_message('debug', 'KREDIT VIEW DOCUMENT - LIKE match result: ' . ($kredit ? 'FOUND (ID: ' . $kredit['id_kredit'] . ')' : 'NOT FOUND'));
+            // Jika tidak ditemukan, coba cari berdasarkan basename (nama file saja)
+            $basename = basename($filename);
+            log_message('debug', 'KREDIT VIEW DOCUMENT - Trying basename search: ' . $basename);
+            $kredit = $this->kreditModel->like('dokumen_agunan', $basename, 'right')->first(); // LIKE '%basename'
+            log_message('debug', 'KREDIT VIEW DOCUMENT - Basename match result: ' . ($kredit ? 'FOUND (ID: ' . $kredit['id_kredit'] . ')' : 'NOT FOUND'));
         }
 
         if (!$kredit) {
@@ -1111,27 +1114,12 @@ class KreditController extends Controller
 
         log_message('debug', 'KREDIT VIEW DOCUMENT - Akses disetujui');
 
-        // Path ke file - coba beberapa kemungkinan path
-        $possiblePaths = [
-            WRITEPATH . 'uploads/' . $filename,  // Full path dari database
-            WRITEPATH . 'uploads/dokumen_kredit/' . basename($filename),  // Jika hanya filename
-            WRITEPATH . 'uploads/' . basename($filename),  // Fallback
-        ];
+        // Path ke file - sesuai dengan cara penyimpanan di database
+        $filePath = WRITEPATH . 'uploads/' . $kredit['dokumen_agunan'];
+        log_message('debug', 'KREDIT VIEW DOCUMENT - Trying file path: ' . $filePath);
 
-        log_message('debug', 'KREDIT VIEW DOCUMENT - Checking paths: ' . json_encode($possiblePaths));
-
-        $filePath = null;
-        foreach ($possiblePaths as $path) {
-            log_message('debug', 'KREDIT VIEW DOCUMENT - Checking path: ' . $path . ' - ' . (file_exists($path) ? 'EXISTS' : 'NOT EXISTS'));
-            if (file_exists($path)) {
-                $filePath = $path;
-                log_message('debug', 'KREDIT VIEW DOCUMENT - File found at: ' . $path);
-                break;
-            }
-        }
-
-        if (!$filePath) {
-            log_message('error', 'KREDIT VIEW DOCUMENT - File tidak ditemukan di semua path yang dicoba: ' . $filename);
+        if (!file_exists($filePath)) {
+            log_message('error', 'KREDIT VIEW DOCUMENT - File tidak ditemukan di path: ' . $filePath);
             throw new \CodeIgniter\Exceptions\PageNotFoundException('File tidak ditemukan.');
         }
 
@@ -1141,7 +1129,7 @@ class KreditController extends Controller
 
         return $this->response
             ->setHeader('Content-Type', $mime)
-            ->setHeader('Content-Disposition', 'inline; filename="' . $filename . '"')
+            ->setHeader('Content-Disposition', 'inline; filename="' . basename($kredit['dokumen_agunan']) . '"')
             ->setBody(file_get_contents($filePath));
     }
 
