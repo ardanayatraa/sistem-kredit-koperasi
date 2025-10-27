@@ -296,9 +296,13 @@ $anggotaData = isset($anggota) ? $anggota : null;
                                             <p class="text-xs text-gray-500">File saat ini: <?= basename($kredit['dokumen_agunan']) ?></p>
                                         </div>
                                         <div class="flex gap-2">
-                                            <a href="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                            <button type="button" onclick="previewFile('<?= esc(basename($kredit['dokumen_agunan'])) ?>', 'agunan')" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
                                                 <i class="bx bx-show h-3 w-3"></i>
-                                                Lihat Dokumen
+                                                Lihat
+                                            </button>
+                                            <a href="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                                                <i class="bx bx-download h-3 w-3"></i>
+                                                Download
                                             </a>
                                         </div>
                                     </div>
