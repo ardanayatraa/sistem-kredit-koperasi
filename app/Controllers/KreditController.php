@@ -1113,9 +1113,9 @@ class KreditController extends Controller
 
         // Path ke file - coba beberapa kemungkinan path
         $possiblePaths = [
-            WRITEPATH . 'uploads/dokumen_kredit/' . $filename,
-            WRITEPATH . 'uploads/' . $filename,
-            WRITEPATH . 'uploads/dokumen_kredit/' . basename($filename)
+            WRITEPATH . 'uploads/' . $filename,  // Full path dari database
+            WRITEPATH . 'uploads/dokumen_kredit/' . basename($filename),  // Jika hanya filename
+            WRITEPATH . 'uploads/' . basename($filename),  // Fallback
         ];
 
         log_message('debug', 'KREDIT VIEW DOCUMENT - Checking paths: ' . json_encode($possiblePaths));
