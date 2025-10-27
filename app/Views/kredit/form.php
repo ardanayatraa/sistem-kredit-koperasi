@@ -757,6 +757,8 @@ function previewFile(filename, type) {
     const fileUrl = `/kredit/view-document/${filename}`;
     const fileExtension = filename.split('.').pop().toLowerCase();
 
+    console.log('Previewing file:', filename, 'URL:', fileUrl);
+
     if (fileExtension === 'pdf') {
         // For PDF files, show download link
         modalContent.innerHTML = `
