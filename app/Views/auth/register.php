@@ -80,6 +80,7 @@
                            required
                            pattern="[a-zA-Z0-9_]+"
                            title="Username hanya boleh berisi huruf, angka, dan underscore (tidak boleh ada spasi)"
+                           oninput="this.value = this.value.replace(/\s/g, '')"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 text-sm"
                            placeholder="Masukkan username (tanpa spasi)">
                     <p class="text-xs text-gray-500 mt-1">Username hanya boleh berisi huruf, angka, dan underscore (_)</p>

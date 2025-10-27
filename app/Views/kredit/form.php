@@ -861,52 +861,72 @@ function previewNewFile(input) {
     const file = input.files[0];
     if (!file) return;
 
-    // Create modal for preview
+    // Create modal for preview (same as profile page)
     const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.id = 'document-modal';
+    modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50';
     modal.innerHTML = `
-        <div class="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-hidden">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
             <div class="flex items-center justify-between p-4 border-b">
-                <h3 class="text-lg font-semibold text-gray-900">Preview Dokumen Baru</h3>
-                <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
-                    <i class="bx bx-x h-6 w-6"></i>
+                <h3 class="text-lg font-medium text-gray-900" id="modal-title">Preview Dokumen Baru</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="bx bx-x text-2xl"></i>
                 </button>
             </div>
             <div class="p-4">
-                <div class="w-full h-[70vh] flex items-center justify-center bg-gray-100 rounded">
-                    <div id="preview-content" class="text-center">
-                        <i class="bx bx-loader-alt bx-spin h-12 w-12 text-gray-400 mb-4"></i>
-                        <p class="text-gray-600">Loading preview...</p>
-                    </div>
+                <div id="modal-content" class="flex justify-center items-center min-h-96">
+                    <!-- Content will be loaded here -->
                 </div>
+            </div>
+            <div class="flex justify-end gap-3 p-4 border-t">
+                <button onclick="closeModal()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition-colors">
+                    Tutup
+                </button>
             </div>
         </div>
     `;
     document.body.appendChild(modal);
 
-    const previewContent = modal.querySelector('#preview-content');
+    // Clear previous content and show loading
+    const modalContent = modal.querySelector('#modal-content');
+    modalContent.innerHTML = '<div class="flex justify-center"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>';
+
+    // Show modal
+    modal.classList.remove('hidden');
 
     // Check file type
     if (file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            previewContent.innerHTML = `<img src="${e.target.result}" alt="Preview" class="max-w-full max-h-full object-contain">`;
+            modalContent.innerHTML = `
+                <div class="relative">
+                    <img src="${e.target.result}"
+                         alt="Preview"
+                         class="max-w-full max-h-96 mx-auto cursor-zoom-in"
+                         onclick="toggleZoom(this)">
+                    <div class="text-center mt-2 text-sm text-gray-500">
+                        Klik gambar untuk zoom in/out
+                    </div>
+                </div>
+            `;
         };
         reader.readAsDataURL(file);
     } else if (file.type === 'application/pdf') {
-        previewContent.innerHTML = `
+        modalContent.innerHTML = `
             <div class="text-center">
                 <i class="bx bx-file-pdf h-12 w-12 text-red-400 mb-4"></i>
-                <p class="text-gray-600 mb-4">File PDF - ${file.name}</p>
+                <p class="text-lg font-medium text-gray-900 mb-2">File PDF</p>
+                <p class="text-gray-600 mb-4">${file.name}</p>
                 <p class="text-sm text-gray-500">Preview tidak tersedia untuk file PDF yang baru diupload</p>
                 <p class="text-sm text-gray-500">File akan dapat dipreview setelah disimpan</p>
             </div>
         `;
     } else {
-        previewContent.innerHTML = `
+        modalContent.innerHTML = `
             <div class="text-center">
                 <i class="bx bx-file h-12 w-12 text-gray-400 mb-4"></i>
-                <p class="text-gray-600 mb-4">File: ${file.name}</p>
+                <p class="text-lg font-medium text-gray-900 mb-2">File Tidak Dapat Dipreview</p>
+                <p class="text-gray-600 mb-4">${file.name}</p>
                 <p class="text-sm text-gray-500">Tipe file tidak didukung untuk preview</p>
             </div>
         `;
