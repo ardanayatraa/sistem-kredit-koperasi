@@ -299,6 +299,7 @@ $routes->group('profile', ['filter' => 'role:view_profile'], function($routes) {
 });
 
 // Route untuk akses dokumen kredit dengan access control
+$routes->get('kredit/view-document/(:any)', 'KreditController::viewDocument/$1', ['filter' => 'auth']);
 $routes->get('dokumen_kredit/(:any)', 'KreditController::viewDocument/$1', ['filter' => 'auth']);
 
 // Route untuk akses file pencairan dengan access control
