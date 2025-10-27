@@ -1043,22 +1043,34 @@ class KreditController extends Controller
      */
     public function viewDocument($filename)
     {
+        // DEBUG: Log filename yang diterima
+        log_message('debug', 'KREDIT VIEW DOCUMENT - Filename: ' . $filename);
+        log_message('debug', 'KREDIT VIEW DOCUMENT - WRITEPATH: ' . WRITEPATH);
+
         // Cari kredit yang memiliki dokumen ini dengan query yang lebih tepat
         $kredit = $this->kreditModel->where('dokumen_agunan', $filename)->first();
+        log_message('debug', 'KREDIT VIEW DOCUMENT - Exact match result: ' . ($kredit ? 'FOUND (ID: ' . $kredit['id_kredit'] . ')' : 'NOT FOUND'));
 
         if (!$kredit) {
             // Jika tidak ditemukan dengan exact match, coba dengan LIKE untuk backward compatibility
             $kredit = $this->kreditModel->like('dokumen_agunan', $filename)->first();
+            log_message('debug', 'KREDIT VIEW DOCUMENT - LIKE match result: ' . ($kredit ? 'FOUND (ID: ' . $kredit['id_kredit'] . ')' : 'NOT FOUND'));
         }
 
         if (!$kredit) {
+            log_message('error', 'KREDIT VIEW DOCUMENT - Dokumen tidak ditemukan di database: ' . $filename);
             throw new \CodeIgniter\Exceptions\PageNotFoundException('Dokumen tidak ditemukan.');
         }
 
+        log_message('debug', 'KREDIT VIEW DOCUMENT - Kredit ditemukan: ' . json_encode($kredit));
+
         // Cek akses menggunakan sistem filtering yang sudah ada
         if (!canAccessData($kredit)) {
+            log_message('error', 'KREDIT VIEW DOCUMENT - Akses ditolak untuk user ID: ' . session()->get('id_user') . ', Level: ' . session()->get('level'));
             throw new \CodeIgniter\Exceptions\PageNotFoundException('Anda tidak memiliki akses ke dokumen ini.');
         }
+
+        log_message('debug', 'KREDIT VIEW DOCUMENT - Akses disetujui');
 
         // Path ke file - coba beberapa kemungkinan path
         $possiblePaths = [
@@ -1067,20 +1079,26 @@ class KreditController extends Controller
             WRITEPATH . 'uploads/dokumen_kredit/' . basename($filename)
         ];
 
+        log_message('debug', 'KREDIT VIEW DOCUMENT - Checking paths: ' . json_encode($possiblePaths));
+
         $filePath = null;
         foreach ($possiblePaths as $path) {
+            log_message('debug', 'KREDIT VIEW DOCUMENT - Checking path: ' . $path . ' - ' . (file_exists($path) ? 'EXISTS' : 'NOT EXISTS'));
             if (file_exists($path)) {
                 $filePath = $path;
+                log_message('debug', 'KREDIT VIEW DOCUMENT - File found at: ' . $path);
                 break;
             }
         }
 
         if (!$filePath) {
+            log_message('error', 'KREDIT VIEW DOCUMENT - File tidak ditemukan di semua path yang dicoba: ' . $filename);
             throw new \CodeIgniter\Exceptions\PageNotFoundException('File tidak ditemukan.');
         }
 
         // Serve file dengan content type yang tepat
         $mime = mime_content_type($filePath);
+        log_message('debug', 'KREDIT VIEW DOCUMENT - Serving file with MIME: ' . $mime . ', Size: ' . filesize($filePath) . ' bytes');
 
         return $this->response
             ->setHeader('Content-Type', $mime)

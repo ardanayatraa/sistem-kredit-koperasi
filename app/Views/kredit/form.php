@@ -641,7 +641,26 @@ $anggotaData = isset($anggota) ? $anggota : null;
     </div>
 </div>
 
-<script>
+// Auto-populate preview for existing image files
+document.addEventListener('DOMContentLoaded', function() {
+    // Check for existing dokumen_agunan file
+    <?php if (isset($kredit) && !empty($kredit['dokumen_agunan'])): ?>
+        const existingFile = '<?= esc($kredit['dokumen_agunan']) ?>';
+        const fileExtension = existingFile.split('.').pop().toLowerCase();
+
+        // If it's an image file, show preview
+        if (['jpg', 'jpeg', 'png'].includes(fileExtension)) {
+            const previewDiv = document.getElementById('image-preview-agunan');
+            const previewImg = document.getElementById('preview-img-agunan');
+
+            if (previewDiv && previewImg) {
+                previewImg.src = '/kredit/view-document/' + existingFile;
+                previewDiv.classList.remove('hidden');
+            }
+        }
+    <?php endif; ?>
+});
+
 // Enhanced currency input formatting
 document.addEventListener('DOMContentLoaded', function() {
     const currencyInputs = document.querySelectorAll('#jumlah_pengajuan, #nilai_taksiran_agunan');
