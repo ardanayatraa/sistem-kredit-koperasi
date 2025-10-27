@@ -47,8 +47,61 @@
                         <?php endif; ?>
                     </div>
 
-                    <!-- Upload Bukti Pembayaran -->
+                    <!-- Upload Bukti Pembayaran & Live Preview -->
                     <div class="lg:col-span-2">
+                        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                            <!-- File Upload Section -->
+                            <div>
+                                <label for="bukti_pembayaran" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Bukti Pembayaran <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <input type="file"
+                                           name="bukti_pembayaran"
+                                           id="bukti_pembayaran"
+                                           accept=".jpg,.jpeg,.png"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm file:mr-4 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                           onchange="previewImage(this)"
+                                           required>
+                                    <p class="text-xs text-gray-500 mt-1">Upload foto struk/bukti transfer (JPG/PNG, max 2MB)</p>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">Format: JPG, JPEG, PNG (Maksimal 2MB)</p>
+                            </div>
+
+                            <!-- Live Preview Section -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Live Preview
+                                    <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full ml-2">Real-time</span>
+                                </label>
+                                <div id="live-preview-container" class="hidden">
+                                    <div class="border-2 border-dashed border-green-300 rounded-lg p-4 bg-green-50">
+                                        <div class="text-center">
+                                            <div class="relative inline-block">
+                                                <img id="live-preview-img" src="" alt="Live Preview" class="max-w-full max-h-48 mx-auto rounded-lg shadow-sm border border-green-200">
+                                                <button type="button" onclick="removeLivePreview()" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors">
+                                                    <i class="bx bx-x"></i>
+                                                </button>
+                                            </div>
+                                            <p class="text-xs text-green-600 mt-2 font-medium">✓ Live Preview - Gambar akan diupload</p>
+                                            <div class="mt-2 text-xs text-gray-600 bg-white p-2 rounded border">
+                                                <div id="file-info" class="font-mono text-xs"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Placeholder when no file selected -->
+                                <div id="preview-placeholder" class="border-2 border-dashed border-gray-300 rounded-lg p-8 bg-gray-50">
+                                    <div class="text-center">
+                                        <i class="bx bx-image text-4xl text-gray-400 mb-2"></i>
+                                        <p class="text-sm text-gray-500">Pilih file untuk melihat preview</p>
+                                        <p class="text-xs text-gray-400 mt-1">Live preview akan muncul di sini</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                         <label for="bukti_pembayaran" class="block text-sm font-medium text-gray-700 mb-2">
                             Bukti Pembayaran <span class="text-red-500">*</span>
                         </label>
@@ -189,6 +242,7 @@
 function previewImage(input) {
     const file = input.files[0];
     const livePreviewContainer = document.getElementById('live-preview-container');
+    const previewPlaceholder = document.getElementById('preview-placeholder');
     const livePreviewImg = document.getElementById('live-preview-img');
     const fileInfo = document.getElementById('file-info');
 
@@ -198,6 +252,7 @@ function previewImage(input) {
             alert('Ukuran file terlalu besar. Maksimal 2MB.');
             input.value = '';
             livePreviewContainer.classList.add('hidden');
+            previewPlaceholder.classList.remove('hidden');
             return;
         }
 
@@ -207,6 +262,7 @@ function previewImage(input) {
             alert('Format file tidak didukung. Gunakan JPG, JPEG, atau PNG.');
             input.value = '';
             livePreviewContainer.classList.add('hidden');
+            previewPlaceholder.classList.remove('hidden');
             return;
         }
 
@@ -215,18 +271,24 @@ function previewImage(input) {
         reader.onload = function(e) {
             livePreviewImg.src = e.target.result;
 
-            // Show file information
+            // Show file information with better formatting
             const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            const fileDate = file.lastModifiedDate ? file.lastModifiedDate.toLocaleDateString('id-ID') : 'N/A';
+
             fileInfo.innerHTML = `
-                <strong>${file.name}</strong> |
-                ${(file.type).toUpperCase()} |
-                ${fileSizeMB} MB |
-                ${file.lastModifiedDate ? file.lastModifiedDate.toLocaleDateString('id-ID') : 'N/A'}
+                <div class="space-y-1">
+                    <div><strong>Nama:</strong> ${file.name}</div>
+                    <div><strong>Tipe:</strong> ${file.type.toUpperCase()}</div>
+                    <div><strong>Ukuran:</strong> ${fileSizeMB} MB</div>
+                    <div><strong>Tanggal:</strong> ${fileDate}</div>
+                </div>
             `;
 
+            // Hide placeholder and show preview
+            previewPlaceholder.classList.add('hidden');
             livePreviewContainer.classList.remove('hidden');
 
-            // Smooth scroll to preview
+            // Smooth scroll to preview area
             livePreviewContainer.scrollIntoView({
                 behavior: 'smooth',
                 block: 'nearest'
@@ -234,13 +296,16 @@ function previewImage(input) {
         };
         reader.readAsDataURL(file);
     } else {
+        // Reset to placeholder state
         livePreviewContainer.classList.add('hidden');
+        previewPlaceholder.classList.remove('hidden');
     }
 }
 
 function removeLivePreview() {
     document.getElementById('bukti_pembayaran').value = '';
     document.getElementById('live-preview-container').classList.add('hidden');
+    document.getElementById('preview-placeholder').classList.remove('hidden');
 }
 
 function previewExistingImage(filename, type) {
