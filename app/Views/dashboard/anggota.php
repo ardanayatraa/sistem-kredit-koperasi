@@ -94,47 +94,10 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <?php
-                                $statusColor = '';
-                                $statusText = '';
-                                switch ($kredit['status_pencairan'] ?? 'Menunggu') {
-                                    case 'Menunggu':
-                                        $statusColor = 'orange';
-                                        $statusText = 'Menunggu';
-                                        break;
-                                    case 'Siap Dicairkan':
-                                        $statusColor = 'blue';
-                                        $statusText = 'Siap Dicairkan';
-                                        break;
-                                    case 'Sudah Dicairkan':
-                                        $statusColor = 'green';
-                                        $statusText = 'Sudah Dicairkan';
-                                        break;
-                                    default:
-                                        $statusColor = 'gray';
-                                        $statusText = 'Unknown';
-                                }
-                                ?>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-<?= $statusColor ?>-100 text-<?= $statusColor ?>-800">
-                                    <?= $statusText ?>
-                                </span>
+                                <?= $kredit['status_pencairan'] ?? 'Menunggu' ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <?php
-                                switch ($kredit['status_pencairan'] ?? 'Menunggu') {
-                                    case 'Menunggu':
-                                        echo 'Menunggu proses pencairan';
-                                        break;
-                                    case 'Siap Dicairkan':
-                                        echo 'Dana siap dicairkan';
-                                        break;
-                                    case 'Sudah Dicairkan':
-                                        echo 'Dana sudah dicairkan';
-                                        break;
-                                    default:
-                                        echo '-';
-                                }
-                                ?>
+                                <?= $kredit['status_pencairan'] ?? 'Menunggu' ?>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -255,30 +218,7 @@
                                     Rp <?= number_format($kredit['jumlah_angsuran'], 0, ',', '.') ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <?php
-                                    $statusColor = '';
-                                    $statusText = '';
-                                    switch ($kredit['status_pencairan'] ?? 'Menunggu') {
-                                        case 'Menunggu':
-                                            $statusColor = 'orange';
-                                            $statusText = 'Menunggu';
-                                            break;
-                                        case 'Siap Dicairkan':
-                                            $statusColor = 'blue';
-                                            $statusText = 'Siap Dicairkan';
-                                            break;
-                                        case 'Sudah Dicairkan':
-                                            $statusColor = 'green';
-                                            $statusText = 'Sudah Dicairkan';
-                                            break;
-                                        default:
-                                            $statusColor = 'gray';
-                                            $statusText = 'Unknown';
-                                    }
-                                    ?>
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-<?= $statusColor ?>-100 text-<?= $statusColor ?>-800">
-                                        <?= $statusText ?>
-                                    </span>
+                                    <?= $kredit['status_pencairan'] ?? 'Menunggu' ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
