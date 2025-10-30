@@ -241,6 +241,7 @@ $currentUserLevel = session()->get('level');
 <script>
     // Server-side data passed from PHP
     const anggotaDataMap = <?php echo json_encode($anggotaData ?? []); ?>;
+    const kreditDataMap = <?php echo json_encode($kredit ?? []); ?>;
     const currentUserLevel = '<?php echo $currentUserLevel; ?>';
     
     // Search functionality
@@ -294,6 +295,8 @@ $currentUserLevel = session()->get('level');
 
     // View agunan documents using server-side data
     function viewAgunanDocuments(idKredit, idAnggota) {
+        // Get kredit data from server-side passed data
+        const kreditData = kreditDataMap.find(k => k.id_kredit == idKredit);
         // Get anggota data from server-side passed data
         const anggotaData = anggotaDataMap[idAnggota];
         
@@ -351,8 +354,8 @@ $currentUserLevel = session()->get('level');
                                 </div>
                             </div>
                             <div class="flex items-center space-x-2">
-                                <?php if (!empty($anggotaData['dokumen_agunan'])): ?>
-                                    <a href="/kredit/view-document/<?= $anggotaData['dokumen_agunan'] ?>" target="_blank" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                                <?php if (!empty(kreditData['dokumen_agunan'])): ?>
+                                    <a href="/kredit/view-document/<?= kreditData['dokumen_agunan'] ?>" target="_blank" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 transition-colors">
                                         <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -378,8 +381,8 @@ $currentUserLevel = session()->get('level');
                                 </div>
                             </div>
                             <div class="flex items-center space-x-2">
-                                <?php if (!empty($anggotaData['foto_agunan'])): ?>
-                                    <a href="/kredit/view-document/<?= $anggotaData['foto_agunan'] ?>" target="_blank" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                                <?php if (!empty(kreditData['foto_agunan'])): ?>
+                                    <a href="/kredit/view-document/<?= kreditData['foto_agunan'] ?>" target="_blank" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 transition-colors">
                                         <i class="bx bx-external-link-alt w-3 h-3 mr-1"></i>
                                         Lihat Foto
                                     </a>
