@@ -94,10 +94,59 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <?= $kredit['status_pencairan'] ?? 'Menunggu' ?>
+                                <?php
+                                switch ($kredit['status_kredit'] ?? 'Pending') {
+                                    case 'Aktif':
+                                        echo 'Aktif';
+                                        break;
+                                    case 'Lunas':
+                                        echo 'Lunas';
+                                        break;
+                                    case 'Ditolak':
+                                        echo 'Ditolak';
+                                        break;
+                                    case 'Disetujui Ketua':
+                                        echo 'Disetujui';
+                                        break;
+                                    case 'Verifikasi Bendahara':
+                                        echo 'Verifikasi';
+                                        break;
+                                    case 'Siap Persetujuan':
+                                        echo 'Pending Approval';
+                                        break;
+                                    default:
+                                        echo 'Diajukan';
+                                }
+                                ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <?= $kredit['status_pencairan'] ?? 'Menunggu' ?>
+                                <?php
+                                switch ($kredit['status_kredit'] ?? 'Diajukan') {
+                                    case 'Diajukan':
+                                        echo 'Pengajuan sedang diperiksa';
+                                        break;
+                                    case 'Verifikasi Bendahara':
+                                        echo 'Dokumen sedang diverifikasi';
+                                        break;
+                                    case 'Siap Persetujuan':
+                                        echo 'Agunan sudah dinilai, menunggu keputusan';
+                                        break;
+                                    case 'Disetujui Ketua':
+                                        echo 'Disetujui! Menunggu pencairan dana';
+                                        break;
+                                    case 'Aktif':
+                                        echo 'Kredit sudah berjalan';
+                                        break;
+                                    case 'Lunas':
+                                        echo 'Pembayaran telah selesai';
+                                        break;
+                                    case 'Ditolak':
+                                        echo 'Pengajuan tidak disetujui';
+                                        break;
+                                    default:
+                                        echo '-';
+                                }
+                                ?>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -218,7 +267,33 @@
                                     Rp <?= number_format($kredit['jumlah_angsuran'], 0, ',', '.') ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <?= $kredit['status_pencairan'] ?? 'Menunggu' ?>
+                                    <?php
+                                    switch ($kredit['status_kredit'] ?? 'Diajukan') {
+                                        case 'Diajukan':
+                                            echo 'Menunggu Verifikasi';
+                                            break;
+                                        case 'Verifikasi Bendahara':
+                                            echo 'Verifikasi Dokumen';
+                                            break;
+                                        case 'Siap Persetujuan':
+                                            echo 'Menunggu Persetujuan';
+                                            break;
+                                        case 'Disetujui Ketua':
+                                            echo 'Menunggu Pencairan';
+                                            break;
+                                        case 'Aktif':
+                                            echo 'Aktif';
+                                            break;
+                                        case 'Lunas':
+                                            echo 'Lunas';
+                                            break;
+                                        case 'Ditolak':
+                                            echo 'Ditolak';
+                                            break;
+                                        default:
+                                            echo 'Unknown';
+                                    }
+                                    ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
