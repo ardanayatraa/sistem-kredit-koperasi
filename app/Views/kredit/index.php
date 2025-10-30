@@ -116,7 +116,6 @@ $currentUserLevel = session()->get('level');
                         <th class="hidden sm:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jangka Waktu</th>
                         <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-4 sm:px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aktif/Nonaktif</th>
-                        <th class="px-4 sm:px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Dokumen</th>
                         <th class="px-4 sm:px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Verifikasi</th>
                         <th class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
@@ -167,14 +166,6 @@ $currentUserLevel = session()->get('level');
                                         <?= esc($row['status_aktif'] ?? 'Aktif') === 'Aktif' ? 'Aktif' : 'Tidak Aktif' ?>
                                     </span>
                                 <?php endif; ?>
-                            </td>
-                            <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-center">
-                                <button
-                                    onclick="viewAgunanDocuments(<?= esc($row['id_kredit']) ?>, '<?= esc($row['id_anggota']) ?>')"
-                                    class="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-lg btn-primary transition-colors">
-                                    <i class="bx bx-eye h-3 w-3"></i>
-                                    Lihat Dokumen
-                                </button>
                             </td>
                             <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-center">
                                 <?php if ($currentUserLevel && $currentUserLevel === 'Appraiser'): ?>
