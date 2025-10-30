@@ -324,9 +324,9 @@ $anggotaData = isset($anggota) ? $anggota : null;
                                                          <i class="bx bx-download h-3 w-3"></i>
                                                          Download
                                                      </a>
-                                                     <a href="/dokumen_kredit/<?= esc($kredit['dokumen_agunan']) ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
-                                                         <i class="bx bx-link-external h-3 w-3"></i>
-                                                         Direct Link
+                                                     <a href="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                                                         <i class="bx bx-eye h-3 w-3"></i>
+                                                         Lihat
                                                      </a>
                                                  </div>
                                              </div>

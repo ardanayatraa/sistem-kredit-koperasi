@@ -169,18 +169,12 @@ $currentUserLevel = session()->get('level');
                                 <?php endif; ?>
                             </td>
                             <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-center">
-                                <?php if ($currentUserLevel && $currentUserLevel === 'Appraiser'): ?>
-                                    <button
-                                        onclick="viewDocuments(<?= esc($row['id_kredit']) ?>, '<?= esc($row['id_anggota']) ?>')"
-                                        class="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-lg btn-primary transition-colors">
-                                        <i class="bx bx-eye h-3 w-3"></i>
-                                        Lihat Dokumen
-                                    </button>
-                                <?php else: ?>
-                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-                                        -
-                                    </span>
-                                <?php endif; ?>
+                                <button
+                                    onclick="viewAgunanDocuments(<?= esc($row['id_kredit']) ?>, '<?= esc($row['id_anggota']) ?>')"
+                                    class="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-lg btn-primary transition-colors">
+                                    <i class="bx bx-eye h-3 w-3"></i>
+                                    Lihat Dokumen
+                                </button>
                             </td>
                             <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-center">
                                 <?php if ($currentUserLevel && $currentUserLevel === 'Appraiser'): ?>
@@ -298,8 +292,8 @@ $currentUserLevel = session()->get('level');
         });
     }
 
-    // View documents using server-side data
-    function viewDocuments(idKredit, idAnggota) {
+    // View agunan documents using server-side data
+    function viewAgunanDocuments(idKredit, idAnggota) {
         // Get anggota data from server-side passed data
         const anggotaData = anggotaDataMap[idAnggota];
         
@@ -308,7 +302,7 @@ $currentUserLevel = session()->get('level');
             return;
         }
 
-        // Create modal HTML with actual data
+        // Create modal HTML with agunan documents
         const modal = document.createElement('div');
         modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
         modal.innerHTML = `
@@ -316,8 +310,8 @@ $currentUserLevel = session()->get('level');
                 <div class="border-b border-gray-200 px-6 py-4">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h3 class="text-lg font-semibold text-gray-900">Dokumen Anggota</h3>
-                            <p class="text-sm text-gray-600 mt-1">Lihat dokumen pribadi dan data anggota</p>
+                            <h3 class="text-lg font-semibold text-gray-900">Dokumen Agunan</h3>
+                            <p class="text-sm text-gray-600 mt-1">Lihat dokumen agunan kredit</p>
                         </div>
                         <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100 transition-colors">
                             <i class="bx bx-times w-5 h-5"></i>
@@ -330,152 +324,70 @@ $currentUserLevel = session()->get('level');
                         <h4 class="font-medium text-blue-900 mb-2">Informasi Pengajuan Kredit</h4>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                             <div>
-                                <span class="text-blue-700">Jumlah Pengajuan:</span>
-                                <span class="font-medium text-blue-900 ml-2">Rp ${anggotaData.kredit_jumlah ? parseInt(anggotaData.kredit_jumlah).toLocaleString('id-ID') : '-'}</span>
+                                <span class="text-blue-700">ID Kredit:</span>
+                                <span class="font-medium text-blue-900 ml-2">${idKredit}</span>
                             </div>
                             <div>
-                                <span class="text-blue-700">Jangka Waktu:</span>
-                                <span class="font-medium text-blue-900 ml-2">${anggotaData.kredit_jangka_waktu ? anggotaData.kredit_jangka_waktu + ' bulan' : '-'}</span>
+                                <span class="text-blue-700">ID Anggota:</span>
+                                <span class="font-medium text-blue-900 ml-2">${idAnggota}</span>
                             </div>
                             <div>
-                                <span class="text-blue-700">Status Kredit:</span>
-                                <span class="font-medium text-blue-900 ml-2">${anggotaData.kredit_status || '-'}</span>
+                                <span class="text-blue-700">Jenis Agunan:</span>
+                                <span class="font-medium text-blue-900 ml-2">${anggotaData.jenis_agunan || '-'}</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Document Tabs -->
-                    <div class="border-b border-gray-200 mb-6">
-                        <nav class="-mb-px flex space-x-8">
-                            <button onclick="switchTab('documents')" id="tab-documents" class="tab-button active whitespace-nowrap py-2 px-1 border-b-2 border-blue-500 font-medium text-sm text-blue-600">
-                                Dokumen Pribadi
-                            </button>
-                            <button onclick="switchTab('info')" id="tab-info" class="tab-button whitespace-nowrap py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
-                                Data Anggota
-                            </button>
-                        </nav>
-                    </div>
-
-                    <!-- Documents Tab Content -->
-                    <div id="documents-content" class="tab-content">
-                        <div class="space-y-4">
-                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                <div class="flex items-center space-x-3">
-                                    <div class="flex-shrink-0">
-                                        <i class="bx bx-id-card text-blue-600 h-5 w-5"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-900">KTP</p>
-                                        <p class="text-xs text-gray-500">Identitas Kependudukan</p>
-                                    </div>
+                    <!-- Agunan Documents -->
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <div class="flex items-center space-x-3">
+                                <div class="flex-shrink-0">
+                                    <i class="bx bx-file-invoice-dollar text-blue-600 h-5 w-5"></i>
                                 </div>
-                                <div class="flex items-center space-x-2">
-                                    <?php if (!empty($anggotaData['dokumen_ktp'])): ?>
-                                        <a href="/uploads/anggota/<?= $anggotaData['dokumen_ktp'] ?>" target="_blank" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 transition-colors">
-                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                            </svg>
-                                            Lihat Dokumen
-                                        </a>
-                                    <?php else: ?>
-                                        <span class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
-                                            Belum diupload
-                                        </span>
-                                    <?php endif; ?>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">Dokumen Agunan</p>
+                                    <p class="text-xs text-gray-500">Dokumen jaminan kredit</p>
                                 </div>
                             </div>
-
-                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                <div class="flex items-center space-x-3">
-                                    <div class="flex-shrink-0">
-                                        <i class="bx bx-id-card text-green-600 h-5 w-5"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-900">KK (Kartu Keluarga)</p>
-                                        <p class="text-xs text-gray-500">Identitas Keluarga</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <?php if (!empty($anggotaData['dokumen_kk'])): ?>
-                                        <a href="/uploads/anggota/<?= $anggotaData['dokumen_kk'] ?>" target="_blank" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 transition-colors">
-                                            <i class="bx bx-external-link-alt w-3 h-3 mr-1"></i>
-                                            Lihat Dokumen
-                                        </a>
-                                    <?php else: ?>
-                                        <span class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
-                                            Belum diupload
-                                        </span>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-
-                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                <div class="flex items-center space-x-3">
-                                    <div class="flex-shrink-0">
-                                        <i class="bx bx-file-invoice-dollar text-purple-600 h-5 w-5"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-900">Slip Gaji</p>
-                                        <p class="text-xs text-gray-500">Bukti Penghasilan</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <?php if (!empty($anggotaData['dokumen_slip_gaji'])): ?>
-                                        <a href="/uploads/anggota/<?= $anggotaData['dokumen_slip_gaji'] ?>" target="_blank" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 transition-colors">
-                                            <i class="bx bx-external-link-alt w-3 h-3 mr-1"></i>
-                                            Lihat Dokumen
-                                        </a>
-                                    <?php else: ?>
-                                        <span class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
-                                            Belum diupload
-                                        </span>
-                                    <?php endif; ?>
-                                </div>
+                            <div class="flex items-center space-x-2">
+                                <?php if (!empty($anggotaData['dokumen_agunan'])): ?>
+                                    <a href="/uploads/kredit/dokumen_agunan/<?= $anggotaData['dokumen_agunan'] ?>" target="_blank" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                        Lihat Dokumen
+                                    </a>
+                                <?php else: ?>
+                                    <span class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+                                        Belum diupload
+                                    </span>
+                                <?php endif; ?>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Info Tab Content -->
-                    <div id="info-content" class="tab-content hidden">
-                        <div class="bg-gray-50 rounded-lg border border-gray-200 p-4">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="space-y-3">
-                                    <div class="flex justify-between">
-                                        <span class="text-sm font-medium text-gray-700">NIK:</span>
-                                        <span class="text-sm text-gray-900">${anggotaData.nik || '-'}</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-sm font-medium text-gray-700">Nama Lengkap:</span>
-                                        <span class="text-sm text-gray-900">${anggotaData.nama_lengkap || '-'}</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-sm font-medium text-gray-700">Tempat Lahir:</span>
-                                        <span class="text-sm text-gray-900">${anggotaData.tempat_lahir || '-'}</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-sm font-medium text-gray-700">Tanggal Lahir:</span>
-                                        <span class="text-sm text-gray-900">${anggotaData.tanggal_lahir || '-'}</span>
-                                    </div>
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <div class="flex items-center space-x-3">
+                                <div class="flex-shrink-0">
+                                    <i class="bx bx-image text-green-600 h-5 w-5"></i>
                                 </div>
-                                <div class="space-y-3">
-                                    <div class="flex justify-between">
-                                        <span class="text-sm font-medium text-gray-700">Alamat:</span>
-                                        <span class="text-sm text-gray-900">${anggotaData.alamat || '-'}</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-sm font-medium text-gray-700">Pekerjaan:</span>
-                                        <span class="text-sm text-gray-900">${anggotaData.pekerjaan || '-'}</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-sm font-medium text-gray-700">Tanggal Pendaftaran:</span>
-                                        <span class="text-sm text-gray-900">${anggotaData.tanggal_pendaftaran || '-'}</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-sm font-medium text-gray-700">Status Keanggotaan:</span>
-                                        <span class="text-sm text-gray-900">${anggotaData.status_keanggotaan || '-'}</span>
-                                    </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">Foto Agunan</p>
+                                    <p class="text-xs text-gray-500">Foto jaminan kredit</p>
                                 </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <?php if (!empty($anggotaData['foto_agunan'])): ?>
+                                    <a href="/uploads/kredit/foto_agunan/<?= $anggotaData['foto_agunan'] ?>" target="_blank" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                                        <i class="bx bx-external-link-alt w-3 h-3 mr-1"></i>
+                                        Lihat Foto
+                                    </a>
+                                <?php else: ?>
+                                    <span class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+                                        Belum diupload
+                                    </span>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
