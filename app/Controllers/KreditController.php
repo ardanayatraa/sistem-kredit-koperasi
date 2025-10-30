@@ -395,6 +395,13 @@ class KreditController extends Controller
         if (empty($data['kredit'])) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException('Kredit dengan ID ' . $id . ' tidak ditemukan atau Anda tidak memiliki akses.');
         }
+
+        // Load anggota data untuk ditampilkan di view detail
+        $data['anggota'] = $this->anggotaModel
+            ->select('tbl_anggota.*, tbl_users.nama_lengkap')
+            ->join('tbl_users', 'tbl_users.id_anggota_ref = tbl_anggota.id_anggota', 'left')
+            ->find($data['kredit']['id_anggota']);
+
         return view('kredit/show', $data);
     }
 
