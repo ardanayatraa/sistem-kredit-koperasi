@@ -97,34 +97,18 @@
                                 <?php
                                 $statusColor = '';
                                 $statusText = '';
-                                switch ($kredit['status_kredit'] ?? 'Diajukan') {
-                                    case 'Diajukan':
+                                switch ($kredit['status_pencairan'] ?? 'Menunggu') {
+                                    case 'Menunggu':
                                         $statusColor = 'orange';
-                                        $statusText = 'Menunggu Verifikasi';
+                                        $statusText = 'Menunggu';
                                         break;
-                                    case 'Verifikasi Bendahara':
+                                    case 'Siap Dicairkan':
                                         $statusColor = 'blue';
-                                        $statusText = 'Verifikasi Dokumen';
+                                        $statusText = 'Siap Dicairkan';
                                         break;
-                                    case 'Siap Persetujuan':
-                                        $statusColor = 'purple';
-                                        $statusText = 'Menunggu Persetujuan';
-                                        break;
-                                    case 'Disetujui Ketua':
+                                    case 'Sudah Dicairkan':
                                         $statusColor = 'green';
-                                        $statusText = 'Menunggu Pencairan';
-                                        break;
-                                    case 'Aktif':
-                                        $statusColor = 'green';
-                                        $statusText = 'Aktif';
-                                        break;
-                                    case 'Lunas':
-                                        $statusColor = 'blue';
-                                        $statusText = 'Lunas';
-                                        break;
-                                    case 'Ditolak':
-                                        $statusColor = 'red';
-                                        $statusText = 'Ditolak';
+                                        $statusText = 'Sudah Dicairkan';
                                         break;
                                     default:
                                         $statusColor = 'gray';
@@ -137,27 +121,15 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 <?php
-                                switch ($kredit['status_kredit'] ?? 'Diajukan') {
-                                    case 'Diajukan':
-                                        echo 'Pengajuan sedang diperiksa';
+                                switch ($kredit['status_pencairan'] ?? 'Menunggu') {
+                                    case 'Menunggu':
+                                        echo 'Menunggu proses pencairan';
                                         break;
-                                    case 'Verifikasi Bendahara':
-                                        echo 'Dokumen sedang diverifikasi';
+                                    case 'Siap Dicairkan':
+                                        echo 'Dana siap dicairkan';
                                         break;
-                                    case 'Siap Persetujuan':
-                                        echo 'Agunan sudah dinilai, menunggu keputusan';
-                                        break;
-                                    case 'Disetujui Ketua':
-                                        echo 'Disetujui! Menunggu pencairan dana';
-                                        break;
-                                    case 'Aktif':
-                                        echo 'Kredit sudah berjalan';
-                                        break;
-                                    case 'Lunas':
-                                        echo 'Pembayaran telah selesai';
-                                        break;
-                                    case 'Ditolak':
-                                        echo 'Pengajuan tidak disetujui';
+                                    case 'Sudah Dicairkan':
+                                        echo 'Dana sudah dicairkan';
                                         break;
                                     default:
                                         echo '-';
@@ -286,34 +258,22 @@
                                     <?php
                                     $statusColor = '';
                                     $statusText = '';
-                                    switch ($kredit['status_kredit'] ?? 'Pending') {
-                                        case 'Aktif':
+                                    switch ($kredit['status_pencairan'] ?? 'Menunggu') {
+                                        case 'Menunggu':
+                                            $statusColor = 'orange';
+                                            $statusText = 'Menunggu';
+                                            break;
+                                        case 'Siap Dicairkan':
+                                            $statusColor = 'blue';
+                                            $statusText = 'Siap Dicairkan';
+                                            break;
+                                        case 'Sudah Dicairkan':
                                             $statusColor = 'green';
-                                            $statusText = 'Aktif';
-                                            break;
-                                        case 'Lunas':
-                                            $statusColor = 'blue';
-                                            $statusText = 'Lunas';
-                                            break;
-                                        case 'Ditolak':
-                                            $statusColor = 'red';
-                                            $statusText = 'Ditolak';
-                                            break;
-                                        case 'Disetujui Ketua':
-                                            $statusColor = 'purple';
-                                            $statusText = 'Disetujui';
-                                            break;
-                                        case 'Verifikasi Bendahara':
-                                            $statusColor = 'blue';
-                                            $statusText = 'Verifikasi';
-                                            break;
-                                        case 'Siap Persetujuan':
-                                            $statusColor = 'yellow';
-                                            $statusText = 'Pending Approval';
+                                            $statusText = 'Sudah Dicairkan';
                                             break;
                                         default:
                                             $statusColor = 'gray';
-                                            $statusText = 'Diajukan';
+                                            $statusText = 'Unknown';
                                     }
                                     ?>
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-<?= $statusColor ?>-100 text-<?= $statusColor ?>-800">
