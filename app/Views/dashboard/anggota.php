@@ -32,7 +32,6 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jangka Waktu</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status Alur</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Keterangan</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -94,59 +93,7 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <?php
-                                switch ($kredit['status_kredit'] ?? 'Pending') {
-                                    case 'Aktif':
-                                        echo 'Aktif';
-                                        break;
-                                    case 'Lunas':
-                                        echo 'Lunas';
-                                        break;
-                                    case 'Ditolak':
-                                        echo 'Ditolak';
-                                        break;
-                                    case 'Disetujui Ketua':
-                                        echo 'Disetujui';
-                                        break;
-                                    case 'Verifikasi Bendahara':
-                                        echo 'Verifikasi';
-                                        break;
-                                    case 'Siap Persetujuan':
-                                        echo 'Pending Approval';
-                                        break;
-                                    default:
-                                        echo 'Diajukan';
-                                }
-                                ?>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <?php
-                                switch ($kredit['status_kredit'] ?? 'Diajukan') {
-                                    case 'Diajukan':
-                                        echo 'Pengajuan sedang diperiksa';
-                                        break;
-                                    case 'Verifikasi Bendahara':
-                                        echo 'Dokumen sedang diverifikasi';
-                                        break;
-                                    case 'Siap Persetujuan':
-                                        echo 'Agunan sudah dinilai, menunggu keputusan';
-                                        break;
-                                    case 'Disetujui Ketua':
-                                        echo 'Disetujui! Menunggu pencairan dana';
-                                        break;
-                                    case 'Aktif':
-                                        echo 'Kredit sudah berjalan';
-                                        break;
-                                    case 'Lunas':
-                                        echo 'Pembayaran telah selesai';
-                                        break;
-                                    case 'Ditolak':
-                                        echo 'Pengajuan tidak disetujui';
-                                        break;
-                                    default:
-                                        echo '-';
-                                }
-                                ?>
+                                <?= $kredit['status_kredit'] ?>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -267,33 +214,7 @@
                                     Rp <?= number_format($kredit['jumlah_angsuran'], 0, ',', '.') ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <?php
-                                    switch ($kredit['status_kredit'] ?? 'Diajukan') {
-                                        case 'Diajukan':
-                                            echo 'Menunggu Verifikasi';
-                                            break;
-                                        case 'Verifikasi Bendahara':
-                                            echo 'Verifikasi Dokumen';
-                                            break;
-                                        case 'Siap Persetujuan':
-                                            echo 'Menunggu Persetujuan';
-                                            break;
-                                        case 'Disetujui Ketua':
-                                            echo 'Menunggu Pencairan';
-                                            break;
-                                        case 'Aktif':
-                                            echo 'Aktif';
-                                            break;
-                                        case 'Lunas':
-                                            echo 'Lunas';
-                                            break;
-                                        case 'Ditolak':
-                                            echo 'Ditolak';
-                                            break;
-                                        default:
-                                            echo 'Unknown';
-                                    }
-                                    ?>
+                                    <?= $kredit['status_kredit'] ?? '' ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
