@@ -247,6 +247,7 @@ $routes->group('kredit', ['filter' => 'role:manage_kredit'], function($routes) {
     $routes->post('delete/(:num)', 'KreditController::delete/$1');
     $routes->get('show/(:num)', 'KreditController::show/$1');
     $routes->post('toggle-status/(:num)', 'KreditController::toggleStatus/$1');
+    $routes->post('toggle-verifikasi/(:num)', 'KreditController::toggleVerifikasi/$1');
     $routes->post('verify-agunan', 'KreditController::verifyAgunan');
 });
 

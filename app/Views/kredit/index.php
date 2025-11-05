@@ -168,34 +168,18 @@ $currentUserLevel = session()->get('level');
                                 <?php endif; ?>
                             </td>
                             <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-center">
-                                <?php if ($currentUserLevel && $currentUserLevel === 'Appraiser'): ?>
-                                    <?php
-                                    // Check if already verified
-                                    $isVerified = !empty($row['catatan_appraiser']) && strpos($row['catatan_appraiser'], 'VERIFIKASI AGUNAN') !== false;
-                                    $kreditId = esc($row['id_kredit']);
-                                    $anggotaId = esc($row['id_anggota']);
-                                    ?>
-                                    <?php if (!$isVerified): ?>
-                                        <button
-                                            onclick="verifyAgunan(<?= $kreditId ?>, '<?= $anggotaId ?>')"
-                                            class="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-lg btn-primary transition-colors">
-                                            <i class="bx bx-check h-3 w-3"></i>
-                                            Verifikasi
-                                        </button>
-                                    <?php else: ?>
-                                        <button
-                                            disabled
-                                            class="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-lg bg-gray-400 text-white cursor-not-allowed">
-                                            <i class="bx bx-check-double h-3 w-3"></i>
-                                            Terverifikasi
-                                        </button>
-                                    <?php endif; ?>
+                                <?php if ($currentUserLevel && in_array($currentUserLevel, ['Bendahara', 'Ketua', 'Appraiser'])): ?>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox"
+                                               class="sr-only peer"
+                                               id="toggle-verifikasi-<?= esc($row['id_kredit']) ?>"
+                                               <?= ($row['status_verifikasi'] ?? 'pending') === 'verified' ? 'checked' : '' ?>
+                                               onchange="toggleKreditVerifikasi(<?= esc($row['id_kredit']) ?>, this)">
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                                    </label>
                                 <?php else: ?>
-                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-                                        <?php
-                                        $isVerified = !empty($row['catatan_appraiser']) && strpos($row['catatan_appraiser'], 'VERIFIKASI AGUNAN') !== false;
-                                        echo $isVerified ? 'Terverifikasi' : 'Belum Diverifikasi';
-                                        ?>
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full <?= ($row['status_verifikasi'] ?? 'pending') === 'verified' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' ?>">
+                                        <?= ($row['status_verifikasi'] ?? 'pending') === 'verified' ? 'Terverifikasi' : 'Belum Diverifikasi' ?>
                                     </span>
                                 <?php endif; ?>
                             </td>
@@ -278,6 +262,40 @@ $currentUserLevel = session()->get('level');
         .catch(error => {
             console.error('Error:', error);
             showNotification('Terjadi kesalahan saat mengubah status', 'error');
+            // Revert toggle state
+            element.checked = !element.checked;
+        });
+    }
+
+    // Toggle kredit verifikasi
+    function toggleKreditVerifikasi(id, element) {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        
+        fetch('/kredit/toggle-verifikasi/' + id, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                showNotification(data.message, 'success');
+                
+                // Update the toggle state
+                element.checked = data.new_status === 'verified';
+            } else {
+                showNotification(data.message || 'Gagal mengubah status verifikasi', 'error');
+                // Revert toggle state
+                element.checked = !element.checked;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Terjadi kesalahan saat mengubah status verifikasi', 'error');
             // Revert toggle state
             element.checked = !element.checked;
         });

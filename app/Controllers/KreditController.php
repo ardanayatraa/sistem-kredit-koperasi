@@ -437,6 +437,57 @@ class KreditController extends Controller
     }
 
     /**
+     * Mengubah status verifikasi kredit via AJAX
+     *
+     * Method ini memungkinkan admin untuk mengubah status verifikasi kredit
+     * secara cepat melalui interface dashboard
+     *
+     * @param int $id ID kredit yang akan diubah status verifikasinya
+     * @return ResponseInterface JSON response dengan status operasi
+     */
+    public function toggleVerifikasi($id = null)
+    {
+        // Cek permission - hanya role tertentu yang bisa verifikasi
+        $currentUserLevel = session()->get('level');
+        if (!in_array($currentUserLevel, ['Bendahara', 'Ketua', 'Appraiser'])) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Anda tidak memiliki akses untuk mengubah status verifikasi.'
+            ])->setStatusCode(403);
+        }
+
+        $kredit = $this->kreditModel->find($id);
+        if (empty($kredit)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Data kredit tidak ditemukan.'
+            ])->setStatusCode(404);
+        }
+
+        // Toggle status_verifikasi between verified and pending
+        $currentStatus = $kredit['status_verifikasi'] ?? 'pending';
+        $newStatus = ($currentStatus === 'verified') ? 'pending' : 'verified';
+        
+        // Update dengan timestamp dan user info
+        $updateData = [
+            'status_verifikasi' => $newStatus,
+            'tanggal_verifikasi' => date('Y-m-d H:i:s'),
+            'verifikator_id' => session()->get('id_user')
+        ];
+
+        $this->kreditModel->update($id, $updateData);
+
+        $statusText = ($newStatus === 'verified') ? 'Terverifikasi' : 'Belum Diverifikasi';
+        
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Status verifikasi berhasil diubah menjadi ' . $statusText,
+            'new_status' => $newStatus,
+            'status_text' => $statusText
+        ]);
+    }
+
+    /**
      * Verifikasi agunan oleh Appraiser via AJAX
      *
      * Method ini memungkinkan Appraiser untuk menyimpan catatan penilaian agunan

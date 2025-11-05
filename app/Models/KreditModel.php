@@ -25,6 +25,8 @@ class KreditModel extends Model
         'status_pencairan',
         'catatan_pencairan_bendahara',
         'tanggal_persetujuan_ketua',
+        'tanggal_verifikasi',
+        'verifikator_id',
         'dokumen_agunan',
         'created_at',
         'updated_at'
