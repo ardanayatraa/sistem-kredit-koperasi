@@ -40,6 +40,7 @@ class KreditController extends Controller
         $data['kredit'] = $kredit;
 
         return view('kredit/index', $data);
+        
     }
 
     /**
