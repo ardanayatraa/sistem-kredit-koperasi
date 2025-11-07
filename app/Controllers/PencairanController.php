@@ -249,21 +249,28 @@ class PencairanController extends Controller
      */
     public function show($id = null)
     {
-        // Get data with complete relations using model method
-        $select = 'tbl_pencairan.*, 
-                   tbl_kredit.id_kredit, tbl_kredit.jumlah_pengajuan, tbl_kredit.jangka_waktu, tbl_kredit.tujuan_kredit,
-                   tbl_anggota.no_anggota, tbl_anggota.alamat, tbl_anggota.no_hp,
-                   tbl_users.nama_lengkap as nama_anggota,
-                   tbl_bunga.nama_bunga, tbl_bunga.persentase_bunga';
-        
-        $additionalWhere = ['tbl_pencairan.id_pencairan' => $id];
-        $result = $this->pencairanModel->getFilteredPencairanWithData($additionalWhere, $select);
-        
-        if (empty($result)) {
+        // Use same approach as edit method
+        $data['pencairan'] = $this->pencairanModel->findWithAccess($id);
+        if (empty($data['pencairan'])) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException('Pencairan dengan ID ' . $id . ' tidak ditemukan atau Anda tidak memiliki akses.');
         }
         
-        $data['pencairan'] = $result[0];
+        // Get additional data with joins
+        $builder = $this->pencairanModel->builder();
+        $data['pencairan'] = $builder
+            ->select('tbl_pencairan.*, 
+                     tbl_kredit.id_kredit, tbl_kredit.jumlah_pengajuan, tbl_kredit.jangka_waktu, tbl_kredit.tujuan_kredit,
+                     tbl_anggota.no_anggota,
+                     tbl_users.nama_lengkap as nama_anggota,
+                     tbl_bunga.nama_bunga, tbl_bunga.persentase_bunga')
+            ->join('tbl_kredit', 'tbl_kredit.id_kredit = tbl_pencairan.id_kredit')
+            ->join('tbl_anggota', 'tbl_anggota.id_anggota = tbl_kredit.id_anggota')
+            ->join('tbl_users', 'tbl_users.id_anggota_ref = tbl_anggota.id_anggota', 'left')
+            ->join('tbl_bunga', 'tbl_bunga.id_bunga = tbl_pencairan.id_bunga', 'left')
+            ->where('tbl_pencairan.id_pencairan', $id)
+            ->get()
+            ->getRowArray();
+        
         return view('pencairan/show', $data);
     }
 
