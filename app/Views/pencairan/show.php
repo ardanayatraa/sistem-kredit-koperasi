@@ -41,11 +41,12 @@
                     <div class="bg-gray-50 rounded-lg p-4">
                         <div class="flex items-center gap-3">
                             <div class="p-2 bg-green-100 rounded-lg">
-                                <i class="bx bx-id-card text-green-600 h-5 w-5"></i>
+                                <i class="bx bx-user text-green-600 h-5 w-5"></i>
                             </div>
                             <div>
-                                <p class="text-sm font-medium text-gray-600">ID Kredit</p>
-                                <p class="text-lg font-semibold text-gray-900"><?= esc($pencairan['id_kredit']) ?></p>
+                                <p class="text-sm font-medium text-gray-600">Nama Anggota</p>
+                                <p class="text-lg font-semibold text-gray-900"><?= esc($pencairan['nama_anggota'] ?? 'N/A') ?></p>
+                                <p class="text-xs text-gray-500">No. <?= esc($pencairan['no_anggota'] ?? '-') ?></p>
                             </div>
                         </div>
                     </div>
@@ -92,8 +93,9 @@
                                 <i class="bx bx-percentage text-blue-600 h-5 w-5"></i>
                             </div>
                             <div>
-                                <p class="text-sm font-medium text-gray-600">ID Bunga</p>
-                                <p class="text-lg font-semibold text-gray-900"><?= esc($pencairan['id_bunga']) ?></p>
+                                <p class="text-sm font-medium text-gray-600">Bunga</p>
+                                <p class="text-lg font-semibold text-gray-900"><?= esc($pencairan['nama_bunga'] ?? 'N/A') ?></p>
+                                <p class="text-xs text-gray-500"><?= isset($pencairan['persentase_bunga']) ? number_format($pencairan['persentase_bunga'], 2) . '%' : '-' ?></p>
                             </div>
                         </div>
                     </div>
