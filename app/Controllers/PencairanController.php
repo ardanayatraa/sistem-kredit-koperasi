@@ -249,12 +249,43 @@ class PencairanController extends Controller
      */
     public function show($id = null)
     {
-        // Use access-controlled method
-        $data['pencairan'] = $this->pencairanModel->findWithAccess($id);
-        if (empty($data['pencairan'])) {
-            throw new \CodeIgniter\Exceptions\PageNotFoundException('Pencairan dengan ID ' . $id . ' tidak ditemukan atau Anda tidak memiliki akses.');
+        try {
+            // First check access
+            $accessCheck = $this->pencairanModel->findWithAccess($id);
+            if (empty($accessCheck)) {
+                throw new \CodeIgniter\Exceptions\PageNotFoundException('Pencairan dengan ID ' . $id . ' tidak ditemukan atau Anda tidak memiliki akses.');
+            }
+            
+            // Get complete data with relations
+            $builder = $this->pencairanModel->builder();
+            $data['pencairan'] = $builder
+                ->select('tbl_pencairan.*, 
+                         tbl_kredit.id_kredit, tbl_kredit.jumlah_pengajuan, tbl_kredit.jangka_waktu, tbl_kredit.tujuan_kredit,
+                         tbl_anggota.no_anggota, tbl_anggota.alamat, tbl_anggota.no_hp,
+                         tbl_users.nama_lengkap as nama_anggota,
+                         tbl_bunga.nama_bunga, tbl_bunga.persentase_bunga')
+                ->join('tbl_kredit', 'tbl_kredit.id_kredit = tbl_pencairan.id_kredit')
+                ->join('tbl_anggota', 'tbl_anggota.id_anggota = tbl_kredit.id_anggota')
+                ->join('tbl_users', 'tbl_users.id_anggota_ref = tbl_anggota.id_anggota', 'left')
+                ->join('tbl_bunga', 'tbl_bunga.id_bunga = tbl_pencairan.id_bunga', 'left')
+                ->where('tbl_pencairan.id_pencairan', $id)
+                ->get()
+                ->getRowArray();
+            
+            if (empty($data['pencairan'])) {
+                log_message('error', 'PencairanController::show - Data pencairan kosong setelah query untuk ID: ' . $id);
+                throw new \CodeIgniter\Exceptions\PageNotFoundException('Data pencairan tidak dapat dimuat.');
+            }
+                
+            return view('pencairan/show', $data);
+            
+        } catch (\CodeIgniter\Exceptions\PageNotFoundException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            log_message('error', 'PencairanController::show - Error: ' . $e->getMessage() . ' at line ' . $e->getLine());
+            log_message('error', 'PencairanController::show - Stack trace: ' . $e->getTraceAsString());
+            return redirect()->to('/pencairan')->with('error', 'Terjadi kesalahan saat menampilkan detail pencairan.');
         }
-        return view('pencairan/show', $data);
     }
 
     /**
