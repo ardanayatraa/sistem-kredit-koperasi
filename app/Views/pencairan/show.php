@@ -158,7 +158,7 @@
                                     <i class="bx bx-show h-3 w-3"></i>
                                     Preview
                                 </button>
-                                <a href="/pencairan/view-document/<?= esc($pencairan['bukti_transfer']) ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                                <a href="/uploads/pencairan/<?= esc($pencairan['bukti_transfer']) ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
                                     <i class="bx bx-download h-3 w-3"></i>
                                     Download
                                 </a>
@@ -222,7 +222,7 @@ function previewExistingImage(filename, type) {
 
     // Load image
     const previewContent = modal.querySelector('#preview-content');
-    const fileUrl = `/pencairan/view-document/${filename}`;
+    const fileUrl = `/uploads/pencairan/${filename}`;
 
     previewContent.innerHTML = `<img src="${fileUrl}" alt="${type}" class="max-w-full max-h-full object-contain" onload="this.previousElementSibling?.remove()" onerror="this.parentElement.innerHTML='<div class=\'text-center\'><i class=\'bx bx-error h-12 w-12 text-red-400 mb-4\'></i><p class=\'text-red-600\'>Gagal memuat preview gambar</p></div>'">`;
 }
