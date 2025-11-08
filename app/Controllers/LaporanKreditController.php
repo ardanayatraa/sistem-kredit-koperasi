@@ -55,7 +55,11 @@ class LaporanKreditController extends BaseController
             'tbl_angsuran.id_kredit_ref' => $id_kredit
         ]);
         
-        $anggota = $this->anggotaModel->find($kredit['id_anggota']);
+        // Get anggota data with user info (nama_lengkap, email, no_hp)
+        $anggota = $this->anggotaModel
+            ->select('tbl_anggota.*, tbl_users.nama_lengkap, tbl_users.email, tbl_users.no_hp')
+            ->join('tbl_users', 'tbl_users.id_anggota_ref = tbl_anggota.id_anggota', 'left')
+            ->find($kredit['id_anggota']);
 
         // Hitung total angsuran dibayar dan jumlah lunas
         $totalDibayar = 0;
