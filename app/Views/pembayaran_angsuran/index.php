@@ -124,12 +124,22 @@ $currentUserLevel = session()->get('level');
                                     <div class="flex flex-wrap gap-2">
                                         <!-- Bukti Pembayaran -->
                                         <?php if (!empty($pembayaran['bukti_pembayaran'])): ?>
-                                            <a href="/writable/uploads/pembayaran_angsuran/<?= esc($pembayaran['bukti_pembayaran']) ?>"
-                                               target="_blank"
-                                               class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors">
-                                                <i class="bx bx-file-blank mr-1"></i>
-                                                Bukti
-                                            </a>
+                                            <?php 
+                                            $filePath = WRITEPATH . 'uploads/pembayaran_angsuran/' . $pembayaran['bukti_pembayaran'];
+                                            if (file_exists($filePath)): 
+                                            ?>
+                                                <a href="/writable/uploads/pembayaran_angsuran/<?= esc($pembayaran['bukti_pembayaran']) ?>"
+                                                   target="_blank"
+                                                   class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors">
+                                                    <i class="bx bx-file-blank mr-1"></i>
+                                                    Bukti
+                                                </a>
+                                            <?php else: ?>
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                    <i class="bx bx-error mr-1"></i>
+                                                    File tidak ditemukan
+                                                </span>
+                                            <?php endif; ?>
                                         <?php endif; ?>
                                         
                                         <!-- Verifikasi Actions untuk Bendahara/Ketua -->
