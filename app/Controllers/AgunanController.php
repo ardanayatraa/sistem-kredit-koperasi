@@ -426,4 +426,72 @@ class AgunanController extends BaseController
 
         return redirect()->to('/agunan');
     }
+
+    /**
+     * View document with access control
+     */
+    public function viewDocument($filename)
+    {
+        try {
+            log_message('debug', 'AgunanController::viewDocument called with filename: ' . $filename);
+
+            // Extract id_kredit from filename pattern: dokumen_agunan_YYYYMMDDHHMMSS_timestamp_hash.ext
+            // Cari kredit yang memiliki dokumen ini
+            $kredit = $this->kreditModel->like('dokumen_agunan', $filename)->first();
+            log_message('debug', 'AgunanController::viewDocument - kredit result: ' . ($kredit ? 'FOUND (ID: ' . $kredit['id_kredit'] . ')' : 'NOT FOUND'));
+
+            if (!$kredit) {
+                log_message('error', 'AgunanController::viewDocument - Dokumen tidak ditemukan di database: ' . $filename);
+                throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Dokumen tidak ditemukan.');
+            }
+
+            log_message('debug', 'AgunanController::viewDocument - Kredit ditemukan: ' . json_encode($kredit));
+
+            // Cek akses menggunakan sistem filtering yang sudah ada
+            if (!canAccessData($kredit)) {
+                log_message('error', 'AgunanController::viewDocument - Akses ditolak untuk user ID: ' . session()->get('id_user') . ', Level: ' . session()->get('level'));
+                throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Anda tidak memiliki akses ke dokumen ini.');
+            }
+
+            log_message('debug', 'AgunanController::viewDocument - Akses disetujui');
+
+            // Path ke file - dokumen agunan ada di root uploads atau subfolder dokumen_kredit
+            $possiblePaths = [
+                WRITEPATH . 'uploads/' . $filename,
+                WRITEPATH . 'uploads/dokumen_kredit/' . $filename,
+                WRITEPATH . 'uploads/agunan/' . $filename
+            ];
+
+            $filePath = null;
+            foreach ($possiblePaths as $path) {
+                if (file_exists($path)) {
+                    $filePath = $path;
+                    break;
+                }
+            }
+
+            if (!$filePath) {
+                log_message('error', 'AgunanController::viewDocument - File tidak ditemukan di semua path yang dicoba');
+                throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('File tidak ditemukan.');
+            }
+
+            log_message('debug', 'AgunanController::viewDocument - File path: ' . $filePath);
+
+            // Serve file dengan content type yang tepat
+            $mime = mime_content_type($filePath);
+            log_message('debug', 'AgunanController::viewDocument - Serving file with MIME: ' . $mime . ', Size: ' . filesize($filePath) . ' bytes');
+
+            return $this->response
+                ->setHeader('Content-Type', $mime)
+                ->setHeader('Content-Disposition', 'inline; filename="' . basename($filename) . '"')
+                ->setBody(file_get_contents($filePath));
+
+        } catch (\CodeIgniter\Exceptions\PageNotFoundException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            log_message('error', 'AgunanController::viewDocument - Unexpected error: ' . $e->getMessage());
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Terjadi kesalahan saat mengakses dokumen.');
+        }
+    }
+
 }
