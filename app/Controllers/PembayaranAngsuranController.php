@@ -259,10 +259,24 @@ class PembayaranAngsuranController extends Controller
         $buktiPembayaran = $this->request->getFile('bukti_pembayaran');
 
         $uploadPath = WRITEPATH . 'uploads/pembayaran_angsuran';
-        if (!is_dir($uploadPath)) { mkdir($uploadPath, 0777, true); }
+        if (!is_dir($uploadPath)) { 
+            mkdir($uploadPath, 0777, true); 
+        }
 
         $buktiPembayaranName = $buktiPembayaran->getRandomName();
-        $buktiPembayaran->move($uploadPath, $buktiPembayaranName);
+        
+        // Attempt to move file and verify
+        if (!$buktiPembayaran->move($uploadPath, $buktiPembayaranName)) {
+            log_message('error', 'Failed to upload bukti pembayaran: ' . $buktiPembayaran->getErrorString());
+            return redirect()->back()->withInput()->with('error', 'Gagal mengupload file bukti pembayaran: ' . $buktiPembayaran->getErrorString());
+        }
+
+        // Verify file exists after upload
+        $uploadedFilePath = $uploadPath . '/' . $buktiPembayaranName;
+        if (!file_exists($uploadedFilePath)) {
+            log_message('error', 'File bukti pembayaran tidak ditemukan setelah upload: ' . $uploadedFilePath);
+            return redirect()->back()->withInput()->with('error', 'File bukti pembayaran gagal tersimpan. Silakan coba lagi.');
+        }
 
         $data = [
             'id_angsuran' => $this->request->getPost('id_angsuran'),
@@ -276,6 +290,7 @@ class PembayaranAngsuranController extends Controller
         ];
 
         $this->pembayaranAngsuranModel->insert($data);
+        log_message('info', 'Pembayaran angsuran berhasil ditambahkan dengan bukti: ' . $buktiPembayaranName);
         return redirect()->to('/pembayaran-angsuran')->with('success', 'Data pembayaran angsuran berhasil ditambahkan.');
     }
 
