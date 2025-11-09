@@ -319,52 +319,37 @@ $anggotaData = isset($anggota) ? $anggota : null;
                             </p>
                         </div>
 
-                        <!-- Existing file preview (only for edit mode) -->
+                        <!-- Existing file link (only for edit mode) -->
                         <?php if (isset($kredit) && !empty($kredit['dokumen_agunan'])): ?>
                         <?php 
-                        // Add timestamp to prevent browser caching
                         $imageTimestamp = time();
+                        $fullUrl = base_url('kredit/view-document/' . $kredit['dokumen_agunan'] . '?t=' . $imageTimestamp);
                         ?>
-                        <div id="existing-preview-agunan" class="border border-blue-200 rounded-lg p-3 bg-blue-50">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-xs font-medium text-blue-900">
-                                    <i class="bx bx-file-blank"></i> Dokumen Saat Ini
-                                </span>
-                                <button type="button" onclick="refreshPreviewAgunan()" class="text-xs text-blue-600 hover:text-blue-800">
-                                    <i class="bx bx-refresh"></i> Refresh
-                                </button>
+                        <div class="border border-blue-200 rounded-lg p-3 bg-blue-50">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="bx bx-file-blank text-blue-600"></i>
+                                <span class="text-xs font-medium text-blue-900">Dokumen Saat Ini</span>
                             </div>
                             
                             <div class="bg-white rounded p-2 mb-2">
-                                <img id="existing-agunan-img" 
-                                     src="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>?t=<?= $imageTimestamp ?>" 
-                                     alt="Preview" 
-                                     class="w-full h-48 object-contain rounded" 
-                                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect fill=\'%23ddd\' width=\'100\' height=\'100\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23999\'%3ENo Image%3C/text%3E%3C/svg%3E';">
+                                <p class="text-xs text-gray-600 break-all"><?= esc($fullUrl) ?></p>
                             </div>
                             
-                            <div class="flex gap-2 mb-2">
-                                <a href="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>?t=<?= $imageTimestamp ?>" 
+                            <div class="flex gap-2">
+                                <a href="<?= $fullUrl ?>" 
                                    target="_blank" 
                                    class="flex-1 text-center px-3 py-1.5 text-xs bg-green-600 text-white rounded hover:bg-green-700">
                                     <i class="bx bx-show"></i> Lihat
                                 </a>
-                                <a href="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>?t=<?= $imageTimestamp ?>" 
+                                <a href="<?= $fullUrl ?>" 
                                    download 
                                    class="flex-1 text-center px-3 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">
                                     <i class="bx bx-download"></i> Download
                                 </a>
                             </div>
                             
-                            <p class="text-xs text-gray-600 text-center">
-                                <?= esc(basename($kredit['dokumen_agunan'])) ?>
-                                <?php if (isset($kredit['updated_at'])): ?>
-                                <br><span class="text-gray-500">Diupdate: <?= date('d/m/Y H:i', strtotime($kredit['updated_at'])) ?></span>
-                                <?php endif; ?>
-                            </p>
-                            
                             <div class="mt-2 text-xs text-center text-yellow-700 bg-yellow-50 border border-yellow-200 rounded px-2 py-1">
-                                <i class="bx bx-info-circle"></i> Upload file baru di bawah untuk mengganti dokumen ini
+                                <i class="bx bx-info-circle"></i> Upload file baru di atas untuk mengganti
                             </div>
                         </div>
                         <?php endif; ?>
@@ -1001,14 +986,7 @@ function removeLivePreview(type) {
     previewImg.src = '';
 }
 
-// Refresh existing preview agunan
-function refreshPreviewAgunan() {
-    const img = document.getElementById('existing-agunan-img');
-    if (img) {
-        const currentSrc = img.src.split('?')[0]; // Remove existing query params
-        img.src = currentSrc + '?t=' + new Date().getTime(); // Add new timestamp
-    }
-}
+
 </script>
 
 
