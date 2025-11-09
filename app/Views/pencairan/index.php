@@ -112,11 +112,11 @@ $currentUserLevel = session()->get('level');
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                        <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Kredit</th>
+                        <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jangka Waktu</th>
                         <th class="hidden md:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                         <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
                         <th class="hidden sm:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metode</th>
-                        <th class="hidden lg:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Bunga</th>
+                        <th class="hidden lg:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bunga</th>
                         <th class="px-4 sm:px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aktif/Nonaktif</th>
                         <th class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
@@ -125,10 +125,14 @@ $currentUserLevel = session()->get('level');
                     <?php foreach ($pencairan as $row): ?>
                         <tr class="hover:bg-gray-50 transition-colors pencairan-row" 
                             data-search="<?= strtolower(esc($row['id_kredit'] . ' ' . $row['tanggal_pencairan'] . ' ' . $row['jumlah_dicairkan'] . ' ' . $row['metode_pencairan'])) ?>">
-                            <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?= esc($row['id_pencairan']) ?></td>
                             <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900"><?= esc($row['id_kredit']) ?></div>
-                                <div class="md:hidden text-xs text-gray-500"><?= date('d/m/Y', strtotime($row['tanggal_pencairan'])) ?></div>
+                                <div class="text-sm font-medium text-gray-900">#<?= esc($row['id_pencairan']) ?></div>
+                                <div class="text-xs text-gray-500">ID Pencairan</div>
+                            </td>
+                            <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-blue-600"><?= esc($row['jangka_waktu'] ?? '-') ?> Bulan</div>
+                                <div class="text-xs text-gray-500">Kredit #<?= esc($row['id_kredit']) ?></div>
+                                <div class="md:hidden text-xs text-gray-500 mt-1"><?= date('d/m/Y', strtotime($row['tanggal_pencairan'])) ?></div>
                             </td>
                             <td class="hidden md:table-cell px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-600"><?= date('d/m/Y', strtotime($row['tanggal_pencairan'])) ?></td>
                             <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
@@ -136,7 +140,10 @@ $currentUserLevel = session()->get('level');
                                 <div class="sm:hidden text-xs text-gray-500"><?= esc($row['metode_pencairan']) ?></div>
                             </td>
                             <td class="hidden sm:table-cell px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-600"><?= esc($row['metode_pencairan']) ?></td>
-                            <td class="hidden lg:table-cell px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-600"><?= esc($row['id_bunga']) ?></td>
+                            <td class="hidden lg:table-cell px-4 sm:px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900"><?= esc($row['nama_bunga'] ?? '-') ?></div>
+                                <div class="text-xs text-gray-500"><?= isset($row['persentase_bunga']) ? number_format($row['persentase_bunga'], 2) . '%' : '-' ?></div>
+                            </td>
                             <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-center">
                                 <?php if ($currentUserLevel && Roles::can($currentUserLevel, 'manage_pencairan')): ?>
                                     <label class="relative inline-flex items-center cursor-pointer">

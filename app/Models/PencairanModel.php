@@ -67,8 +67,9 @@ class PencairanModel extends Model
         
         // Default select if not provided
         if (!$select) {
-            $select = 'tbl_pencairan.*, tbl_kredit.jumlah_pengajuan, tbl_users.nama_lengkap,
-                      tbl_anggota.no_anggota, tbl_bunga.nama_bunga, tbl_bunga.persentase_bunga';
+            $select = 'tbl_pencairan.*, tbl_kredit.jumlah_pengajuan, tbl_kredit.jangka_waktu, 
+                      tbl_users.nama_lengkap, tbl_anggota.no_anggota, 
+                      tbl_bunga.nama_bunga, tbl_bunga.persentase_bunga';
         }
         
         $builder->select($select)
