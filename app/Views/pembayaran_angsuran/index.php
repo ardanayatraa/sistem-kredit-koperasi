@@ -128,7 +128,7 @@ $currentUserLevel = session()->get('level');
                                             $filePath = WRITEPATH . 'uploads/pembayaran_angsuran/' . $pembayaran['bukti_pembayaran'];
                                             if (file_exists($filePath)): 
                                             ?>
-                                                <a href="/writable/uploads/pembayaran_angsuran/<?= esc($pembayaran['bukti_pembayaran']) ?>"
+                                                <a href="<?= base_url('pembayaran_angsuran/' . $pembayaran['bukti_pembayaran']) ?>"
                                                    target="_blank"
                                                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors">
                                                     <i class="bx bx-file-blank mr-1"></i>
