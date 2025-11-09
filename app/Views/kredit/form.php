@@ -278,14 +278,19 @@ $anggotaData = isset($anggota) ? $anggota : null;
                     <!-- Upload Dokumen Agunan -->
                     <div class="col-span-1 md:col-span-2">
                         <label for="dokumen_agunan" class="block text-sm font-medium text-gray-700 mb-2">
-                            Dokumen Agunan <span class="text-red-500">*</span>
-                            <span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full ml-2">Wajib Upload</span>
+                            Dokumen Agunan 
+                            <?php if (!isset($kredit)): ?>
+                                <span class="text-red-500">*</span>
+                                <span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full ml-2">Wajib Upload</span>
+                            <?php else: ?>
+                                <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full ml-2">Opsional - Upload untuk mengganti</span>
+                            <?php endif; ?>
                         </label>
                         <div class="border-2 border-dashed border-gray-300 rounded-lg p-4">
                              <input type="file"
                                      name="dokumen_agunan"
                                      id="dokumen_agunan"
-                                     class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
+                                     class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                      accept=".pdf,.jpg,.jpeg,.png"
                                      onchange="previewImage(this, 'agunan')"
                                      <?= !isset($kredit) ? 'required' : '' ?>>
