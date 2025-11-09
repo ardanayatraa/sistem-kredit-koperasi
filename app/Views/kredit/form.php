@@ -281,103 +281,93 @@ $anggotaData = isset($anggota) ? $anggota : null;
                             Dokumen Agunan 
                             <?php if (!isset($kredit)): ?>
                                 <span class="text-red-500">*</span>
-                                <span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full ml-2">Wajib Upload</span>
+                                <span class="bg-orange-100 text-orange-800 text-xs px-2 py-0.5 rounded ml-2">Wajib Upload</span>
                             <?php else: ?>
-                                <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full ml-2">Opsional - Upload untuk mengganti</span>
+                                <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded ml-2">Opsional - Upload untuk mengganti</span>
                             <?php endif; ?>
                         </label>
-                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-4">
-                             <input type="file"
-                                     name="dokumen_agunan"
-                                     id="dokumen_agunan"
-                                     class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                                     accept=".pdf,.jpg,.jpeg,.png"
-                                     onchange="previewImage(this, 'agunan')"
-                                     <?= !isset($kredit) ? 'required' : '' ?>>
+                        
+                        <!-- File Input -->
+                        <div class="mb-3">
+                            <input type="file"
+                                   name="dokumen_agunan"
+                                   id="dokumen_agunan"
+                                   class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
+                                   accept=".pdf,.jpg,.jpeg,.png"
+                                   onchange="previewImage(this, 'agunan')"
+                                   <?= !isset($kredit) ? 'required' : '' ?>>
+                            <p class="mt-1 text-xs text-gray-500">Format: PDF, JPG, JPEG, PNG (Max: 5MB)</p>
+                        </div>
 
-                             <!-- Live Preview Container -->
-                             <div id="live-preview-agunan" class="mt-3 hidden">
-                                 <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
-                                     <div class="text-center">
-                                         <div class="relative inline-block">
-                                             <img id="live-preview-img-agunan" src="" alt="Live Preview" class="max-w-full max-h-64 mx-auto rounded-lg shadow-sm border border-gray-200">
-                                             <button type="button" onclick="removeLivePreview('agunan')" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors">
-                                                 <i class="bx bx-x"></i>
-                                             </button>
-                                         </div>
-                                         <p class="text-xs text-gray-600 mt-2">Live Preview - Dokumen Agunan akan diupload</p>
-                                         <div class="mt-2 text-xs text-gray-500">
-                                             <span id="file-info-agunan"></span>
-                                         </div>
-                                     </div>
-                                 </div>
-                             </div>
+                        <!-- Live Preview Container -->
+                        <div id="live-preview-agunan" class="hidden border border-green-200 rounded-lg p-3 bg-green-50 mb-3">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-medium text-green-900">
+                                    <i class="bx bx-image-add"></i> Preview File Baru
+                                </span>
+                                <button type="button" onclick="removeLivePreview('agunan')" class="text-xs text-red-600 hover:text-red-800">
+                                    <i class="bx bx-x"></i> Hapus
+                                </button>
+                            </div>
+                            
+                            <div class="bg-white rounded p-2 mb-2">
+                                <img id="live-preview-img-agunan" src="" alt="Preview" class="w-full h-48 object-contain rounded">
+                            </div>
+                            
+                            <p class="text-xs text-center text-gray-600">
+                                <span id="file-info-agunan"></span>
+                            </p>
+                        </div>
 
-                             <!-- Existing file preview (only for edit mode) -->
-                             <?php if (isset($kredit) && !empty($kredit['dokumen_agunan'])): ?>
-                             <?php 
-                             // Add timestamp to prevent browser caching
-                             $imageTimestamp = time();
-                             ?>
-                             <div id="existing-preview-agunan" class="mt-3">
-                                 <div class="border-2 border-dashed border-blue-300 rounded-lg p-4 bg-blue-50">
-                                     <div class="flex items-center justify-between mb-3">
-                                         <p class="text-sm font-medium text-blue-900">
-                                             <i class="bx bx-image-alt mr-1"></i>
-                                             Dokumen Agunan Saat Ini
-                                         </p>
-                                         <button type="button" onclick="refreshPreviewAgunan()" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
-                                             <i class="bx bx-refresh"></i>
-                                             Refresh
-                                         </button>
-                                     </div>
-                                     <div class="text-center">
-                                         <div class="relative inline-block">
-                                             <img id="existing-agunan-img" src="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>?t=<?= $imageTimestamp ?>" alt="Existing Preview" class="max-w-full max-h-64 mx-auto rounded-lg shadow-sm border border-blue-200" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                             <div class="text-center text-gray-500 text-sm" style="display: none;">
-                                                 <i class="bx bx-error text-2xl mb-2"></i>
-                                                 <p>Gagal memuat preview gambar</p>
-                                                 <p class="text-xs text-gray-400 mt-1">File: <?= esc(basename($kredit['dokumen_agunan'])) ?></p>
-                                             </div>
-                                         </div>
-                                         <div class="flex gap-2 justify-center mt-3">
-                                             <a href="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>?t=<?= $imageTimestamp ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
-                                                 <i class="bx bx-show"></i>
-                                                 Lihat
-                                             </a>
-                                             <a href="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>?t=<?= $imageTimestamp ?>" download class="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
-                                                 <i class="bx bx-download"></i>
-                                                 Download
-                                             </a>
-                                         </div>
-                                         <p class="text-xs text-gray-600 mt-2">
-                                             <?= esc(basename($kredit['dokumen_agunan'])) ?>
-                                             <?php if (isset($kredit['updated_at'])): ?>
-                                             <br><span class="text-gray-500">Terakhir diupdate: <?= date('d/m/Y H:i', strtotime($kredit['updated_at'])) ?></span>
-                                             <?php endif; ?>
-                                         </p>
-                                         
-                                         <!-- Debug Info -->
-                                         <?php if (ENVIRONMENT === 'development'): ?>
-                                         <div class="text-xs text-gray-500 bg-gray-100 border border-gray-300 rounded px-2 py-1 mt-2">
-                                             <strong>Debug Info:</strong><br>
-                                             DB Path: <?= esc($kredit['dokumen_agunan']) ?><br>
-                                             Full Path: <?= WRITEPATH . 'uploads/' . $kredit['dokumen_agunan'] ?><br>
-                                             File Exists: <?= file_exists(WRITEPATH . 'uploads/' . $kredit['dokumen_agunan']) ? 'YES' : 'NO' ?><br>
-                                             <?php if (file_exists(WRITEPATH . 'uploads/' . $kredit['dokumen_agunan'])): ?>
-                                             File Modified: <?= date('Y-m-d H:i:s', filemtime(WRITEPATH . 'uploads/' . $kredit['dokumen_agunan'])) ?>
-                                             <?php endif; ?>
-                                         </div>
-                                         <?php endif; ?>
-                                         
-                                         <p class="text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded px-2 py-1 mt-2 inline-block">
-                                             <i class="bx bx-info-circle"></i>
-                                             Upload file baru di bawah untuk mengganti dokumen ini
-                                         </p>
-                                     </div>
-                                 </div>
-                             </div>
-                             <?php endif; ?>
+                        <!-- Existing file preview (only for edit mode) -->
+                        <?php if (isset($kredit) && !empty($kredit['dokumen_agunan'])): ?>
+                        <?php 
+                        // Add timestamp to prevent browser caching
+                        $imageTimestamp = time();
+                        ?>
+                        <div id="existing-preview-agunan" class="border border-blue-200 rounded-lg p-3 bg-blue-50">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-medium text-blue-900">
+                                    <i class="bx bx-file-blank"></i> Dokumen Saat Ini
+                                </span>
+                                <button type="button" onclick="refreshPreviewAgunan()" class="text-xs text-blue-600 hover:text-blue-800">
+                                    <i class="bx bx-refresh"></i> Refresh
+                                </button>
+                            </div>
+                            
+                            <div class="bg-white rounded p-2 mb-2">
+                                <img id="existing-agunan-img" 
+                                     src="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>?t=<?= $imageTimestamp ?>" 
+                                     alt="Preview" 
+                                     class="w-full h-48 object-contain rounded" 
+                                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect fill=\'%23ddd\' width=\'100\' height=\'100\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23999\'%3ENo Image%3C/text%3E%3C/svg%3E';">
+                            </div>
+                            
+                            <div class="flex gap-2 mb-2">
+                                <a href="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>?t=<?= $imageTimestamp ?>" 
+                                   target="_blank" 
+                                   class="flex-1 text-center px-3 py-1.5 text-xs bg-green-600 text-white rounded hover:bg-green-700">
+                                    <i class="bx bx-show"></i> Lihat
+                                </a>
+                                <a href="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>?t=<?= $imageTimestamp ?>" 
+                                   download 
+                                   class="flex-1 text-center px-3 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">
+                                    <i class="bx bx-download"></i> Download
+                                </a>
+                            </div>
+                            
+                            <p class="text-xs text-gray-600 text-center">
+                                <?= esc(basename($kredit['dokumen_agunan'])) ?>
+                                <?php if (isset($kredit['updated_at'])): ?>
+                                <br><span class="text-gray-500">Diupdate: <?= date('d/m/Y H:i', strtotime($kredit['updated_at'])) ?></span>
+                                <?php endif; ?>
+                            </p>
+                            
+                            <div class="mt-2 text-xs text-center text-yellow-700 bg-yellow-50 border border-yellow-200 rounded px-2 py-1">
+                                <i class="bx bx-info-circle"></i> Upload file baru di bawah untuk mengganti dokumen ini
+                            </div>
+                        </div>
+                        <?php endif; ?>
                          </div>
                         <div class="mt-2 text-xs text-gray-500">
                             <p><strong>Jenis dokumen sesuai agunan:</strong></p>
