@@ -351,6 +351,20 @@ $anggotaData = isset($anggota) ? $anggota : null;
                                              <br><span class="text-gray-500">Terakhir diupdate: <?= date('d/m/Y H:i', strtotime($kredit['updated_at'])) ?></span>
                                              <?php endif; ?>
                                          </p>
+                                         
+                                         <!-- Debug Info -->
+                                         <?php if (ENVIRONMENT === 'development'): ?>
+                                         <div class="text-xs text-gray-500 bg-gray-100 border border-gray-300 rounded px-2 py-1 mt-2">
+                                             <strong>Debug Info:</strong><br>
+                                             DB Path: <?= esc($kredit['dokumen_agunan']) ?><br>
+                                             Full Path: <?= WRITEPATH . 'uploads/' . $kredit['dokumen_agunan'] ?><br>
+                                             File Exists: <?= file_exists(WRITEPATH . 'uploads/' . $kredit['dokumen_agunan']) ? 'YES' : 'NO' ?><br>
+                                             <?php if (file_exists(WRITEPATH . 'uploads/' . $kredit['dokumen_agunan'])): ?>
+                                             File Modified: <?= date('Y-m-d H:i:s', filemtime(WRITEPATH . 'uploads/' . $kredit['dokumen_agunan'])) ?>
+                                             <?php endif; ?>
+                                         </div>
+                                         <?php endif; ?>
+                                         
                                          <p class="text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded px-2 py-1 mt-2 inline-block">
                                              <i class="bx bx-info-circle"></i>
                                              Upload file baru di bawah untuk mengganti dokumen ini

@@ -203,6 +203,17 @@ class KreditController extends Controller
                 throw new \CodeIgniter\Exceptions\PageNotFoundException('Data anggota terkait tidak ditemukan.');
             }
 
+            // Log dokumen agunan info
+            if (!empty($data['kredit']['dokumen_agunan'])) {
+                $filePath = WRITEPATH . 'uploads/' . $data['kredit']['dokumen_agunan'];
+                log_message('info', 'KreditController::edit - Dokumen Agunan: ' . $data['kredit']['dokumen_agunan']);
+                log_message('info', 'KreditController::edit - File Path: ' . $filePath);
+                log_message('info', 'KreditController::edit - File Exists: ' . (file_exists($filePath) ? 'YES' : 'NO'));
+                if (file_exists($filePath)) {
+                    log_message('info', 'KreditController::edit - File Modified: ' . date('Y-m-d H:i:s', filemtime($filePath)));
+                }
+            }
+            
             log_message('debug', 'KreditController::edit - Successfully loaded data for kredit ID: ' . $id);
             return view('kredit/form', $data);
 
@@ -290,15 +301,29 @@ class KreditController extends Controller
 
         $file = $this->request->getFile('dokumen_agunan');
         if ($file && $file->isValid() && !$file->hasMoved()) {
+            log_message('info', 'KreditController Update - New file uploaded: ' . $file->getName());
+            
             // Delete old file if exists
-            if (!empty($kredit['dokumen_agunan']) && file_exists(WRITEPATH . $kredit['dokumen_agunan'])) {
-                unlink(WRITEPATH . $kredit['dokumen_agunan']);
+            if (!empty($kredit['dokumen_agunan'])) {
+                $oldFilePath = WRITEPATH . 'uploads/' . $kredit['dokumen_agunan'];
+                log_message('debug', 'KreditController Update - Checking old file: ' . $oldFilePath);
+                if (file_exists($oldFilePath)) {
+                    unlink($oldFilePath);
+                    log_message('info', 'KreditController Update - Old file deleted: ' . $oldFilePath);
+                } else {
+                    log_message('warning', 'KreditController Update - Old file not found: ' . $oldFilePath);
+                }
             }
             
             $newName = 'dokumen_agunan_' . date('YmdHis') . '_' . $file->getRandomName();
             if ($file->move($uploadPath, $newName)) {
                 $data['dokumen_agunan'] = 'dokumen_kredit/' . $newName;
+                log_message('info', 'KreditController Update - New file saved: ' . $data['dokumen_agunan']);
+            } else {
+                log_message('error', 'KreditController Update - Failed to move file: ' . $file->getErrorString());
             }
+        } else {
+            log_message('debug', 'KreditController Update - No new file uploaded or file invalid');
         }
 
         log_message('debug', 'KreditController Update - Data yang akan disimpan: ' . json_encode($data));
