@@ -311,24 +311,24 @@ $anggotaData = isset($anggota) ? $anggota : null;
                              <!-- Existing file preview (only for edit mode) -->
                              <?php if (isset($kredit) && !empty($kredit['dokumen_agunan'])): ?>
                              <?php 
-                             // Add cache buster to prevent browser caching old images
-                             $cacheBuster = isset($kredit['updated_at']) ? strtotime($kredit['updated_at']) : time();
+                             // Add timestamp to prevent browser caching
+                             $imageTimestamp = time();
                              ?>
                              <div id="existing-preview-agunan" class="mt-3">
                                  <div class="border-2 border-dashed border-blue-300 rounded-lg p-4 bg-blue-50">
                                      <div class="text-center">
                                          <div class="relative inline-block">
-                                             <img src="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>?v=<?= $cacheBuster ?>" alt="Existing Preview" class="max-w-full max-h-64 mx-auto rounded-lg shadow-sm border border-blue-200" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                             <img src="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>?t=<?= $imageTimestamp ?>" alt="Existing Preview" class="max-w-full max-h-64 mx-auto rounded-lg shadow-sm border border-blue-200" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                                              <div class="text-center text-gray-500 text-sm" style="display: none;">
                                                  <i class="bx bx-error text-2xl mb-2"></i>
                                                  <p>Gagal memuat preview gambar</p>
                                                  <p class="text-xs text-gray-400 mt-1">File: <?= esc($kredit['dokumen_agunan']) ?></p>
                                                  <div class="flex gap-2 justify-center mt-2">
-                                                     <a href="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>?v=<?= $cacheBuster ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                                     <a href="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>?t=<?= $imageTimestamp ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
                                                          <i class="bx bx-download h-3 w-3"></i>
                                                          Download
                                                      </a>
-                                                     <a href="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>?v=<?= $cacheBuster ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                                                     <a href="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>?t=<?= $imageTimestamp ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
                                                          <i class="bx bx-eye h-3 w-3"></i>
                                                          Lihat
                                                      </a>
