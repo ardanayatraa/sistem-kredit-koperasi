@@ -99,16 +99,12 @@
                         </div>
                     </div>
                     <?php if (!empty($kredit['dokumen_agunan'])): ?>
-                        <?php 
-                        // Build correct URL - dokumen_agunan already contains folder path
-                        $dokumenUrl = base_url('writable/uploads/' . $kredit['dokumen_agunan']);
-                        ?>
-                        <button type="button" 
-                                onclick="showDokumenModal('<?= $dokumenUrl ?>')"
-                                class="inline-flex items-center gap-1 px-3 py-1 bg-purple-600 text-white text-sm font-medium rounded hover:bg-purple-700 transition-colors">
+                        <a href="<?= base_url('writable/uploads/dokumen_kredit/' . basename($kredit['dokumen_agunan'])) ?>"
+                           target="_blank"
+                           class="inline-flex items-center gap-1 px-3 py-1 bg-purple-600 text-white text-sm font-medium rounded hover:bg-purple-700 transition-colors">
                             <i class="bx bx-show text-sm"></i>
                             Lihat
-                        </button>
+                        </a>
                     <?php else: ?>
                         <span class="text-sm text-gray-500">Tidak ada file</span>
                     <?php endif; ?>
@@ -137,68 +133,4 @@
     </div>
     <?php endif; ?>
 </div>
-<?= $this->endSection() ?>
-
-
-<!-- Modal untuk preview dokumen -->
-<div id="dokumenModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
-        <div class="flex items-center justify-between p-4 border-b">
-            <h3 class="text-lg font-semibold text-gray-900">Preview Dokumen Agunan</h3>
-            <button type="button" onclick="closeDokumenModal()" class="text-gray-400 hover:text-gray-600">
-                <i class="bx bx-x text-2xl"></i>
-            </button>
-        </div>
-        <div class="p-4 overflow-auto max-h-[calc(90vh-8rem)]">
-            <img id="dokumenImage" src="" alt="Dokumen Agunan" class="w-full h-auto">
-        </div>
-        <div class="flex items-center justify-end gap-2 p-4 border-t">
-            <a id="dokumenDownload" href="" download class="inline-flex items-center gap-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                <i class="bx bx-download"></i>
-                Download
-            </a>
-            <button type="button" onclick="closeDokumenModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
-                Tutup
-            </button>
-        </div>
-    </div>
-</div>
-
-<script>
-function showDokumenModal(url) {
-    const modal = document.getElementById('dokumenModal');
-    const image = document.getElementById('dokumenImage');
-    const download = document.getElementById('dokumenDownload');
-    
-    image.src = url;
-    download.href = url;
-    modal.classList.remove('hidden');
-    
-    // Prevent body scroll
-    document.body.style.overflow = 'hidden';
-}
-
-function closeDokumenModal() {
-    const modal = document.getElementById('dokumenModal');
-    modal.classList.add('hidden');
-    
-    // Restore body scroll
-    document.body.style.overflow = '';
-}
-
-// Close modal when clicking outside
-document.getElementById('dokumenModal')?.addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeDokumenModal();
-    }
-});
-
-// Close modal with ESC key
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closeDokumenModal();
-    }
-});
-</script>
-
 <?= $this->endSection() ?>
