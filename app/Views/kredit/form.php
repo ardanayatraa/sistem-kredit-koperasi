@@ -316,33 +316,44 @@ $anggotaData = isset($anggota) ? $anggota : null;
                              ?>
                              <div id="existing-preview-agunan" class="mt-3">
                                  <div class="border-2 border-dashed border-blue-300 rounded-lg p-4 bg-blue-50">
+                                     <div class="flex items-center justify-between mb-3">
+                                         <p class="text-sm font-medium text-blue-900">
+                                             <i class="bx bx-image-alt mr-1"></i>
+                                             Dokumen Agunan Saat Ini
+                                         </p>
+                                         <button type="button" onclick="refreshPreviewAgunan()" class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                             <i class="bx bx-refresh"></i>
+                                             Refresh
+                                         </button>
+                                     </div>
                                      <div class="text-center">
                                          <div class="relative inline-block">
-                                             <img src="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>?t=<?= $imageTimestamp ?>" alt="Existing Preview" class="max-w-full max-h-64 mx-auto rounded-lg shadow-sm border border-blue-200" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                             <img id="existing-agunan-img" src="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>?t=<?= $imageTimestamp ?>" alt="Existing Preview" class="max-w-full max-h-64 mx-auto rounded-lg shadow-sm border border-blue-200" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                                              <div class="text-center text-gray-500 text-sm" style="display: none;">
                                                  <i class="bx bx-error text-2xl mb-2"></i>
                                                  <p>Gagal memuat preview gambar</p>
-                                                 <p class="text-xs text-gray-400 mt-1">File: <?= esc($kredit['dokumen_agunan']) ?></p>
-                                                 <div class="flex gap-2 justify-center mt-2">
-                                                     <a href="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>?t=<?= $imageTimestamp ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
-                                                         <i class="bx bx-download h-3 w-3"></i>
-                                                         Download
-                                                     </a>
-                                                     <a href="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>?t=<?= $imageTimestamp ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
-                                                         <i class="bx bx-eye h-3 w-3"></i>
-                                                         Lihat
-                                                     </a>
-                                                 </div>
-                                             </div>
-                                             <div class="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
-                                                 File Tersimpan
+                                                 <p class="text-xs text-gray-400 mt-1">File: <?= esc(basename($kredit['dokumen_agunan'])) ?></p>
                                              </div>
                                          </div>
-                                         <p class="text-xs text-blue-600 mt-2">
-                                             File saat ini: <?= esc(basename($kredit['dokumen_agunan'])) ?>
+                                         <div class="flex gap-2 justify-center mt-3">
+                                             <a href="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>?t=<?= $imageTimestamp ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                                                 <i class="bx bx-show"></i>
+                                                 Lihat
+                                             </a>
+                                             <a href="/kredit/view-document/<?= esc($kredit['dokumen_agunan']) ?>?t=<?= $imageTimestamp ?>" download class="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                                 <i class="bx bx-download"></i>
+                                                 Download
+                                             </a>
+                                         </div>
+                                         <p class="text-xs text-gray-600 mt-2">
+                                             <?= esc(basename($kredit['dokumen_agunan'])) ?>
                                              <?php if (isset($kredit['updated_at'])): ?>
-                                             <span class="text-gray-500">• Diupdate: <?= date('d/m/Y H:i', strtotime($kredit['updated_at'])) ?></span>
+                                             <br><span class="text-gray-500">Terakhir diupdate: <?= date('d/m/Y H:i', strtotime($kredit['updated_at'])) ?></span>
                                              <?php endif; ?>
+                                         </p>
+                                         <p class="text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded px-2 py-1 mt-2 inline-block">
+                                             <i class="bx bx-info-circle"></i>
+                                             Upload file baru di bawah untuk mengganti dokumen ini
                                          </p>
                                      </div>
                                  </div>
@@ -979,6 +990,15 @@ function removeLivePreview(type) {
     // Reset preview image src
     const previewImg = document.getElementById(`live-preview-img-${type}`);
     previewImg.src = '';
+}
+
+// Refresh existing preview agunan
+function refreshPreviewAgunan() {
+    const img = document.getElementById('existing-agunan-img');
+    if (img) {
+        const currentSrc = img.src.split('?')[0]; // Remove existing query params
+        img.src = currentSrc + '?t=' + new Date().getTime(); // Add new timestamp
+    }
 }
 </script>
 
