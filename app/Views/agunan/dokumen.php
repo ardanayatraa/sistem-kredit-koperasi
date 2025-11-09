@@ -99,8 +99,12 @@
                         </div>
                     </div>
                     <?php if (!empty($kredit['dokumen_agunan'])): ?>
+                        <?php 
+                        // Build correct URL - dokumen_agunan already contains folder path
+                        $dokumenUrl = base_url('writable/uploads/' . $kredit['dokumen_agunan']);
+                        ?>
                         <button type="button" 
-                                onclick="showDokumenModal('<?= base_url('writable/uploads/dokumen_kredit/' . basename($kredit['dokumen_agunan'])) ?>')"
+                                onclick="showDokumenModal('<?= $dokumenUrl ?>')"
                                 class="inline-flex items-center gap-1 px-3 py-1 bg-purple-600 text-white text-sm font-medium rounded hover:bg-purple-700 transition-colors">
                             <i class="bx bx-show text-sm"></i>
                             Lihat
