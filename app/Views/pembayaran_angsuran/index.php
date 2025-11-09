@@ -140,6 +140,11 @@ $currentUserLevel = session()->get('level');
                                                     File tidak ditemukan
                                                 </span>
                                             <?php endif; ?>
+                                        <?php else: ?>
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                                <i class="bx bx-image-alt mr-1"></i>
+                                                Belum ada bukti
+                                            </span>
                                         <?php endif; ?>
                                         
                                         <!-- Verifikasi Actions untuk Bendahara/Ketua -->
