@@ -315,6 +315,7 @@ $routes->get('writable/uploads/pembayaran_angsuran/(:any)', 'PembayaranAngsuranC
 
 // Rute khusus untuk dokumen agunan dengan access control
 $routes->get('writable/uploads/dokumen_kredit/(:any)', 'AgunanController::viewDocument/$1', ['filter' => 'auth']);
+$routes->get('dokumen_kredit/(:any)', 'AgunanController::viewDocument/$1', ['filter' => 'auth']);
 
 // Rute untuk melayani file yang diunggah dari writable/uploads (tetap sama)
 $routes->get('writable/uploads/(:segment)/(:any)', function($folder, $filename) {
