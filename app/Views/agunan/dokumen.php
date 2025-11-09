@@ -104,11 +104,12 @@
                         $dokumenUrl = base_url($kredit['dokumen_agunan']);
                         ?>
                         <button type="button" 
-                                onclick="showDokumenModal('<?= $dokumenUrl ?>')"
+                                onclick="showDokumenModal('<?= addslashes($dokumenUrl) ?>')"
                                 class="inline-flex items-center gap-1 px-3 py-1 bg-purple-600 text-white text-sm font-medium rounded hover:bg-purple-700 transition-colors">
                             <i class="bx bx-show text-sm"></i>
                             Lihat
                         </button>
+                        <!-- Debug: URL = <?= $dokumenUrl ?> -->
                     <?php else: ?>
                         <span class="text-sm text-gray-500">Tidak ada file</span>
                     <?php endif; ?>
@@ -164,13 +165,25 @@
 
 <script>
 function showDokumenModal(url) {
+    console.log('showDokumenModal called with URL:', url);
+    
     const modal = document.getElementById('dokumenModal');
     const image = document.getElementById('dokumenImage');
     const download = document.getElementById('dokumenDownload');
     
+    console.log('Modal element:', modal);
+    console.log('Image element:', image);
+    
+    if (!modal || !image || !download) {
+        console.error('Modal elements not found!');
+        return;
+    }
+    
     image.src = url;
     download.href = url;
     modal.classList.remove('hidden');
+    
+    console.log('Modal should be visible now');
     
     // Prevent body scroll
     document.body.style.overflow = 'hidden';
