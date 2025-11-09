@@ -207,7 +207,7 @@
             </div>
         </div>
         <div class="p-6">
-            <form action="/kredit/proses-pencairan/<?= $kredit['id_kredit'] ?>" method="post" class="space-y-6">
+            <form action="/kredit/proses-pencairan/<?= $kredit['id_kredit'] ?>" method="post" enctype="multipart/form-data" class="space-y-6">
                 <?= csrf_field() ?>
                 
                 <div>
@@ -222,6 +222,39 @@
                               placeholder="Masukkan catatan untuk proses pencairan (verifikasi rekening, konfirmasi data, dll)"><?= old('catatan_pencairan_bendahara') ?></textarea>
                     <?php if (isset($errors['catatan_pencairan_bendahara'])): ?>
                         <p class="mt-1 text-sm text-red-600"><?= $errors['catatan_pencairan_bendahara'] ?></p>
+                    <?php endif; ?>
+                </div>
+
+                <div>
+                    <label for="metode_pencairan" class="block text-sm font-medium text-gray-700 mb-2">
+                        Metode Pencairan <span class="text-red-500">*</span>
+                    </label>
+                    <select class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" 
+                            name="metode_pencairan" 
+                            id="metode_pencairan" 
+                            required>
+                        <option value="">-- Pilih Metode Pencairan --</option>
+                        <option value="Transfer Bank" <?= old('metode_pencairan') === 'Transfer Bank' ? 'selected' : '' ?>>Transfer Bank</option>
+                        <option value="Tunai" <?= old('metode_pencairan') === 'Tunai' ? 'selected' : '' ?>>Tunai</option>
+                        <option value="Cek" <?= old('metode_pencairan') === 'Cek' ? 'selected' : '' ?>>Cek</option>
+                    </select>
+                    <?php if (isset($errors['metode_pencairan'])): ?>
+                        <p class="mt-1 text-sm text-red-600"><?= $errors['metode_pencairan'] ?></p>
+                    <?php endif; ?>
+                </div>
+
+                <div>
+                    <label for="bukti_pencairan" class="block text-sm font-medium text-gray-700 mb-2">
+                        Bukti Pencairan <span class="text-gray-500">(Opsional)</span>
+                    </label>
+                    <input type="file" 
+                           name="bukti_pencairan" 
+                           id="bukti_pencairan"
+                           accept=".pdf,.jpg,.jpeg,.png"
+                           class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none">
+                    <p class="mt-1 text-xs text-gray-500">Format: PDF, JPG, JPEG, PNG (Max: 5MB)</p>
+                    <?php if (isset($errors['bukti_pencairan'])): ?>
+                        <p class="mt-1 text-sm text-red-600"><?= $errors['bukti_pencairan'] ?></p>
                     <?php endif; ?>
                 </div>
 
