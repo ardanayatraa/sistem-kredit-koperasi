@@ -335,10 +335,15 @@ $anggotaData = isset($anggota) ? $anggota : null;
                                                  </div>
                                              </div>
                                              <div class="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
-                                                 File Lama
+                                                 File Tersimpan
                                              </div>
                                          </div>
-                                         <p class="text-xs text-blue-600 mt-2">File saat ini: <?= esc($kredit['dokumen_agunan']) ?></p>
+                                         <p class="text-xs text-blue-600 mt-2">
+                                             File saat ini: <?= esc(basename($kredit['dokumen_agunan'])) ?>
+                                             <?php if (isset($kredit['updated_at'])): ?>
+                                             <span class="text-gray-500">• Diupdate: <?= date('d/m/Y H:i', strtotime($kredit['updated_at'])) ?></span>
+                                             <?php endif; ?>
+                                         </p>
                                      </div>
                                  </div>
                              </div>
