@@ -28,7 +28,14 @@ class AgunanController extends BaseController
         $select = 'tbl_kredit.*, tbl_users.nama_lengkap, tbl_anggota.nik';
         $additionalWhere = ['tbl_kredit.jenis_agunan IS NOT NULL' => null];
         
-        $data['agunan'] = $this->kreditModel->getFilteredKreditsWithData($additionalWhere, $select);
+        $agunan = $this->kreditModel->getFilteredKreditsWithData($additionalWhere, $select);
+        
+        // Sort by created_at DESC (data terbaru di atas)
+        usort($agunan, function($a, $b) {
+            return strtotime($b['created_at']) - strtotime($a['created_at']);
+        });
+        
+        $data['agunan'] = $agunan;
         $data['pager'] = $this->kreditModel->pager;
 
         return view('agunan/index', $data);

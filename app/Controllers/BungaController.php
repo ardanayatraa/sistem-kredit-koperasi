@@ -17,7 +17,14 @@ class BungaController extends Controller
 
     public function index()
     {
-        $data['bunga'] = $this->bungaModel->findAll();
+        $bunga = $this->bungaModel->findAll();
+        
+        // Sort by created_at DESC (data terbaru di atas)
+        usort($bunga, function($a, $b) {
+            return strtotime($b['created_at']) - strtotime($a['created_at']);
+        });
+        
+        $data['bunga'] = $bunga;
         return view('bunga/index', $data);
     }
 

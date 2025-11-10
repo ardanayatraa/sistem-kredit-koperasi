@@ -32,7 +32,14 @@ class AngsuranController extends BaseController
     public function index()
     {
         // Use filtered method with user-based access control
-        $data['angsuran'] = $this->angsuranModel->getFilteredAngsuranWithData();
+        $angsuran = $this->angsuranModel->getFilteredAngsuranWithData();
+        
+        // Sort by created_at DESC (data terbaru di atas)
+        usort($angsuran, function($a, $b) {
+            return strtotime($b['created_at']) - strtotime($a['created_at']);
+        });
+        
+        $data['angsuran'] = $angsuran;
         return view('angsuran/index', $data);
     }
 
