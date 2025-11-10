@@ -1058,7 +1058,9 @@ class KreditController extends Controller
         if ($this->request->getMethod() === 'POST') {
             $rules = [
                 'catatan_pencairan_bendahara' => 'required|max_length[255]',
-                'keputusan_pencairan' => 'required|in_list[Siap Dicairkan,Perlu Review]'
+                'keputusan_pencairan' => 'required|in_list[Siap Dicairkan,Perlu Review]',
+                'metode_pencairan' => 'required|in_list[Transfer Bank,Tunai,Cek]',
+                'bukti_pencairan' => 'permit_empty|max_size[bukti_pencairan,5120]|ext_in[bukti_pencairan,pdf,jpg,jpeg,png]'
             ];
 
             if (!$this->validate($rules)) {
@@ -1093,17 +1095,32 @@ class KreditController extends Controller
                             return redirect()->back()->with('error', 'Data bunga tidak ditemukan. Hubungi administrator.');
                         }
                         
+                        // Handle bukti pencairan upload
+                        $buktiTransferName = null;
+                        $buktiFile = $this->request->getFile('bukti_pencairan');
+                        if ($buktiFile && $buktiFile->isValid() && !$buktiFile->hasMoved()) {
+                            $uploadPath = WRITEPATH . 'uploads/pencairan';
+                            if (!is_dir($uploadPath)) {
+                                mkdir($uploadPath, 0777, true);
+                            }
+                            $buktiTransferName = $buktiFile->getRandomName();
+                            $buktiFile->move($uploadPath, $buktiTransferName);
+                            log_message('info', 'Bukti pencairan uploaded: ' . $buktiTransferName);
+                        }
+                        
                         $pencairanData = [
                             'id_kredit' => $id,
                             'id_bunga' => $defaultBunga['id_bunga'],
                             'jumlah_dicairkan' => $kredit['jumlah_pengajuan'],
                             'tanggal_pencairan' => date('Y-m-d'),
+                            'metode_pencairan' => $this->request->getPost('metode_pencairan'),
+                            'bukti_transfer' => $buktiTransferName,
                             'catatan_pencairan' => 'Pencairan otomatis oleh Bendahara - ' . $catatanPencairan,
                             'created_at' => date('Y-m-d H:i:s')
                         ];
                         
                         $pencairanModel->insert($pencairanData);
-                        log_message('info', 'AUTO-PENCAIRAN: Record pencairan dibuat untuk kredit ID ' . $id);
+                        log_message('info', 'AUTO-PENCAIRAN: Record pencairan dibuat untuk kredit ID ' . $id . ' dengan metode ' . $pencairanData['metode_pencairan']);
                     }
                     
                     // 2. Generate HANYA angsuran ke-1 (user request: bertahap, bukan sekaligus)
