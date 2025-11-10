@@ -27,7 +27,14 @@ class PencairanController extends Controller
     public function index()
     {
         // Use filtered method with user-based access control
-        $data['pencairan'] = $this->pencairanModel->getFilteredPencairanWithData();
+        $pencairan = $this->pencairanModel->getFilteredPencairanWithData();
+        
+        // Sort by created_at DESC (data terbaru di atas)
+        usort($pencairan, function($a, $b) {
+            return strtotime($b['created_at']) - strtotime($a['created_at']);
+        });
+        
+        $data['pencairan'] = $pencairan;
         return view('pencairan/index', $data);
     }
 
